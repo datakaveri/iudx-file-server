@@ -5,6 +5,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.net.JksOptions;
@@ -15,6 +17,8 @@ import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
+import iudx.file.server.utilities.CustomResponse;
+import iudx.file.server.utilities.FileServer;
 
 /**
  * The File Server API Verticle.
@@ -45,6 +49,7 @@ public class FileServerVerticle extends AbstractVerticle {
   private String keystore;
   private String keystorePassword;
   private Router router;
+  private FileServer fileServer;
 
   @Override
   public void start() throws Exception {
@@ -88,6 +93,7 @@ public class FileServerVerticle extends AbstractVerticle {
 
       }
     });
+    logger.info("FileServerVerticle started successfully");
   }
 
   /**
@@ -104,6 +110,28 @@ public class FileServerVerticle extends AbstractVerticle {
     /* TODO : Get user token from header. Perform TIP for Resource Server */
     /* TODO : Allow or deny upload of the file */
     /* TODO : If allow, Update the metadata to Resource Server */
+
+		HttpServerRequest request = routingContext.request();
+		HttpServerResponse response = routingContext.response();
+		response.putHeader("content-type", "application/json");
+		fileServer = new FileServer(vertx, Constants.DIR);
+
+		//upload file logic
+		fileServer.writeUploadFile(request, Constants.MAX_SIZE, handler->{
+			String status = handler.getString("status");
+			logger.info("FileServerVerticle received uploadFile status : " + status );
+			if( null != status && !status.isEmpty() && !status.isBlank() ) {
+				if( "ok".equals(status) ) {
+					response.end(new CustomResponse.ResponseBuilder().withStatusCode(200).withMessage(handler.getString("message"))
+							.withCustomMessage(""+handler.getJsonObject("metadata")).build().toJson().toString());
+				} else if("error".equals(status) || "exception".equals(status)){
+					response.end(new CustomResponse.ResponseBuilder().withStatusCode(400).withMessage(handler.getString("message")).build().toJson().toString()); 
+				  }
+			}
+			else {
+				response.end(new CustomResponse.ResponseBuilder().withStatusCode(400).withMessage(status).build().toJson().toString()); 
+			}
+		});
 
   }
 
