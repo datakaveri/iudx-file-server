@@ -5,7 +5,7 @@ import io.vertx.core.json.JsonObject;
 public class CustomResponse {
 
 	private final int statusCode;
-	private final String message;
+	private final Object message;
 	private final String httpMesage;
 	
 	private CustomResponse(int statusCode, String message, String httpMessage) {
