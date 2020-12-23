@@ -30,32 +30,26 @@ public class PGTokenStoreImpl implements TokenStore {
 
   private PgPool client;
 
-  public PGTokenStoreImpl(Vertx vertx) {
-    FileInputStream inputstream;
-    try {
-      inputstream = new FileInputStream(Constants.CONFIG_FILE);
-      Properties properties = new Properties();
-      properties.load(inputstream);
-      String databaseIP = properties.getProperty("databaseIP");
-      Integer databasePort = Integer.parseInt(properties.getProperty("databasePort"));
-      String databaseUser = properties.getProperty("databaseUser");
-      String databaseUsed = properties.getProperty("databaseUsed");
-      String databasePassword = properties.getProperty("databasePassword");
+  public PGTokenStoreImpl(Vertx vertx, JsonObject configs) {
 
-      PgConnectOptions connectOptions = new PgConnectOptions().setPort(databasePort)
-          .setHost(databaseIP).setDatabase(databaseUsed).setUser(databaseUser)
-          .setPassword(databasePassword).addProperty("search_path", "public");
+    String databaseIP = configs.getString("databaseIP");
+    Integer databasePort = configs.getInteger("databasePort");
+    String databaseUser = configs.getString("databaseUser");
+    String databaseUsed = configs.getString("databaseUsed");
+    String databasePassword = configs.getString("databasePassword");
 
-      // Pool options
-      PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
+    PgConnectOptions connectOptions = new PgConnectOptions()
+        .setPort(databasePort)
+        .setHost(databaseIP)
+        .setDatabase(databaseUsed)
+        .setUser(databaseUser)
+        .setPassword(databasePassword)
+        .addProperty("search_path", "public");
+    // Pool options
+    PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
+    // Create the pooled client
+    this.client = PgPool.pool(vertx, connectOptions, poolOptions);
 
-      // Create the pooled client
-      this.client = PgPool.pool(vertx, connectOptions, poolOptions);
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
   }
 
   @Override
@@ -65,7 +59,7 @@ public class PGTokenStoreImpl implements TokenStore {
     client.preparedQuery(SQL_SELECT).execute(Tuple.of(token), ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rows = ar.result();
-        LOGGER.info("size :"+rows.size());
+        LOGGER.info("size :" + rows.size());
         if (rows.size() > 0) {
           for (Row row : rows) {
             result.put("file_token", row.getValue("file_token").toString());
@@ -109,11 +103,11 @@ public class PGTokenStoreImpl implements TokenStore {
   @Override
   public Future<Boolean> delete(String token) {
     Promise<Boolean> promise = Promise.promise();
-    client.preparedQuery(SQL_DELETE).execute(Tuple.of(token),ar->{
-      if(ar.succeeded()) {
+    client.preparedQuery(SQL_DELETE).execute(Tuple.of(token), ar -> {
+      if (ar.succeeded()) {
         LOGGER.info("file server token deleted.");
         promise.complete(true);
-      }else {
+      } else {
         LOGGER.info("file server token deletion failed.");
         promise.fail(ar.cause());
       }

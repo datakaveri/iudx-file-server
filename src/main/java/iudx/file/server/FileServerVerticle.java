@@ -84,6 +84,7 @@ public class FileServerVerticle extends AbstractVerticle {
   private String[] allowedDomains;
   private HashSet<String> instanceIDs = new HashSet<String>();
   private TokenStore tokenStoreClient;
+  
 
   @Override
   public void start() throws Exception {
@@ -102,7 +103,7 @@ public class FileServerVerticle extends AbstractVerticle {
         router = Router.router(vertx);
         properties = new Properties();
         inputstream = null;
-        tokenStoreClient = new PGTokenStoreImpl(vertx);
+        tokenStoreClient = new PGTokenStoreImpl(vertx,config());
         
         router.route().handler(BodyHandler.create());
         router.route().handler(UserAuthorizationHandler.create(tokenStoreClient));
@@ -131,12 +132,20 @@ public class FileServerVerticle extends AbstractVerticle {
 
           inputstream = new FileInputStream(Constants.CONFIG_FILE);
           properties.load(inputstream);
-
-          keystore = properties.getProperty(Constants.KEYSTORE_FILE_NAME);
-          keystorePassword = properties.getProperty(Constants.KEYSTORE_FILE_PASSWORD);
-          truststore = properties.getProperty("truststore");
-          truststorePassword = properties.getProperty("truststorePassword");
-          allowedDomain = properties.getProperty("domains");
+          
+          keystore=config().getString("keystore");
+          keystorePassword=config().getString("keystorePassword");
+          truststore=config().getString("truststore");
+          truststorePassword=config().getString("truststorePassword");
+          allowedDomain=config().getString("domains");
+              
+          /*
+           * keystore = properties.getProperty(Constants.KEYSTORE_FILE_NAME); keystorePassword =
+           * properties.getProperty(Constants.KEYSTORE_FILE_PASSWORD); truststore =
+           * properties.getProperty("truststore"); truststorePassword =
+           * properties.getProperty("truststorePassword"); allowedDomain =
+           * properties.getProperty("domains");
+           */
           allowedDomains = allowedDomain.split(",");
 
           for (int i = 0; i < allowedDomains.length; i++) {
@@ -362,12 +371,13 @@ public class FileServerVerticle extends AbstractVerticle {
     fileService.download(fileName, response, handler -> {
       if (handler.succeeded()) {
         // do nothing response is already written and file is served using content-disposition.
-        tokenStoreClient.delete(fileToken);
+       
       } else {
         response.end(new CustomResponse.ResponseBuilder().withStatusCode(400)
             .withMessage(handler.cause().getMessage()).build().toString());
       }
     });
+    tokenStoreClient.delete(fileToken);
   }
 
 

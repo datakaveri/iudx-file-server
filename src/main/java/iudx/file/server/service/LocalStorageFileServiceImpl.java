@@ -23,7 +23,9 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.streams.Pump;
+import io.vertx.core.streams.ReadStream;
 import io.vertx.ext.web.FileUpload;
+import io.vertx.core.buffer.Buffer;
 
 // TODO : uniform response messages.
 public class LocalStorageFileServiceImpl implements FileService {
@@ -197,6 +199,7 @@ public class LocalStorageFileServiceImpl implements FileService {
     Promise<JsonObject> promise = Promise.promise();
     String filePath = DIR + fileName;
     System.out.println("filepath :" + filePath);
+    response.setChunked(true);
     fileSystem.exists(filePath, existHandler -> {
       if (existHandler.succeeded()) {
         if (existHandler.result()) {
@@ -205,16 +208,13 @@ public class LocalStorageFileServiceImpl implements FileService {
               finalResponse.put("statusCode", HttpStatus.SC_BAD_REQUEST);
               promise.complete(finalResponse);
             }
-            AsyncFile asyncFile = readEvent.result();
-            Pump pump = Pump.pump(asyncFile, response);
-            pump.start();
-            asyncFile.endHandler(aVoid -> {
-              response.putHeader("Content-Disposition", "attachment; filename=" + fileName);
-              asyncFile.close();
-              response.end();
-              promise.complete();
+            ReadStream<Buffer> asyncFile = readEvent.result();
+            asyncFile.pipeTo(response, pipeHandler -> {
+              asyncFile.endHandler(avoid -> {
+                response.putHeader("Content-Disposition", "attachment; filename=" + fileName);
+                promise.complete();
+              });
             });
-            pump.stop();
           });
         } else {
           finalResponse.put("statusCode", HttpStatus.SC_NOT_FOUND);

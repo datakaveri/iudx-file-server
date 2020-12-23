@@ -1,0 +1,43 @@
+{
+	"version": "1.0",
+	"zookeepers": [
+		"zookeeper"
+	],
+	"clusterId": "iudx-fs-cluster",
+	"host": "server",
+	"modules": [
+		{
+			"id": "iudx.file.server.FileServerVerticle",
+			"keystore": "",
+			"keystorePassword": "",
+			"verticleInstances": 2,
+			"ssl": true,
+			
+			"databaseIP": "",
+			"databasePort": 5432,
+			"databaseUser": "",
+			"databasePassword": "",
+			"databaseUsed":"",
+			
+			"dataBrokerIP": "",
+			"dataBrokerPort": ,
+			"dataBrokerVhost": "",
+			"dataBrokerUserName": "",
+			"dataBrokerPassword": "",
+			"dataBrokerManagementPort": 15672,
+			"connectionTimeout": 6000,
+			"requestedHeartbeat": 60,
+			"handshakeTimeout": 6000,
+			"requestedChannelMax": 5,
+			"networkRecoveryInterval": 500,
+			
+			"automaticRecoveryEnabled": true,
+			"truststore": "",
+			"truststorePassword": "",
+			"domains": "",
+			
+			"tmp_dir":"",
+			"dir":""
+		}
+	]
+}

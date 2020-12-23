@@ -9,8 +9,13 @@
 
 	<properties>
 		<vertx.version>3.9.0</vertx.version>
+		<hazelcast.version>3.6.3</hazelcast.version>
+		<micrometer.version>1.5.2</micrometer.version>
+		<curator.version>4.0.1</curator.version>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
+		<exec.mainClass>iudx.file.server.deploy.Deployer</exec.mainClass>
+        <exec.mainClassDev>iudx.file.server.deploy.DeployerDev</exec.mainClassDev>
 	</properties>
 
 	<dependencyManagement>
@@ -76,10 +81,40 @@
 			<version>2.13.3</version>
 		</dependency>
 		<dependency>
-            <groupId>com.lmax</groupId>
-            <artifactId>disruptor</artifactId>
-            <version>3.4.2</version>
-        </dependency>
+			<groupId>com.lmax</groupId>
+			<artifactId>disruptor</artifactId>
+			<version>3.4.2</version>
+		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-micrometer-metrics</artifactId>
+			<version>3.9.2</version>
+		</dependency>
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-core</artifactId>
+			<version>${micrometer.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+			<version>${micrometer.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.lmax</groupId>
+			<artifactId>disruptor</artifactId>
+			<version>3.4.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.hazelcast</groupId>
+			<artifactId>hazelcast-zookeeper</artifactId>
+			<version>${hazelcast.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.curator</groupId>
+			<artifactId>curator-x-discovery</artifactId>
+			<version>${curator.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -106,6 +141,94 @@
 				</configuration>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>2.3</version>
+				<executions>
+					<execution>
+						<id>dev</id>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<filters>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>META-INF/maven/**</exclude>
+										<exclude>META-INF/*.RSA</exclude>
+										<exclude>META-INF/*.DSA</exclude>
+										<exclude>META-INF/*.SF</exclude>
+									</excludes>
+								</filter>
+							</filters>
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<manifestEntries>
+										<Main-Class>${exec.mainClassDev}</Main-Class>
+									</manifestEntries>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/services/io.vertx.core.spi.VerticleFactory
+									</resource>
+								</transformer>
+							</transformers>
+							<artifactSet></artifactSet>
+							<outputFile>${project.build.directory}/${project.artifactId}-dev-${project.version}-fat.jar
+							</outputFile>
+						</configuration>
+					</execution>
+					<execution>
+						<id>cluster</id>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<filters>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>META-INF/maven/**</exclude>
+										<exclude>META-INF/*.RSA</exclude>
+										<exclude>META-INF/*.DSA</exclude>
+										<exclude>META-INF/*.SF</exclude>
+									</excludes>
+								</filter>
+							</filters>
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<manifestEntries>
+										<Main-Class>${exec.mainClass}</Main-Class>
+									</manifestEntries>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/services/io.vertx.core.spi.VerticleFactory
+									</resource>
+								</transformer>
+							</transformers>
+							<artifactSet></artifactSet>
+							<outputFile>${project.build.directory}/${project.artifactId}-cluster-${project.version}-fat.jar
+							</outputFile>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.0.0</version>
+				<configuration>
+					<source>13</source>
+					<target>13</target>
+				</configuration>
+			</plugin>
+			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
 				<version>1.5.0</version>
@@ -113,11 +236,16 @@
 					<execution>
 						<id>file-server</id>
 						<configuration>
-							<mainClass>iudx.file.server.deploy.helper.FileServerDeployer
-							</mainClass>
+							<mainClass>iudx.file.server.deploy.DeployerDev </mainClass>
+							<arguments>
+								<argument>-jar</argument>
+								<argument>{project.build.directory}/${project.artifactId}-dev-${project.version}-fat.jar
+								</argument>
+								<argument>-c</argument>
+								<argument>./configs/config-dev.json</argument>
+							</arguments>
 						</configuration>
 					</execution>
-
 				</executions>
 			</plugin>
 			<plugin>
@@ -184,6 +312,7 @@
 					</reportSet>
 				</reportSets>
 			</plugin>
+
 		</plugins>
 	</reporting>
 </project>
