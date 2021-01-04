@@ -16,6 +16,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 
+//TODO : delete after complete functionality and testing  
 public class FileServer {
 
   private static final Logger log = LoggerFactory.getLogger(FileServer.class);

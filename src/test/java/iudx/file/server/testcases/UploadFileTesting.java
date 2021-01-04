@@ -28,8 +28,8 @@ import io.vertx.ext.web.multipart.MultipartForm;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import iudx.file.server.Constants;
 import iudx.file.server.FileServerVerticle;
+import iudx.file.server.utilities.Constants;
 
 
 /**

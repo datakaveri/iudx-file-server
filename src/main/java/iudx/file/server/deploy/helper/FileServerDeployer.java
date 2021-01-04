@@ -2,15 +2,16 @@ package iudx.file.server.deploy.helper;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import iudx.file.server.FileServerVerticle;
 
+
 public class FileServerDeployer {
 
-  private static final Logger logger = LoggerFactory.getLogger(FileServerDeployer.class);
+  private static final Logger logger = LogManager.getLogger(FileServerDeployer.class);
   private static Vertx vertx;
   private static ClusterManager mgr;
   private static VertxOptions options;
@@ -42,6 +43,8 @@ public class FileServerDeployer {
             logger.info("The FileServerVerticle is ready");
           } else {
             logger.info("The FileServerVerticle failed !");
+            logger.info(fileVerticle.cause());
+            fileVerticle.cause().printStackTrace();
           }
         });
       } else {

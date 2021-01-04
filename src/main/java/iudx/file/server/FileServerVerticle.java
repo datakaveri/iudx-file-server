@@ -1,5 +1,6 @@
 package iudx.file.server;
 
+import static iudx.file.server.utilities.Constants.*;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.security.Principal;
@@ -9,25 +10,40 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.ClientAuth;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import io.vertx.core.net.JksOptions;
 import io.vertx.core.spi.cluster.ClusterManager;
+import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
+import iudx.file.server.handlers.UserAuthorizationHandler;
+import iudx.file.server.service.FileService;
+import iudx.file.server.service.LocalStorageFileServiceImpl;
+import iudx.file.server.service.PGTokenStoreImpl;
+import iudx.file.server.service.TokenStore;
+import iudx.file.server.utilities.Constants;
 import iudx.file.server.utilities.CustomResponse;
+import iudx.file.server.utilities.DefaultAsyncResult;
+// import iudx.file.server.utilities.FileServer;
 import iudx.file.server.utilities.FileServer;
 
 /**
@@ -49,7 +65,8 @@ import iudx.file.server.utilities.FileServer;
  */
 public class FileServerVerticle extends AbstractVerticle {
 
-  private static final Logger logger = LoggerFactory.getLogger(FileServerVerticle.class);
+  private static final Logger LOGGER = LogManager.getLogger(FileServerVerticle.class);
+
   private Vertx vertx;
   private ClusterManager mgr;
   private VertxOptions options;
@@ -59,12 +76,15 @@ public class FileServerVerticle extends AbstractVerticle {
   private String keystore;
   private String keystorePassword;
   private Router router;
-  private FileServer fileServer;
+  // private FileServer fileServer;
+  private FileService fileService;
   private Map<String, String> tokens = new HashMap<String, String>();
   private Map<String, Date> validity = new HashMap<String, Date>();
   private String allowedDomain, truststore, truststorePassword;
   private String[] allowedDomains;
   private HashSet<String> instanceIDs = new HashSet<String>();
+  private TokenStore tokenStoreClient;
+  
 
   @Override
   public void start() throws Exception {
@@ -83,10 +103,27 @@ public class FileServerVerticle extends AbstractVerticle {
         router = Router.router(vertx);
         properties = new Properties();
         inputstream = null;
+        tokenStoreClient = new PGTokenStoreImpl(vertx,config());
+        
+        router.route().handler(BodyHandler.create());
+        router.route().handler(UserAuthorizationHandler.create(tokenStoreClient));
+        
+        router.route().failureHandler(failureHandler -> {
+          failureHandler.failure().printStackTrace();
+          LOGGER.error(failureHandler.failure());
+        });
 
-        router.post("/file").handler(this::uploadFile);
-        router.get("/file/:fileId").handler(this::downloadFile);
-        router.get("/token").handler(this::fileServerToken);
+
+        router.post("/file")
+              .handler(BodyHandler.create()
+                  .setUploadsDirectory(TMP_DIR)
+                  .setBodyLimit(MAX_SIZE)
+                  .setDeleteUploadedFilesOnEnd(true))
+              .handler(this::upload);
+
+        router.get("/file/:fileId").handler(this::download);
+        router.delete("/file/:fileId").handler(this::delete);
+        router.get("/token").handler(this::getFileServerToken);
 
         /* Read the configuration and set the HTTPs server properties. */
         ClientAuth clientAuth = ClientAuth.REQUEST;
@@ -95,23 +132,32 @@ public class FileServerVerticle extends AbstractVerticle {
 
           inputstream = new FileInputStream(Constants.CONFIG_FILE);
           properties.load(inputstream);
-
-          keystore = properties.getProperty(Constants.KEYSTORE_FILE_NAME);
-          keystorePassword = properties.getProperty(Constants.KEYSTORE_FILE_PASSWORD);
-          truststore = properties.getProperty("truststore");
-          truststorePassword = properties.getProperty("truststorePassword");
-          allowedDomain = properties.getProperty("domains");
+          
+          keystore=config().getString("keystore");
+          keystorePassword=config().getString("keystorePassword");
+          truststore=config().getString("truststore");
+          truststorePassword=config().getString("truststorePassword");
+          allowedDomain=config().getString("domains");
+              
+          /*
+           * keystore = properties.getProperty(Constants.KEYSTORE_FILE_NAME); keystorePassword =
+           * properties.getProperty(Constants.KEYSTORE_FILE_PASSWORD); truststore =
+           * properties.getProperty("truststore"); truststorePassword =
+           * properties.getProperty("truststorePassword"); allowedDomain =
+           * properties.getProperty("domains");
+           */
           allowedDomains = allowedDomain.split(",");
 
           for (int i = 0; i < allowedDomains.length; i++) {
+            LOGGER.info(allowedDomains[i].toLowerCase());
             instanceIDs.add(allowedDomains[i].toLowerCase());
           }
 
-          logger.info("Updated domain list. Serving " + instanceIDs.size() + " tenants");
+          LOGGER.info("Updated domain list. Serving " + instanceIDs.size() + " tenants");
         } catch (Exception ex) {
-          logger.info(ex.toString());
+          LOGGER.info(ex.toString());
         }
-
+        LOGGER.info("starting server");
         server =
             vertx.createHttpServer(new HttpServerOptions().setSsl(true).setClientAuth(clientAuth)
                 .setKeyStoreOptions(
@@ -122,9 +168,21 @@ public class FileServerVerticle extends AbstractVerticle {
         server.requestHandler(router).listen(Constants.PORT);
 
       }
+      fileService = new LocalStorageFileServiceImpl(vertx.fileSystem());
+      // check upload dir exist or not.
+      mkdirsIfNotExists(vertx.fileSystem(), DIR, new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> event) {
+          if (event.succeeded()) {
+            LOGGER.info("mkdirsIfNotExists's handler");
+          } else {
+            LOGGER.error(event.cause().getMessage(), event.cause());
+          }
+        }
+      });
     });
 
-    logger.info("FileServerVerticle started successfully");
+    LOGGER.info("FileServerVerticle started successfully");
     // for unit testing - later it must be removed
     tokens.put("testing_key", "fileServerToken");
     // set validity of token for 10 hours
@@ -138,11 +196,12 @@ public class FileServerVerticle extends AbstractVerticle {
   /*
    * token service get file-server-token with its validity for given userToken
    */
+  @Deprecated // use getFileServerToken()
   public void fileServerToken(RoutingContext routingContext) {
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     response.setChunked(true);
-    if (!decodeCertificate(routingContext)) {
+    if (!isValidCertificate(routingContext)) {
       response.write("Invalid client certificate error").end();
     } else {
       /* create a temporary token, save in a hashmap */
@@ -154,7 +213,7 @@ public class FileServerVerticle extends AbstractVerticle {
         String fileServerToken = UUID.randomUUID().toString();
         // save user token and file server token in hashmap for later use
         tokens.put(userToken, fileServerToken);
-        logger.info("value stored inside tokens hashmap [ key : " + userToken + ", value : "
+        LOGGER.info("value stored inside tokens hashmap [ key : " + userToken + ", value : "
             + fileServerToken + " ]");
         // set validity of token for 10 hours
         Date currDate = new Date();
@@ -163,15 +222,48 @@ public class FileServerVerticle extends AbstractVerticle {
         calendar.add(Calendar.HOUR_OF_DAY, 10);
         // save validity in hashmap for later use
         validity.put(userToken, calendar.getTime());
-        logger.info("value stored inside validity hashmap [ key : " + userToken + ", value : "
+        LOGGER.info("value stored inside validity hashmap [ key : " + userToken + ", value : "
             + calendar.getTime() + " ]");
         // TODO: need to save above values in database too (userToken,file-server-token,validity)
         JsonObject json = new JsonObject();
         json.put("fileServerToken", fileServerToken);
         json.put("validity", calendar.getTime().toString());
-        logger.info("json.toString()" + json.toString());
+        LOGGER.info("json.toString()" + json.toString());
         /* send the token as response */
         response.write(json.toString()).end();
+      }
+    }
+  }
+
+  private void getFileServerToken(RoutingContext routingContext) {
+    HttpServerRequest request = routingContext.request();
+    HttpServerResponse response = routingContext.response();
+    response.setChunked(true);
+    if (!isValidCertificate(routingContext)) {
+      response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(400)
+      .end(new CustomResponse.ResponseBuilder().withStatusCode(400)
+          .withMessage("Invalid Client Certificate").build().toJsonString());
+    } else {
+      String authToken = request.getHeader("token");
+      if (null == authToken || authToken.isEmpty()) {
+          response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(400)
+          .end(new CustomResponse.ResponseBuilder().withStatusCode(400)
+              .withMessage("User Token Not Provided").build().toJsonString());
+      } else {
+        String fileServerToken = UUID.randomUUID().toString();
+        String serverId = routingContext.request().host();
+        Future<JsonObject> issueToken = tokenStoreClient.put(authToken, fileServerToken, serverId);
+        issueToken.onComplete(handler -> {
+          if (handler.succeeded()) {
+            LOGGER.info("token succeeded : " + handler.result());
+            response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(200)
+                .end(new CustomResponse.ResponseBuilder().withStatusCode(200)
+                    .withMessage(handler.result().toString()).build().toJsonString());
+          } else {
+            response.end(new CustomResponse.ResponseBuilder().withStatusCode(500)
+                .withMessage(handler.cause().toString()).build().toJsonString());
+          }
+        });
       }
     }
   }
@@ -208,6 +300,7 @@ public class FileServerVerticle extends AbstractVerticle {
    * @param routingContext Handles web request in Vert.x web
    */
 
+  @Deprecated // use upload()
   public void uploadFile(RoutingContext routingContext) {
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
@@ -215,8 +308,8 @@ public class FileServerVerticle extends AbstractVerticle {
 
     /* Allow or deny upload of the file. If allow, Update the metadata to Resource Server */
     if (isTokenValid(request)) {
-      logger.info("Token is valid. file upload starts");
-      fileServer = new FileServer(vertx, Constants.DIR);
+      LOGGER.info("Token is valid. file upload starts");
+      FileServer fileServer = new FileServer(vertx, Constants.DIR);
       fileServer.writeUploadFile(request, Constants.MAX_SIZE, handler -> {
         String status = handler.getString("status");
         if (null != status && !status.isEmpty() && !status.isBlank()) {
@@ -244,17 +337,51 @@ public class FileServerVerticle extends AbstractVerticle {
 
   }
 
+  public void upload(RoutingContext routingContext) {
+    LOGGER.debug("upload() started.");
+    HttpServerResponse response = routingContext.response();
+    response.putHeader("content-type", "application/json");
+    String fileToken=routingContext.request().getHeader("fileServerToken");
+    Set<FileUpload> files=routingContext.fileUploads();
+    fileService.upload(files, handler->{
+      if(handler.succeeded()) {
+        JsonObject uploadResult =handler.result();
+        response.end(uploadResult.toString());
+        //delete token from DB;
+        tokenStoreClient.delete(fileToken);
+        //TODO : upload metadata to RS.
+      }else {
+        response.end(new
+            CustomResponse.ResponseBuilder()
+            .withStatusCode(400)
+            .withMessage(handler.cause().getMessage()).build().toJson().toString());
+      }
+    });
+  }
+
   /**
    * Download File service allows to download a file from the server after authenticating the user.
    *
    * @param routingContext Handles web request in Vert.x web
    */
 
-  public void downloadFile(RoutingContext routingContext) {
-
-    /* TODO : Initialize web client */
-    /* TODO : Get user token from header. Perform TIP for Resource Server */
-    /* TODO : Allow or deny download to the file */
+  public void download(RoutingContext routingContext) {
+    HttpServerRequest request = routingContext.request();
+    HttpServerResponse response = routingContext.response();
+    response.putHeader("content-type", "application/octet-stream");
+    String fileToken=routingContext.request().getHeader("fileServerToken");
+    response.setChunked(true);
+    String fileName = request.getParam("fileId");
+    fileService.download(fileName, response, handler -> {
+      if (handler.succeeded()) {
+        // do nothing response is already written and file is served using content-disposition.
+       
+      } else {
+        response.end(new CustomResponse.ResponseBuilder().withStatusCode(400)
+            .withMessage(handler.cause().getMessage()).build().toString());
+      }
+    });
+    tokenStoreClient.delete(fileToken);
   }
 
 
@@ -262,49 +389,78 @@ public class FileServerVerticle extends AbstractVerticle {
    * Download File service allows to download a file from the server after authenticating the user.
    */
 
-  public void deleteFile() {
-
+  public void delete(RoutingContext routingContext) {
     /* TODO : Connect to RabbitMQ */
     /* TODO : Get the file id object. Delete the file from the server. */
-
+    HttpServerRequest request = routingContext.request();
+    HttpServerResponse response = routingContext.response();
+    response.putHeader("content-type", "application/json");
+    String fileName = request.getParam("fileId");
+    fileService.delete(fileName, handler -> {
+      if (handler.succeeded()) {
+        JsonObject deleteResult = handler.result();
+        response.end(new CustomResponse.ResponseBuilder().withStatusCode(200)
+            .withMessage(deleteResult.getString("statusMessage"))
+            .withCustomMessage("" + deleteResult.getJsonObject("metadata")).build().toJsonString());
+      } else {
+        response.end(new CustomResponse.ResponseBuilder().withStatusCode(400)
+            .withMessage(handler.cause().getMessage()).build().toString());
+      }
+    });
   }
 
-  private boolean decodeCertificate(RoutingContext routingContext) {
+  private boolean isValidCertificate(RoutingContext routingContext) {
     System.out.println("Inside decodeCertificate");
     boolean status = false;
     try {
       Principal peerPrincipal =
           routingContext.request().connection().sslSession().getPeerPrincipal();
-      logger.info("peerPrincipal.toString() : " + peerPrincipal.toString());
       String certificate_class[] = peerPrincipal.toString().split(",");
       String class_level = certificate_class[0];
-      logger.info("class_level :" + class_level);
       String emailInfo = certificate_class[1];
-      logger.info("EMAILADDRESS :" + emailInfo);
       String[] email = emailInfo.split("=")[1].split("@");
       String emailID = email[0];
-      logger.info("email : " + emailID);
       String domain = email[1];
-      // String emailID_SHA_1 = DigestUtils.md5Hex(email[1]);
-      logger.info("domain : " + domain);
       String cn = certificate_class[2];
       String cnValue = cn.split("=")[1];
-      logger.info("cnValue :" + cnValue);
       // Now check existence of cnValue inside instanceIDs set (allowedDomains)
       if (instanceIDs.contains(cnValue.toLowerCase())) {
         status = true;
-        logger.info("Valid Certificate");
+        LOGGER.info("Valid Certificate");
       } else {
         status = false;
-        logger.info("Invalid Certificate");
+        LOGGER.info("Invalid Certificate");
       }
-
     } catch (SSLPeerUnverifiedException e) {
       status = false;
-      logger.info("decodeCertificate - Certificate exception message : " + e.getMessage());
+      LOGGER.info("decodeCertificate - Certificate exception message : " + e.getMessage());
     }
-
     return status;
+  }
+
+
+  private void mkdirsIfNotExists(FileSystem fileSystem, String basePath,
+      final Handler<AsyncResult<Void>> h) {
+    LOGGER.info("mkidr check started");
+    fileSystem.exists(basePath, new Handler<AsyncResult<Boolean>>() {
+      @Override
+      public void handle(AsyncResult<Boolean> event) {
+        if (event.succeeded()) {
+          if (Boolean.FALSE.equals(event.result())) {
+            fileSystem.mkdirs(basePath, new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> event) {
+                h.handle(event);
+              }
+            });
+          } else {
+            h.handle(new DefaultAsyncResult<>((Void) null));
+          }
+        } else {
+          h.handle(new DefaultAsyncResult<Void>(event.cause()));
+        }
+      }
+    });
   }
 
 }

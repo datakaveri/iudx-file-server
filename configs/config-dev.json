@@ -1,0 +1,43 @@
+{
+	"version": "1.0",
+	"zookeepers": [
+		"zookeeper"
+	],
+	"clusterId": "iudx-fs-cluster",
+	"host": "server",
+	"modules": [
+		{
+			"id": "iudx.file.server.FileServerVerticle",
+			"keystore": "configs/keystore.jks",
+			"keystorePassword": "password",
+			"verticleInstances": 2,
+			"ssl": true,
+			
+			"databaseIP": "10.0.2.15",
+			"databasePort": 5432,
+			"databaseUser": "postgres",
+			"databasePassword": "postgres",
+			"databaseUsed":"iudx_file_server",
+			
+			"dataBrokerIP": "68.183.80.248",
+			"dataBrokerPort": 5672,
+			"dataBrokerVhost": "IUDX",
+			"dataBrokerUserName": "IUDXDemoUser",
+			"dataBrokerPassword": "IUDXDemoUser@123",
+			"dataBrokerManagementPort": 15672,
+			"connectionTimeout": 6000,
+			"requestedHeartbeat": 60,
+			"handshakeTimeout": 6000,
+			"requestedChannelMax": 5,
+			"networkRecoveryInterval": 500,
+			
+			"automaticRecoveryEnabled": true,
+			"truststore": "configs/keystore.jks",
+			"truststorePassword": "password",
+			"domains": "example.com",
+			
+			"tmp_dir":"z",
+			"dir":"asd"
+		}
+	]
+}
