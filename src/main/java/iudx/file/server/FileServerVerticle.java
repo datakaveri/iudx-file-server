@@ -240,11 +240,15 @@ public class FileServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     response.setChunked(true);
     if (!isValidCertificate(routingContext)) {
-      response.write("Invalid client certificate error").end();
+      response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(400)
+      .end(new CustomResponse.ResponseBuilder().withStatusCode(400)
+          .withMessage("Invalid Client Certificate").build().toJsonString());
     } else {
       String authToken = request.getHeader("token");
       if (null == authToken || authToken.isEmpty()) {
-        response.write("user token not provided").end();
+          response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(400)
+          .end(new CustomResponse.ResponseBuilder().withStatusCode(400)
+              .withMessage("User Token Not Provided").build().toJsonString());
       } else {
         String fileServerToken = UUID.randomUUID().toString();
         String serverId = routingContext.request().host();
