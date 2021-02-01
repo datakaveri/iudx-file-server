@@ -7,6 +7,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
+import org.apache.commons.compress.utils.FileNameUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,6 +28,7 @@ import io.vertx.core.streams.Pump;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.ext.web.FileUpload;
 import iudx.file.server.service.FileService;
+import iudx.file.server.utilities.DefaultAsyncResult;
 import io.vertx.core.buffer.Buffer;
 
 // TODO : uniform response messages.
@@ -161,15 +164,18 @@ public class LocalStorageFileServiceImpl implements FileService {
   }
 
   @Override
-  public void upload(Set<FileUpload> files, Handler<AsyncResult<JsonObject>> handler) {
+  public void upload(Set<FileUpload> files, String filePath,
+      Handler<AsyncResult<JsonObject>> handler) {
     LOGGER.debug("uploading.. files to file system.");
     final JsonObject metadata = new JsonObject();
+    fileSystem.mkdirsBlocking(DIR + filePath);
     Iterator<FileUpload> fileUploadIterator = files.iterator();
     while (fileUploadIterator.hasNext()) {
       FileUpload fileUpload = fileUploadIterator.next();
       LOGGER.debug("uploading... " + fileUpload.fileName());
       String uuid = UUID.randomUUID().toString();
-      String fileUploadPath = DIR + uuid + "+" + fileUpload.fileName();
+      String fileExtension = FileNameUtils.getExtension(fileUpload.fileName());
+      String fileUploadPath = DIR + "/" + filePath + "/" + uuid + "." + fileExtension;
       CopyOptions copyOptions = new CopyOptions();
       copyOptions.setReplaceExisting(true);
       fileSystem.move(fileUpload.uploadedFileName(), fileUploadPath, copyOptions,
@@ -181,6 +187,7 @@ public class LocalStorageFileServiceImpl implements FileService {
               metadata.put("char-set", fileUpload.charSet());
               metadata.put("size", fileUpload.size() + " Bytes");
               metadata.put("uploaded path", fileUploadPath);
+              metadata.put("file-id", uuid + "." + fileExtension);
               handler.handle(Future.succeededFuture(metadata));
             } else {
               LOGGER.debug("failed :" + fileMoveHandler.cause());
@@ -194,26 +201,26 @@ public class LocalStorageFileServiceImpl implements FileService {
    * {@inheritDoc}
    */
   @Override
-  public void download(String fileName, HttpServerResponse response,
+  public void download(String fileName, String uploadDir, HttpServerResponse response,
       Handler<AsyncResult<JsonObject>> handler) {
     JsonObject finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
-    String filePath = DIR + fileName;
-    System.out.println("filepath :" + filePath);
+    String path = DIR + uploadDir + "/" + fileName;
     response.setChunked(true);
-    fileSystem.exists(filePath, existHandler -> {
+    fileSystem.exists(path, existHandler -> {
       if (existHandler.succeeded()) {
         if (existHandler.result()) {
-          fileSystem.open(filePath, new OpenOptions().setCreate(true), readEvent -> {
+          fileSystem.open(path, new OpenOptions().setCreate(true), readEvent -> {
             if (readEvent.failed()) {
               finalResponse.put("statusCode", HttpStatus.SC_BAD_REQUEST);
               promise.complete(finalResponse);
             }
+            LOGGER.debug("seding file : " + fileName + " to client");
             ReadStream<Buffer> asyncFile = readEvent.result();
             response.putHeader("Content-Disposition", "attachment; filename=" + fileName);
             asyncFile.pipeTo(response, pipeHandler -> {
               asyncFile.endHandler(avoid -> {
-                //response.putHeader("Content-Disposition", "attachment; filename=" + fileName);
+                // response.putHeader("Content-Disposition", "attachment; filename=" + fileName);
                 promise.complete();
               });
             });
@@ -238,9 +245,9 @@ public class LocalStorageFileServiceImpl implements FileService {
    * {@inheritDoc}
    */
   @Override
-  public void delete(String fileName, Handler<AsyncResult<JsonObject>> handler) {
+  public void delete(String fileName, String filePath, Handler<AsyncResult<JsonObject>> handler) {
     JsonObject finalResponse = new JsonObject();
-    String filePath = DIR + "/" + fileName;
+    // String filePath = DIR + "/" + fileName;
     LOGGER.info("filePath : " + filePath);
     fileSystem.exists(filePath, existHandler -> {
       if (existHandler.succeeded()) {
@@ -268,6 +275,6 @@ public class LocalStorageFileServiceImpl implements FileService {
         handler.handle(Future.failedFuture(existHandler.cause()));
       }
     });
-
   }
+
 }

@@ -4,6 +4,7 @@ import static iudx.file.server.utilities.Constants.*;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -85,7 +86,7 @@ public class FileServerVerticle extends AbstractVerticle {
   private String[] allowedDomains;
   private HashSet<String> instanceIDs = new HashSet<String>();
   private TokenStore tokenStoreClient;
-  
+
 
   @Override
   public void start() throws Exception {
@@ -104,27 +105,24 @@ public class FileServerVerticle extends AbstractVerticle {
         router = Router.router(vertx);
         properties = new Properties();
         inputstream = null;
-        tokenStoreClient = new PGTokenStoreImpl(vertx,config());
-        
+        tokenStoreClient = new PGTokenStoreImpl(vertx, config());
+
         router.route().handler(BodyHandler.create());
-        router.route().handler(UserAuthorizationHandler.create(tokenStoreClient));
-        
+
+        // router.route().handler(UserAuthorizationHandler.create(tokenStoreClient));
+
         router.route().failureHandler(failureHandler -> {
           failureHandler.failure().printStackTrace();
           LOGGER.error(failureHandler.failure());
         });
 
         router.post(API_TEMPORAL).handler(this::query);
-              
-        router.post(API_FILE)
-              .handler(BodyHandler.create()
-                  .setUploadsDirectory(TMP_DIR)
-                  .setBodyLimit(MAX_SIZE)
-                  .setDeleteUploadedFilesOnEnd(true))
-              .handler(this::upload);
 
-        router.get(API_FILE+"/:fileId").handler(this::download);
-        router.delete(API_FILE+"/:fileId").handler(this::delete);
+        router.post(API_FILE_UPLOAD).handler(BodyHandler.create().setUploadsDirectory(TMP_DIR)
+            .setBodyLimit(MAX_SIZE).setDeleteUploadedFilesOnEnd(true)).handler(this::upload);
+
+        router.get(API_FILE_DOWNLOAD).handler(this::download);
+        router.delete(API_FILE_DELETE).handler(this::delete);
         router.get(API_TOKEN).handler(this::getFileServerToken);
 
         /* Read the configuration and set the HTTPs server properties. */
@@ -134,20 +132,13 @@ public class FileServerVerticle extends AbstractVerticle {
 
           inputstream = new FileInputStream(Constants.CONFIG_FILE);
           properties.load(inputstream);
-          
-          keystore=config().getString("keystore");
-          keystorePassword=config().getString("keystorePassword");
-          truststore=config().getString("truststore");
-          truststorePassword=config().getString("truststorePassword");
-          allowedDomain=config().getString("domains");
-              
-          /*
-           * keystore = properties.getProperty(Constants.KEYSTORE_FILE_NAME); keystorePassword =
-           * properties.getProperty(Constants.KEYSTORE_FILE_PASSWORD); truststore =
-           * properties.getProperty("truststore"); truststorePassword =
-           * properties.getProperty("truststorePassword"); allowedDomain =
-           * properties.getProperty("domains");
-           */
+
+          keystore = config().getString("keystore");
+          keystorePassword = config().getString("keystorePassword");
+          truststore = config().getString("truststore");
+          truststorePassword = config().getString("truststorePassword");
+          allowedDomain = config().getString("domains");
+
           allowedDomains = allowedDomain.split(",");
 
           for (int i = 0; i < allowedDomains.length; i++) {
@@ -243,14 +234,14 @@ public class FileServerVerticle extends AbstractVerticle {
     response.setChunked(true);
     if (!isValidCertificate(routingContext)) {
       response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(400)
-      .end(new CustomResponse.ResponseBuilder().withStatusCode(400)
-          .withMessage("Invalid Client Certificate").build().toJsonString());
+          .end(new CustomResponse.ResponseBuilder().withStatusCode(400)
+              .withMessage("Invalid Client Certificate").build().toJsonString());
     } else {
       String authToken = request.getHeader("token");
       if (null == authToken || authToken.isEmpty()) {
-          response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(400)
-          .end(new CustomResponse.ResponseBuilder().withStatusCode(400)
-              .withMessage("User Token Not Provided").build().toJsonString());
+        response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(400)
+            .end(new CustomResponse.ResponseBuilder().withStatusCode(400)
+                .withMessage("User Token Not Provided").build().toJsonString());
       } else {
         String fileServerToken = UUID.randomUUID().toString();
         String serverId = routingContext.request().host();
@@ -342,20 +333,20 @@ public class FileServerVerticle extends AbstractVerticle {
   public void upload(RoutingContext routingContext) {
     LOGGER.debug("upload() started.");
     HttpServerResponse response = routingContext.response();
+    String id = routingContext.request().getFormAttribute("id");
     response.putHeader("content-type", "application/json");
-    String fileToken=routingContext.request().getHeader("fileServerToken");
-    Set<FileUpload> files=routingContext.fileUploads();
-    fileService.upload(files, handler->{
-      if(handler.succeeded()) {
-        JsonObject uploadResult =handler.result();
-        response.end(uploadResult.toString());
-        //delete token from DB;
-        tokenStoreClient.delete(fileToken);
-        //TODO : upload metadata to RS.
-      }else {
-        response.end(new
-            CustomResponse.ResponseBuilder()
-            .withStatusCode(400)
+    LOGGER.debug("id :" + id);
+    String fileIdComponent[] = getFileIdComponents(id);
+    String uploadPath = fileIdComponent[1] + "/" + fileIdComponent[3];
+    Set<FileUpload> files = routingContext.fileUploads();
+    fileService.upload(files, uploadPath, handler -> {
+      if (handler.succeeded()) {
+        JsonObject uploadResult = handler.result();
+        JsonObject responseJson = new JsonObject();
+        responseJson.put("file-id", id + "/" + uploadResult.getString("file-id"));
+        response.end(responseJson.toString());
+      } else {
+        response.end(new CustomResponse.ResponseBuilder().withStatusCode(400)
             .withMessage(handler.cause().getMessage()).build().toJson().toString());
       }
     });
@@ -371,28 +362,28 @@ public class FileServerVerticle extends AbstractVerticle {
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     response.putHeader("content-type", "application/octet-stream");
-    String fileToken=routingContext.request().getHeader("fileServerToken");
     response.setChunked(true);
-    String fileName = request.getParam("fileId");
-    fileService.download(fileName, response, handler -> {
+    String id = request.getParam("file-id");
+    String fileIdComponent[] = getFileIdComponents(id);
+    String uploadDir = fileIdComponent[1] + "/" + fileIdComponent[3];
+    // extract the file-uuid from supplied id. since position of file in id will be different for
+    // group level(pos:5) and resource level(pos:4)
+    String fileUUID = fileIdComponent.length >= 6 ? fileIdComponent[5] : fileIdComponent[4];
+    fileService.download(fileUUID, uploadDir, response, handler -> {
       if (handler.succeeded()) {
         // do nothing response is already written and file is served using content-disposition.
-       
       } else {
         response.end(new CustomResponse.ResponseBuilder().withStatusCode(400)
             .withMessage(handler.cause().getMessage()).build().toString());
       }
     });
-    tokenStoreClient.delete(fileToken);
   }
-  
-  
+
+
   public void query(RoutingContext context) {
     HttpServerRequest request = context.request();
     HttpServerResponse response = context.response();
-    MultiMap queryParams =MultiMap.caseInsensitiveMultiMap();
-    
-    
+    MultiMap queryParams = MultiMap.caseInsensitiveMultiMap();
   }
 
 
@@ -407,7 +398,7 @@ public class FileServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     response.putHeader("content-type", "application/json");
     String fileName = request.getParam("fileId");
-    fileService.delete(fileName, handler -> {
+    fileService.delete(fileName, "", handler -> {
       if (handler.succeeded()) {
         JsonObject deleteResult = handler.result();
         response.end(new CustomResponse.ResponseBuilder().withStatusCode(200)
@@ -450,8 +441,15 @@ public class FileServerVerticle extends AbstractVerticle {
   }
 
 
+  /**
+   * Helper method to check/create initial directory structure
+   * 
+   * @param fileSystem vert.x FileSystem
+   * @param basePath base derfault directory structure
+   * @param handler Async handler
+   */
   private void mkdirsIfNotExists(FileSystem fileSystem, String basePath,
-      final Handler<AsyncResult<Void>> h) {
+      final Handler<AsyncResult<Void>> handler) {
     LOGGER.info("mkidr check started");
     fileSystem.exists(basePath, new Handler<AsyncResult<Boolean>>() {
       @Override
@@ -461,17 +459,22 @@ public class FileServerVerticle extends AbstractVerticle {
             fileSystem.mkdirs(basePath, new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> event) {
-                h.handle(event);
+                handler.handle(event);
               }
             });
           } else {
-            h.handle(new DefaultAsyncResult<>((Void) null));
+            handler.handle(new DefaultAsyncResult<>((Void) null));
           }
         } else {
-          h.handle(new DefaultAsyncResult<Void>(event.cause()));
+          handler.handle(new DefaultAsyncResult<Void>(event.cause()));
         }
       }
     });
+  }
+
+
+  private String[] getFileIdComponents(String fileId) {
+    return fileId.split("/");
   }
 
 }

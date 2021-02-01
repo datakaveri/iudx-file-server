@@ -15,7 +15,8 @@ public interface FileService {
    * @param Set of files to be uploaded.
    * @param handler
    */
-  public void upload(final Set<FileUpload> file, final Handler<AsyncResult<JsonObject>> handler);
+  public void upload(final Set<FileUpload> file, String filePath,
+      final Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * download file from server
@@ -24,7 +25,7 @@ public interface FileService {
    * @param response response object to send file as Content-Disposition header
    * @param handler Async handler
    */
-  public void download(final String fileName, final HttpServerResponse response,
+  public void download(final String fileName, String filePath, final HttpServerResponse response,
       final Handler<AsyncResult<JsonObject>> handler);
 
   /**
@@ -33,5 +34,6 @@ public interface FileService {
    * @param fileName name of file to be deleted
    * @param handler Async handler
    */
-  public void delete(final String fileName, final Handler<AsyncResult<JsonObject>> handler);
+  public void delete(final String fileName, String filePath,
+      final Handler<AsyncResult<JsonObject>> handler);
 }
