@@ -23,7 +23,7 @@ public class UserAuthorizationHandler implements Handler<RoutingContext> {
   private DateTimeFormatter formatter =
       DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss[.SSSSSS]");
   private static TokenStore tokenStoreClient;
-  private final List<String> noUserAuthRequired = List.of("/token");
+  private final List<String> noUserAuthRequired = List.of(API_TOKEN,API_TEMPORAL);
 
   public static UserAuthorizationHandler create(TokenStore tokenStore) {
     tokenStoreClient = tokenStore;

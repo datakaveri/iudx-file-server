@@ -17,6 +17,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.file.FileSystem;
@@ -37,9 +38,9 @@ import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import iudx.file.server.handlers.UserAuthorizationHandler;
 import iudx.file.server.service.FileService;
-import iudx.file.server.service.LocalStorageFileServiceImpl;
-import iudx.file.server.service.PGTokenStoreImpl;
 import iudx.file.server.service.TokenStore;
+import iudx.file.server.service.impl.LocalStorageFileServiceImpl;
+import iudx.file.server.service.impl.PGTokenStoreImpl;
 import iudx.file.server.utilities.Constants;
 import iudx.file.server.utilities.CustomResponse;
 import iudx.file.server.utilities.DefaultAsyncResult;
@@ -113,17 +114,18 @@ public class FileServerVerticle extends AbstractVerticle {
           LOGGER.error(failureHandler.failure());
         });
 
-
-        router.post("/file")
+        router.post(API_TEMPORAL).handler(this::query);
+              
+        router.post(API_FILE)
               .handler(BodyHandler.create()
                   .setUploadsDirectory(TMP_DIR)
                   .setBodyLimit(MAX_SIZE)
                   .setDeleteUploadedFilesOnEnd(true))
               .handler(this::upload);
 
-        router.get("/file/:fileId").handler(this::download);
-        router.delete("/file/:fileId").handler(this::delete);
-        router.get("/token").handler(this::getFileServerToken);
+        router.get(API_FILE+"/:fileId").handler(this::download);
+        router.delete(API_FILE+"/:fileId").handler(this::delete);
+        router.get(API_TOKEN).handler(this::getFileServerToken);
 
         /* Read the configuration and set the HTTPs server properties. */
         ClientAuth clientAuth = ClientAuth.REQUEST;
@@ -382,6 +384,15 @@ public class FileServerVerticle extends AbstractVerticle {
       }
     });
     tokenStoreClient.delete(fileToken);
+  }
+  
+  
+  public void query(RoutingContext context) {
+    HttpServerRequest request = context.request();
+    HttpServerResponse response = context.response();
+    MultiMap queryParams =MultiMap.caseInsensitiveMultiMap();
+    
+    
   }
 
 

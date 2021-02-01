@@ -1,4 +1,4 @@
-package iudx.file.server.testcases;
+package iudx.file.server;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -26,7 +26,7 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import iudx.file.server.FileServerVerticle;
+import iudx.file.server.configuration.Configuration;
 import iudx.file.server.utilities.Constants;
 
 /**
@@ -46,9 +46,11 @@ public class TokenApiTesting {
   private static InputStream inputstream;
   private static String keystore, keystorePassword, truststore, truststorePassword;
 
+  private static Configuration config;
+
   @DisplayName("BeforeAll")
   @BeforeAll
-  public static void startFileServerVerticle(VertxTestContext vertxTestContext) {
+  public static void startFileServerVerticle(VertxTestContext vertxTestContext,io.vertx.reactivex.core.Vertx vertx2) {
     System.out.println("BeforeAll called");
     vertx = Vertx.vertx();
     deployFileServerVerticle(vertx).onComplete(h -> {
@@ -57,17 +59,20 @@ public class TokenApiTesting {
         vertxTestContext.completeNow();
       }
     });
+    
+    config = new Configuration();
+    JsonObject apiConfig = config.configLoader(0, vertx2);
 
-    properties = new Properties();
-    inputstream = null;
+//    properties = new Properties();
+//    inputstream = null;
     try {
-      inputstream = new FileInputStream(Constants.CONFIG_FILE);
-      properties.load(inputstream);
+//      inputstream = new FileInputStream(Constants.CONFIG_FILE);
+//      properties.load(inputstream);
 
-      keystore = properties.getProperty(Constants.KEYSTORE_FILE_NAME);
-      keystorePassword = properties.getProperty(Constants.KEYSTORE_FILE_PASSWORD);
-      truststore = properties.getProperty("truststore");
-      truststorePassword = properties.getProperty("truststorePassword");
+      keystore = apiConfig.getString(Constants.KEYSTORE_FILE_NAME);
+      keystorePassword = apiConfig.getString(Constants.KEYSTORE_FILE_PASSWORD);
+      truststore = apiConfig.getString("truststore");
+      truststorePassword = apiConfig.getString("truststorePassword");
 
     } catch (Exception ex) {
       logger.info(ex.toString());

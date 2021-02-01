@@ -9,6 +9,11 @@ public class Constants {
   public static final String DIR = "/home/kailash/data/uploads/";
   public static final long MAX_SIZE = 1073741824L; // 1GB = 1073741824 Bytes
   
+  //api
+  public static final String API_TEMPORAL="/ngsi-ld/v1/temporal/entities";
+  public static final String API_FILE="/file";
+  public static final String API_TOKEN="/token";
+  
   //header
   public static final String HEADER_TOKEN = "token";
   

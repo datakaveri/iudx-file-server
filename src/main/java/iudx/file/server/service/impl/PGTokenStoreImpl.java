@@ -1,4 +1,4 @@
-package iudx.file.server.service;
+package iudx.file.server.service.impl;
 
 import static iudx.file.server.utilities.Constants.*;
 import java.io.FileInputStream;
@@ -19,6 +19,7 @@ import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import iudx.file.server.service.TokenStore;
 import iudx.file.server.utilities.Constants;
 
 import org.apache.logging.log4j.LogManager;
@@ -50,6 +51,9 @@ public class PGTokenStoreImpl implements TokenStore {
     // Create the pooled client
     this.client = PgPool.pool(vertx, connectOptions, poolOptions);
 
+  }
+  public PGTokenStoreImpl(PgPool client) {
+    this.client = client;
   }
 
   @Override

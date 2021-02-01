@@ -1,4 +1,4 @@
-package iudx.file.server.service;
+package iudx.file.server.service.impl;
 
 import static iudx.file.server.utilities.Constants.DIR;
 import static iudx.file.server.utilities.Constants.MAX_SIZE;
@@ -25,6 +25,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.streams.Pump;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.ext.web.FileUpload;
+import iudx.file.server.service.FileService;
 import io.vertx.core.buffer.Buffer;
 
 // TODO : uniform response messages.
