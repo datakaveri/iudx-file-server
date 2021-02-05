@@ -12,10 +12,21 @@ public interface FileService {
   /**
    * upload file to server.
    * 
-   * @param Set of files to be uploaded.
+   * @param file set of file (although there will always be a single file to upload)
    * @param handler
    */
   public void upload(final Set<FileUpload> file, String filePath,
+      final Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * upload file to server
+   * 
+   * @param file set of file (although there will always be a single file to upload)
+   * @param fileName uploaded filename
+   * @param filePath path for uploaded file
+   * @param handler
+   */
+  public void upload(final Set<FileUpload> file, String fileName, String filePath,
       final Handler<AsyncResult<JsonObject>> handler);
 
   /**

@@ -1,14 +1,7 @@
 package iudx.file.server.utilities;
 
 public class Constants {
-  public static final String CONFIG_FILE = "config.properties";
-  public static final String KEYSTORE_FILE_NAME = "keystore";
-  public static final String KEYSTORE_FILE_PASSWORD = "keystorePassword";
-  public static final int PORT = 8443;
-  public static final String TMP_DIR = "/home/kailash/data/tmp/";
-  public static final String DIR = "/home/kailash/data/uploads/";
   public static final long MAX_SIZE = 1073741824L; // 1GB = 1073741824 Bytes
-
   // api
   public static final String API_TEMPORAL = "/ngsi-ld/v1/temporal/entities";
   public static final String API_FILE_UPLOAD = "/iudx/v1/upload";

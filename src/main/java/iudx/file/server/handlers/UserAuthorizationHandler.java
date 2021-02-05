@@ -16,6 +16,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import iudx.file.server.service.TokenStore;
 
+//TODO : incomplete integration.
 public class UserAuthorizationHandler implements Handler<RoutingContext> {
 
   private static final Logger LOGGER = LogManager.getLogger(UserAuthorizationHandler.class);
@@ -40,12 +41,10 @@ public class UserAuthorizationHandler implements Handler<RoutingContext> {
       return;
     }
 
-    String headerToken = request.getHeader("fileServerToken");
     String token=request.getHeader("token");
 
-    if (headerToken == null) {
+    if (token == null) {
       processUnauthorized(context, "no token");
-      //context.next();
       return;
     }
 
@@ -65,11 +64,6 @@ public class UserAuthorizationHandler implements Handler<RoutingContext> {
         if (validityTime != null && now.isAfter(validityTime)) {
           LOGGER.info("Validity expired for token.");
           processUnauthorized(context, "validity expired");
-          return;
-        }
-        if (!file_token.equals(headerToken)) {
-          LOGGER.info("token doesn't match");
-          processUnauthorized(context, "token doesn't match");
           return;
         }
       } else if (handler.failed()) {

@@ -1,6 +1,5 @@
 package iudx.file.server;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -27,7 +26,6 @@ import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.file.server.configuration.Configuration;
-import iudx.file.server.utilities.Constants;
 
 /**
  * @author Umesh.Pacholi
@@ -50,7 +48,8 @@ public class TokenApiTesting {
 
   @DisplayName("BeforeAll")
   @BeforeAll
-  public static void startFileServerVerticle(VertxTestContext vertxTestContext,io.vertx.reactivex.core.Vertx vertx2) {
+  public static void startFileServerVerticle(VertxTestContext vertxTestContext,
+      io.vertx.reactivex.core.Vertx vertx2) {
     System.out.println("BeforeAll called");
     vertx = Vertx.vertx();
     deployFileServerVerticle(vertx).onComplete(h -> {
@@ -59,24 +58,14 @@ public class TokenApiTesting {
         vertxTestContext.completeNow();
       }
     });
-    
+
     config = new Configuration();
     JsonObject apiConfig = config.configLoader(0, vertx2);
 
-//    properties = new Properties();
-//    inputstream = null;
-    try {
-//      inputstream = new FileInputStream(Constants.CONFIG_FILE);
-//      properties.load(inputstream);
-
-      keystore = apiConfig.getString(Constants.KEYSTORE_FILE_NAME);
-      keystorePassword = apiConfig.getString(Constants.KEYSTORE_FILE_PASSWORD);
-      truststore = apiConfig.getString("truststore");
-      truststorePassword = apiConfig.getString("truststorePassword");
-
-    } catch (Exception ex) {
-      logger.info(ex.toString());
-    }
+    keystore = apiConfig.getString(apiConfig.getString("keystore"));
+    keystorePassword = apiConfig.getString(apiConfig.getString("keystorePassword"));
+    truststore = apiConfig.getString("truststore");
+    truststorePassword = apiConfig.getString("truststorePassword");
 
   }
 
