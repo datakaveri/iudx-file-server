@@ -1,6 +1,5 @@
-package iudx.file.server.testcases;
+package iudx.file.server;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -28,8 +27,8 @@ import io.vertx.ext.web.multipart.MultipartForm;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import iudx.file.server.FileServerVerticle;
-import iudx.file.server.utilities.Constants;
+import iudx.file.server.configuration.Configuration;
+import iudx.file.server.service.TokenStore;
 
 
 /**
@@ -38,10 +37,10 @@ import iudx.file.server.utilities.Constants;
  */
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class UploadFileTesting {
+public class UploadFileTest {
 
   static FileServerVerticle fileserver;
-  private static final Logger logger = LoggerFactory.getLogger(UploadFileTesting.class);
+  private static final Logger logger = LoggerFactory.getLogger(UploadFileTest.class);
   private static final int PORT = 8443;
   private static final String BASE_URL = "localhost";
   private static WebClient client;
@@ -49,12 +48,21 @@ public class UploadFileTesting {
   private static Properties properties;
   private static InputStream inputstream;
   private static String keystore, keystorePassword, truststore, truststorePassword;
+  private static Configuration appConfig;
+  private static TokenStore tokenStore;
+  private static JsonObject configs;
+  private static Configuration config;
 
   @DisplayName("BeforeAll")
   @BeforeAll
-  public static void startFileServerVerticle(VertxTestContext vertxTestContext) {
+  public static void startFileServerVerticle(VertxTestContext vertxTestContext,
+      io.vertx.reactivex.core.Vertx vertx2) {
     System.out.println("BeforeAll called");
     vertx = Vertx.vertx();
+
+    appConfig = new Configuration();
+    configs = appConfig.configLoader(0, vertx2);
+
     deployFileServerVerticle(vertx).onComplete(h -> {
       if (h.succeeded() && h.result().getBoolean("deployed")) {
         System.out.println("FileServerVerticle deployed successfully");
@@ -62,27 +70,21 @@ public class UploadFileTesting {
       }
     });
 
-    properties = new Properties();
-    inputstream = null;
-    try {
-      inputstream = new FileInputStream(Constants.CONFIG_FILE);
-      properties.load(inputstream);
+    config = new Configuration();
+    JsonObject apiConfig = config.configLoader(0, vertx2);
 
-      keystore = properties.getProperty(Constants.KEYSTORE_FILE_NAME);
-      keystorePassword = properties.getProperty(Constants.KEYSTORE_FILE_PASSWORD);
-      truststore = properties.getProperty("truststore");
-      truststorePassword = properties.getProperty("truststorePassword");
-
-    } catch (Exception ex) {
-      logger.info(ex.toString());
-    }
+    keystore = apiConfig.getString(apiConfig.getString("keystore"));
+    keystorePassword = apiConfig.getString(apiConfig.getString("keystorePassword"));
+    truststore = apiConfig.getString("truststore");
+    truststorePassword = apiConfig.getString("truststorePassword");
 
   }
 
   static Future<JsonObject> deployFileServerVerticle(Vertx vrtx) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject jsonObject = new JsonObject();
-    DeploymentOptions options = new DeploymentOptions().setWorker(true).setWorkerPoolSize(10);
+    DeploymentOptions options =
+        new DeploymentOptions().setWorker(true).setWorkerPoolSize(10).setConfig(configs);
     vrtx.deployVerticle(new FileServerVerticle(), options, result -> {
       if (result.succeeded()) {
         jsonObject.put("deployed", true);
@@ -120,8 +122,8 @@ public class UploadFileTesting {
     HttpRequest<Buffer> req = client.post(PORT, BASE_URL, apiURL).ssl(Boolean.TRUE);
     req.putHeader("token", "testing_key");
     req.putHeader("fileServerToken", "fileServerToken");
-    MultipartForm form = MultipartForm.create().binaryFileUpload("text", "TestUploadFile.txt",
-        "D:/IUDX_UploadDownload_Testing/TestUploadFile.txt", "text/plain");
+    MultipartForm form = MultipartForm.create().binaryFileUpload("text", "uploadtest.txt",
+        "src/test/resources/uploadtest.txt", "text/plain");
     // MultipartForm form = MultipartForm.create().binaryFileUpload("mp4", "sample-mp4-file",
     // "D:/IUDX_UploadDownload_Testing/sample-mp4-file.mp4", "video/mp4");
 
@@ -156,8 +158,8 @@ public class UploadFileTesting {
     HttpRequest<Buffer> req = client.post(PORT, BASE_URL, apiURL).ssl(Boolean.TRUE);
     req.putHeader("token", "testing_key");
     req.putHeader("fileServerToken", "fileServerToken");
-    MultipartForm form = MultipartForm.create().binaryFileUpload("text", "TestUploadFile.txt",
-        "D:/IUDX_UploadDownload_Testing/TestUploadFile.txt", "text/plain");
+    MultipartForm form = MultipartForm.create().binaryFileUpload("text", "uploadtest.txt",
+        "src/test/resources/uploadtest.txt", "text/plain");
     req.sendMultipartForm(form, ar -> {
       logger.info(
           "Inside failureUploadFileWhenNoClientCertificate testcase response - ar.succeeded() : "
@@ -190,8 +192,8 @@ public class UploadFileTesting {
     HttpRequest<Buffer> req = client.post(PORT, BASE_URL, apiURL).ssl(Boolean.TRUE);
     // req.putHeader("token", "testing_key");
     // req.putHeader("fileServerToken", "fileServerToken");
-    MultipartForm form = MultipartForm.create().binaryFileUpload("text", "TestUploadFile.txt",
-        "D:/IUDX_UploadDownload_Testing/TestUploadFile.txt", "text/plain");
+    MultipartForm form = MultipartForm.create().binaryFileUpload("text", "uploadtest.txt",
+        "src/test/resources/uploadtest.txt", "text/plain");
     req.sendMultipartForm(form, ar -> {
       if (ar.succeeded()) {
         Integer statusCode = ar.result().bodyAsJsonObject().getInteger("statusCode");

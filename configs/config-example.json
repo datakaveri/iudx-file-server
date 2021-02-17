@@ -12,6 +12,7 @@
 			"keystorePassword": "",
 			"verticleInstances": 2,
 			"ssl": true,
+			"port":80,
 			
 			"databaseIP": "",
 			"databasePort": 5432,
@@ -37,7 +38,7 @@
 			"domains": "example.com",
 			
 			"tmp_dir":"z",
-			"dir":"asd"
+			"upload_dir":"asd"
 		}
 	]
 }
