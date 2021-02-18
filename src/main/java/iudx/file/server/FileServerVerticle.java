@@ -32,8 +32,12 @@ import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
+import iudx.file.server.handlers.UserAuthorizationHandler;
+import iudx.file.server.service.AuthService;
+import iudx.file.server.service.AuthServiceImpl;
 import iudx.file.server.service.FileService;
 import iudx.file.server.service.TokenStore;
 import iudx.file.server.service.impl.LocalStorageFileServiceImpl;
@@ -79,9 +83,13 @@ public class FileServerVerticle extends AbstractVerticle {
   private String allowedDomain, truststore, truststorePassword;
   private String[] allowedDomains;
   private HashSet<String> instanceIDs = new HashSet<String>();
+
   private TokenStore tokenStoreClient;
   private String directory;
   private String temp_directory;
+
+  private AuthService authService;
+  private WebClient webClient;
 
 
   @Override
@@ -107,6 +115,12 @@ public class FileServerVerticle extends AbstractVerticle {
 
         // router.route().handler(UserAuthorizationHandler.create(tokenStoreClient));
 
+//        tokenStoreClient = new PGTokenStoreImpl(vertx,config());
+        authService=new AuthServiceImpl(vertx, webClient, config());
+        
+        router.route().handler(BodyHandler.create());
+        router.route().handler(UserAuthorizationHandler.create(authService));
+        
         router.route().failureHandler(failureHandler -> {
           failureHandler.failure().printStackTrace();
           LOGGER.error(failureHandler.failure());

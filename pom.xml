@@ -150,6 +150,10 @@
 			<version>42.2.18</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-web-api-contract</artifactId>
+        </dependency>
 	</dependencies>
 
 	<build>

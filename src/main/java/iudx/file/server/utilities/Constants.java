@@ -9,6 +9,7 @@ public class Constants {
   public static final String API_FILE_DELETE = "/iudx/v1/delete";
   public static final String API_TOKEN = "/token";
 
+
   // header
   public static final String HEADER_TOKEN = "token";
 
@@ -26,5 +27,20 @@ public class Constants {
   public static final String SQL_INSERT =
       "INSERT INTO file_server_token (user_token, file_token, validity_date, server_id ) VALUES ($1, $2, $3,$4)";
   public static final String SQL_SELECT = "SELECT * FROM file_server_token WHERE user_token = $1";
+
+  // cache
+  public static final long CACHE_TIMEOUT = 30;
+
+
+  // Form Params
+  public static final String PARAM_FILE = "file";
+  public static final String PARAM_ID = "id";
+  public static final String PARAM_SAMPLE = "isSample";
+  public static final String PARAM_START_TIME = "startTime";
+  public static final String PARAM_END_TIME = "endTime";
+  public static final String PARAM_FILE_ID = "file-id";
+  
+  public static final String API_ENDPOINT = "apiEndpoint";
+  public static final String API_METHOD = "method";
 
 }

@@ -1,20 +1,16 @@
 package iudx.file.server.handlers;
 
 import static iudx.file.server.utilities.Constants.*;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import iudx.file.server.service.TokenStore;
+import iudx.file.server.service.AuthService;
 
 //TODO : incomplete integration.
 public class UserAuthorizationHandler implements Handler<RoutingContext> {
@@ -23,52 +19,46 @@ public class UserAuthorizationHandler implements Handler<RoutingContext> {
 
   private DateTimeFormatter formatter =
       DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss[.SSSSSS]");
-  private static TokenStore tokenStoreClient;
-  private final List<String> noUserAuthRequired = List.of(API_TOKEN,API_TEMPORAL);
 
-  public static UserAuthorizationHandler create(TokenStore tokenStore) {
-    tokenStoreClient = tokenStore;
+  private static AuthService authService;
+  private final List<String> noUserAuthRequired = List.of("/token");
+
+  public static UserAuthorizationHandler create(AuthService authServiceImpl) {
+    authService = authServiceImpl;
     return new UserAuthorizationHandler();
   }
 
   @Override
   public void handle(RoutingContext context) {
     HttpServerRequest request = context.request();
-    
+
     // bypassing handler for /token endpoint
     if (noUserAuthRequired.contains(request.path())) {
       context.next();
       return;
     }
 
-    String token=request.getHeader("token");
+    String token = request.getHeader("token");
+    final String path = request.path();
+    final String method = context.request().method().toString();
+
+    JsonObject authInfo = new JsonObject().put(API_ENDPOINT, path)
+        .put(HEADER_TOKEN, token)
+        .put(API_METHOD, method);
+
+    JsonObject requestJson = new JsonObject().put(PARAM_ID, request.getParam("id"));
 
     if (token == null) {
       processUnauthorized(context, "no token");
       return;
     }
 
-    LOGGER.info("token :" + token);
-    tokenStoreClient.getTokenDetails(token).onComplete(handler -> {
+
+    authService.tokenInterospect(requestJson, authInfo).onComplete(handler -> {
       if (handler.succeeded()) {
-        Map<String, String> dbResult = handler.result();
-        String validityTimeDB = dbResult.get("validity_date");
-        String file_token = dbResult.get("file_token");
-        LOGGER.info("file_token"+file_token);
-        LOGGER.info("validity_time"+validityTimeDB);
-        LocalDateTime validityTime = LocalDateTime.parse(validityTimeDB, formatter);
-        LOGGER.info("LocalDateTime validity : "+validityTime);
-        LocalDateTime now = LocalDateTime.now();
-        LOGGER.info("LocalDateTime now : "+now);
-        LOGGER.info("LocalDateTime validity : "+validityTime);
-        if (validityTime != null && now.isAfter(validityTime)) {
-          LOGGER.info("Validity expired for token.");
-          processUnauthorized(context, "validity expired");
-          return;
-        }
-      } else if (handler.failed()) {
-        LOGGER.info("handler fail"+handler.cause());
-        processUnauthorized(context, "handler failed");
+        LOGGER.info("auth success.");
+      } else {
+        LOGGER.error("auth fail.");
         return;
       }
       context.next();
