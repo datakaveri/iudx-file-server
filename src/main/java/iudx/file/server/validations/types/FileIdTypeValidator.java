@@ -4,16 +4,16 @@ import io.vertx.ext.web.api.RequestParameter;
 import io.vertx.ext.web.api.validation.ParameterTypeValidator;
 import io.vertx.ext.web.api.validation.ValidationException;
 
-public class IDTypeValidator {
+public class FileIdTypeValidator {
 
   private String pattern = ".*";
 
   public ParameterTypeValidator create() {
-    ParameterTypeValidator idValidator = new IDValidator();
+    ParameterTypeValidator idValidator = new FileIdValidator();
     return idValidator;
   }
 
-  class IDValidator implements ParameterTypeValidator {
+  class FileIdValidator implements ParameterTypeValidator {
 
     // TODO : replace with a regex
     /**
@@ -23,7 +23,7 @@ public class IDTypeValidator {
      */
     private boolean isValidId(String id) {
       String[] idcomponents = id.split("/");
-      return idcomponents.length >= 4;
+      return idcomponents.length >= 5;
     }
 
     private boolean isValidLength(String id) {
@@ -42,7 +42,7 @@ public class IDTypeValidator {
       }
       if (!isValidId(value)) {
         throw ValidationException.ValidationExceptionFactory
-            .generateNotMatchValidationException("Not a valid IUDX id");
+            .generateNotMatchValidationException("Not a valid IUDX file id");
       }
 
       return RequestParameter.create(value);

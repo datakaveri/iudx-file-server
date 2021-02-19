@@ -10,6 +10,7 @@ import static iudx.file.server.utilities.Constants.PARAM_START_TIME;
 import io.vertx.ext.web.api.validation.HTTPRequestValidationHandler;
 import io.vertx.ext.web.api.validation.ParameterTypeValidator;
 import iudx.file.server.validations.types.DateTypeValidator;
+import iudx.file.server.validations.types.FileIdTypeValidator;
 import iudx.file.server.validations.types.IDTypeValidator;
 import iudx.file.server.validations.types.SampleTypeValidator;
 import iudx.file.server.validations.types.TokenTypeValidator;
@@ -19,69 +20,47 @@ public class ValidationHandlerFactory {
   public HTTPRequestValidationHandler create(RequestType requestType) {
     HTTPRequestValidationHandler validator = null;
     switch (requestType) {
-      case SAMPLE_UPLOAD:
-        validator = getSampleUploadRequestValidations();
+      case UPLOAD:
+        validator = getUploadRequestValidations();
         break;
-      case ARCHIVE_UPLOAD:
-        validator = getArchiveUploadRequestValidations();
+      case DOWNLOAD:
+        validator = getDownloadRequestValidations();
         break;
-      case SAMPLE_DOWNLOAD:
-        validator = getSampleDownloadRequestValidations();
-        break;
-      case ARCHIVE_DOWNLOAD:
-        validator = getArchieveDownloadRequestValidations();
-        break;
-      case DELETE_SAMPLE :
-      case DELETE_ARCHIVE:
-        validator=getDeleteRequestValidations();
+      case DELETE:
+        validator = getDeleteRequestValidations();
         break;
       default:
         break;
-
     }
     return validator;
   }
 
   private final ParameterTypeValidator idTypeValidator = new IDTypeValidator().create();
+  private final ParameterTypeValidator fileIdValueValidator=new FileIdTypeValidator().create();
   private final ParameterTypeValidator sampleValueValidator = new SampleTypeValidator().create();
   private final ParameterTypeValidator dateTypeValidator = new DateTypeValidator().create();
   private final ParameterTypeValidator tokenTypeValidator = new TokenTypeValidator().create();
 
-  private HTTPRequestValidationHandler getSampleUploadRequestValidations() {
+  private HTTPRequestValidationHandler getUploadRequestValidations() {
     final HTTPRequestValidationHandler validator = HTTPRequestValidationHandler.create()
         .addFormParamWithCustomTypeValidator(PARAM_ID, idTypeValidator, true, false)
-        .addFormParamWithCustomTypeValidator(PARAM_SAMPLE, sampleValueValidator, true, false)
-        .addHeaderParamWithCustomTypeValidator(HEADER_TOKEN, tokenTypeValidator, true, false);
+        .addFormParamWithCustomTypeValidator(PARAM_START_TIME, dateTypeValidator, false, false)
+        .addFormParamWithCustomTypeValidator(PARAM_SAMPLE, sampleValueValidator, false, false)
+        .addFormParamWithCustomTypeValidator(PARAM_END_TIME, dateTypeValidator, false, false)
+        .addHeaderParamWithCustomTypeValidator(HEADER_TOKEN, tokenTypeValidator, false, false);
     return validator;
   }
 
-
-  private HTTPRequestValidationHandler getArchiveUploadRequestValidations() {
+  private HTTPRequestValidationHandler getDownloadRequestValidations() {
     final HTTPRequestValidationHandler validator = HTTPRequestValidationHandler.create()
-        .addFormParamWithCustomTypeValidator(PARAM_ID, idTypeValidator, true, false)
-        .addFormParamWithCustomTypeValidator(PARAM_START_TIME, dateTypeValidator, true, false)
-        .addFormParamWithCustomTypeValidator(PARAM_END_TIME, dateTypeValidator, true, false)
-        .addHeaderParamWithCustomTypeValidator(HEADER_TOKEN, tokenTypeValidator, true, false);
+        .addQueryParamWithCustomTypeValidator(PARAM_FILE_ID, fileIdValueValidator, true, false)
+        .addHeaderParamWithCustomTypeValidator(HEADER_TOKEN, tokenTypeValidator, false, false);
     return validator;
   }
 
-
-  private HTTPRequestValidationHandler getSampleDownloadRequestValidations() {
-    final HTTPRequestValidationHandler validator = HTTPRequestValidationHandler.create()
-        .addQueryParamWithCustomTypeValidator(PARAM_FILE_ID, idTypeValidator, true, false);
-    return validator;
-  }
-
-  private HTTPRequestValidationHandler getArchieveDownloadRequestValidations() {
-    final HTTPRequestValidationHandler validator = HTTPRequestValidationHandler.create()
-        .addQueryParamWithCustomTypeValidator(PARAM_FILE_ID, idTypeValidator, true, false)
-        .addHeaderParamWithCustomTypeValidator(HEADER_TOKEN, tokenTypeValidator, true, false);
-    return validator;
-  }
-  
   private HTTPRequestValidationHandler getDeleteRequestValidations() {
     final HTTPRequestValidationHandler validator = HTTPRequestValidationHandler.create()
-        .addQueryParamWithCustomTypeValidator(PARAM_FILE_ID, idTypeValidator, true, false)
+        .addQueryParamWithCustomTypeValidator(PARAM_FILE_ID, fileIdValueValidator, true, false)
         .addHeaderParamWithCustomTypeValidator(HEADER_TOKEN, tokenTypeValidator, true, false);
     return validator;
   }

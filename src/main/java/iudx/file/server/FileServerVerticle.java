@@ -1,9 +1,14 @@
 package iudx.file.server;
 
-import static iudx.file.server.utilities.Constants.*;
-import java.io.FileInputStream;
+import static iudx.file.server.utilities.Constants.API_FILE_DELETE;
+import static iudx.file.server.utilities.Constants.API_FILE_DOWNLOAD;
+import static iudx.file.server.utilities.Constants.API_FILE_UPLOAD;
+import static iudx.file.server.utilities.Constants.API_TEMPORAL;
+import static iudx.file.server.utilities.Constants.APPLICATION_JSON;
+import static iudx.file.server.utilities.Constants.CONTENT_TYPE;
+import static iudx.file.server.utilities.Constants.JSON_TYPE;
+import static iudx.file.server.utilities.Constants.MAX_SIZE;
 import java.io.InputStream;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,19 +37,24 @@ import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.api.validation.ValidationException;
 import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
-import iudx.file.server.handlers.UserAuthorizationHandler;
+import iudx.file.server.handlers.AuthHandler;
 import iudx.file.server.service.AuthService;
-import iudx.file.server.service.AuthServiceImpl;
 import iudx.file.server.service.FileService;
 import iudx.file.server.service.TokenStore;
+import iudx.file.server.service.impl.AuthServiceImpl;
 import iudx.file.server.service.impl.LocalStorageFileServiceImpl;
 import iudx.file.server.service.impl.PGTokenStoreImpl;
-import iudx.file.server.utilities.Constants;
 import iudx.file.server.utilities.DefaultAsyncResult;
 import iudx.file.server.utilities.RestResponse;
+import iudx.file.server.validations.ContentTypeValidator;
+import iudx.file.server.validations.RequestType;
+import iudx.file.server.validations.ValidationFailureHandler;
+import iudx.file.server.validations.ValidationHandlerFactory;
 
 /**
  * The File Server API Verticle.
@@ -84,7 +94,6 @@ public class FileServerVerticle extends AbstractVerticle {
   private String[] allowedDomains;
   private HashSet<String> instanceIDs = new HashSet<String>();
 
-  private TokenStore tokenStoreClient;
   private String directory;
   private String temp_directory;
 
@@ -109,22 +118,13 @@ public class FileServerVerticle extends AbstractVerticle {
         router = Router.router(vertx);
         properties = new Properties();
         inputstream = null;
-        tokenStoreClient = new PGTokenStoreImpl(vertx, config());
+        ValidationHandlerFactory validations = new ValidationHandlerFactory();
+        ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
+        authService = new AuthServiceImpl(vertx, getWebClient(vertx, config()), config());
 
-        router.route().handler(BodyHandler.create());
+        // router.route().handler(BodyHandler.create());
+        // router.route().handler(AuthHandler.create(authService));
 
-        // router.route().handler(UserAuthorizationHandler.create(tokenStoreClient));
-
-//        tokenStoreClient = new PGTokenStoreImpl(vertx,config());
-        authService=new AuthServiceImpl(vertx, webClient, config());
-        
-        router.route().handler(BodyHandler.create());
-        router.route().handler(UserAuthorizationHandler.create(authService));
-        
-        router.route().failureHandler(failureHandler -> {
-          failureHandler.failure().printStackTrace();
-          LOGGER.error(failureHandler.failure());
-        });
 
         directory = config().getString("upload_dir");
         temp_directory = config().getString("tmp_dir");
@@ -136,10 +136,24 @@ public class FileServerVerticle extends AbstractVerticle {
                 .setUploadsDirectory(temp_directory)
                 .setBodyLimit(MAX_SIZE)
                 .setDeleteUploadedFilesOnEnd(true))
-            .handler(this::upload);
+            .handler(validations.create(RequestType.UPLOAD))
+            .handler(AuthHandler.create(authService))
+            .handler(this::upload)
+            .failureHandler(validationsFailureHandler);
 
-        router.get(API_FILE_DOWNLOAD).handler(this::download);
-        router.delete(API_FILE_DELETE).handler(this::delete);
+        router.get(API_FILE_DOWNLOAD)
+            .handler(BodyHandler.create())
+            .handler(validations.create(RequestType.DOWNLOAD))
+            .handler(AuthHandler.create(authService))
+            .handler(this::download)
+            .failureHandler(validationsFailureHandler);
+
+        router.delete(API_FILE_DELETE)
+            .handler(BodyHandler.create())
+            .handler(validations.create(RequestType.DELETE))
+            .handler(AuthHandler.create(authService))
+            .handler(this::delete)
+            .failureHandler(validationsFailureHandler);
 
         /* Read the configuration and set the HTTPs server properties. */
         ClientAuth clientAuth = ClientAuth.REQUEST;
@@ -203,12 +217,21 @@ public class FileServerVerticle extends AbstractVerticle {
     response.putHeader("content-type", "application/json");
     LOGGER.debug("id :" + id);
     String fileIdComponent[] = getFileIdComponents(id);
-    String uploadPath = fileIdComponent[1] + "/" + fileIdComponent[3];
+    StringBuilder uploadPath = new StringBuilder();
+    uploadPath.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
     Set<FileUpload> files = routingContext.fileUploads();
+    if (!isValidFileContentType(files)) {
+      ValidationException ex = new ValidationException("Invalid file type");
+      ex.setParameterName("content-type");
+      routingContext.fail(ex);
+      return;
+    }
     if (isSample) {
-      sampleFileUpload(response, files, "sample", uploadPath, id);
+      if (fileIdComponent.length >= 5)
+        uploadPath.append("/" + fileIdComponent[4]);
+      sampleFileUpload(response, files, "sample", uploadPath.toString(), id);
     } else {
-      archiveFileUpload(response, files, uploadPath, id);
+      archiveFileUpload(response, files, uploadPath.toString(), id);
     }
   }
 
@@ -273,11 +296,17 @@ public class FileServerVerticle extends AbstractVerticle {
     response.setChunked(true);
     String id = request.getParam("file-id");
     String fileIdComponent[] = getFileIdComponents(id);
-    String uploadDir = fileIdComponent[1] + "/" + fileIdComponent[3];
+    StringBuilder uploadDir = new StringBuilder();
+    uploadDir.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
     // extract the file-uuid from supplied id, since position of file-id in id will be different for
     // group level(pos:5) and resource level(pos:4)
     String fileUUID = fileIdComponent.length >= 6 ? fileIdComponent[5] : fileIdComponent[4];
-    fileService.download(fileUUID, uploadDir, response, handler -> {
+    System.out.println(fileUUID);
+    if (fileUUID.contains("sample") && fileIdComponent.length >= 6) {
+      uploadDir.append("/" + fileIdComponent[4]);
+    }
+    System.out.println(uploadDir);
+    fileService.download(fileUUID, uploadDir.toString(), response, handler -> {
       if (handler.succeeded()) {
         // do nothing response is already written and file is served using content-disposition.
       } else {
@@ -304,11 +333,17 @@ public class FileServerVerticle extends AbstractVerticle {
     response.putHeader("content-type", "application/json");
     String id = request.getParam("file-id");
     String fileIdComponent[] = getFileIdComponents(id);
-    String uploadDir = fileIdComponent[1] + "/" + fileIdComponent[3];
+    StringBuilder uploadDir = new StringBuilder();
+    uploadDir.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
     // extract the file-uuid from supplied id, since position of file-id in id will be different for
     // group level(pos:5) and resource level(pos:4)
     String fileUUID = fileIdComponent.length >= 6 ? fileIdComponent[5] : fileIdComponent[4];
-    fileService.delete(fileUUID, uploadDir, handler -> {
+    System.out.println(fileUUID);
+    if (fileUUID.contains("sample") && fileIdComponent.length >= 6) {
+      uploadDir.append("/" + fileIdComponent[4]);
+    }
+    System.out.println(uploadDir);
+    fileService.delete(fileUUID, uploadDir.toString(), handler -> {
       if (handler.succeeded()) {
         JsonObject deleteResult = handler.result();
         LOGGER.info(deleteResult);
@@ -340,7 +375,7 @@ public class FileServerVerticle extends AbstractVerticle {
       public void handle(AsyncResult<Boolean> event) {
         if (event.succeeded()) {
           if (Boolean.FALSE.equals(event.result())) {
-            LOGGER.info("Creating parent directory structure ...  "+basePath);
+            LOGGER.info("Creating parent directory structure ...  " + basePath);
             fileSystem.mkdirs(basePath, new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> event) {
@@ -357,7 +392,14 @@ public class FileServerVerticle extends AbstractVerticle {
     });
   }
 
-
+  /**
+   * retreicve components from id index : 0 - Domain 1 - user SHA 2 - File Server 3 - File group 4 -
+   * Resource/ File id(for Group level file, index 4 represent file Id(optional)) 5 - File id
+   * (optional)
+   * 
+   * @param fileId
+   * @return
+   */
   private String[] getFileIdComponents(String fileId) {
     return fileId.split("/");
   }
@@ -385,6 +427,26 @@ public class FileServerVerticle extends AbstractVerticle {
               .build().toJson().toString());
     }
 
+  }
+
+
+  private WebClient getWebClient(Vertx vertx, JsonObject config) {
+    WebClientOptions options =
+        new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true)
+            .setKeyStoreOptions(
+                new JksOptions()
+                    .setPath(config.getString("keystore"))
+                    .setPassword(config.getString("keystorePassword")));
+    return WebClient.create(vertx, options);
+  }
+
+  private boolean isValidFileContentType(Set<FileUpload> files) {
+    for (FileUpload file : files) {
+      if (!ContentTypeValidator.isValid(file.contentType())) {
+        return false;
+      }
+    }
+    return true;
   }
 
 }

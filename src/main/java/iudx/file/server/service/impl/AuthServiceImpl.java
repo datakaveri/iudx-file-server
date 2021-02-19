@@ -1,4 +1,4 @@
-package iudx.file.server.service;
+package iudx.file.server.service.impl;
 
 import static iudx.file.server.utilities.Constants.*;
 import java.time.Clock;
@@ -21,6 +21,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
+import iudx.file.server.service.AuthService;
 
 public class AuthServiceImpl implements AuthService {
 
@@ -29,6 +30,8 @@ public class AuthServiceImpl implements AuthService {
   private final Vertx vertx;
   private final int catPort;
   private final String catHost;
+  private final String authHost;
+  private final int authPort;
 
 
   private final Cache<String, JsonObject> tipCache = CacheBuilder.newBuilder()
@@ -47,6 +50,8 @@ public class AuthServiceImpl implements AuthService {
     this.webClient = webClient;
     this.catPort = config.getInteger("cataloguePort");
     this.catHost = config.getString("catalogueHost");
+    this.authHost = config.getString("authHost");
+    this.authPort = config.getInteger("authPort");
   }
 
 
@@ -89,9 +94,12 @@ public class AuthServiceImpl implements AuthService {
       // call cat-server only when token not found in cache.
       JsonObject body = new JsonObject();
       body.put("token", token);
-      webClient.post(443, "authHost", "/auth/v1/token/introspect")
-          .expect(ResponsePredicate.JSON).sendJsonObject(body, httpResponseAsyncResult -> {
+      System.out.println(body);
+      webClient.post(authPort, authHost, "/auth/v1/token/introspect")
+          .expect(ResponsePredicate.JSON)
+          .sendJsonObject(body, httpResponseAsyncResult -> {
             if (httpResponseAsyncResult.failed()) {
+              System.out.println(httpResponseAsyncResult.cause());
               promise.fail(httpResponseAsyncResult.cause());
               return;
             }
@@ -103,6 +111,7 @@ public class AuthServiceImpl implements AuthService {
               return;
             }
             JsonObject responseBody = response.bodyAsJsonObject();
+            System.out.println(responseBody);
             String cacheExpiry = Instant.now(Clock.systemUTC())
                 .plus(CACHE_TIMEOUT, ChronoUnit.MINUTES)
                 .toString();
@@ -145,16 +154,18 @@ public class AuthServiceImpl implements AuthService {
       JsonObject authenticationInfo, JsonObject userRequest) {
     Promise<JsonObject> promise = Promise.promise();
 
-    String allowedId = tipResponse.getJsonArray("request").getJsonObject(0).getString("id");
-    String requestedId = userRequest.getJsonArray("ids").getString(0);
-    List<String> allowedEndpoints = toList(tipResponse.getJsonArray("apis"));
+    JsonArray tipResponseRequestAttribte = tipResponse.getJsonArray("request");
+    String allowedId = tipResponseRequestAttribte.getJsonObject(0).getString("id");
+    String requestedId = userRequest.getString("id");
+    List<String> allowedEndpoints =
+        toList(tipResponseRequestAttribte.getJsonObject(0).getJsonArray("apis"));
     String endpoint = authenticationInfo.getString("apiEndpoint");
 
     if (isExist) {
       if (isAllowedId(allowedId, requestedId) && isAllowedEndpoint(allowedEndpoints, endpoint)) {
         promise.complete();
       } else {
-        promise.fail("not allowed.");
+        promise.fail("Operation not allowed.");
       }
     } else {
       LOGGER.debug("id doesn't exist in Catalogue server");

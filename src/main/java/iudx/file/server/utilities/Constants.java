@@ -1,5 +1,7 @@
 package iudx.file.server.utilities;
 
+import java.util.Map;
+
 public class Constants {
   public static final long MAX_SIZE = 1073741824L; // 1GB = 1073741824 Bytes
   // api
@@ -42,5 +44,10 @@ public class Constants {
   
   public static final String API_ENDPOINT = "apiEndpoint";
   public static final String API_METHOD = "method";
+  
+  
+  
+      
+      
 
 }
