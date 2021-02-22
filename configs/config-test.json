@@ -15,13 +15,13 @@
             "port":8443,
             
             "databaseIP": "",
-            "databasePort":5432 ,
+            "databasePort":80 ,
             "databaseUser": "",
             "databasePassword": "",
             "databaseUsed":"",
             
             "dataBrokerIP": "",
-            "dataBrokerPort": 5432,
+            "dataBrokerPort": 5672,
             "dataBrokerVhost": "",
             "dataBrokerUserName": "",
             "dataBrokerPassword": "",
@@ -32,10 +32,17 @@
             "requestedChannelMax": 5,
             "networkRecoveryInterval": 500,
             
+            "catalogueHost":"",
+            "cataloguePort":443,
+            
+            "authHost":"",
+            "authPort":443,
+            
+            
             "automaticRecoveryEnabled": true,
             "truststore": "configs/keystore.jks",
             "truststorePassword": "",
-            "domains": "example.com",
+            "domains": "",
             
             "tmp_dir":"",
             "upload_dir":""

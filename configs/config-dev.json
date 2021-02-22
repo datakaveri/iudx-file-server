@@ -32,6 +32,13 @@
 			"requestedChannelMax": 5,
 			"networkRecoveryInterval": 500,
 			
+			"catalogueHost":"",
+            "cataloguePort":443,
+            
+            "authHost":"",
+            "authPort":443,
+            
+			
 			"automaticRecoveryEnabled": true,
 			"truststore": "configs/keystore.jks",
 			"truststorePassword": "",
