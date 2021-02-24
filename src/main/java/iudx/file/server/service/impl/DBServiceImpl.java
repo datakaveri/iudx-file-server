@@ -13,4 +13,10 @@ public class DBServiceImpl implements DBService {
 
   }
 
+  @Override
+  public void update(JsonObject value, Handler<AsyncResult<JsonObject>> handler) {
+    // TODO Auto-generated method stub
+    
+  }
+
 }

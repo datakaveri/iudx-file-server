@@ -59,6 +59,7 @@ public class AuthServiceImpl implements AuthService {
   @Override
   public Future<JsonObject> tokenInterospect(JsonObject request, JsonObject authenticationInfo) {
     Promise<JsonObject> promise = Promise.promise();
+    System.out.println("userRequest : "+request);
     String token = authenticationInfo.getString("token");
     TokenInterospectionResultContainer responseContainer =
         new TokenInterospectionResultContainer();
@@ -157,6 +158,7 @@ public class AuthServiceImpl implements AuthService {
     JsonArray tipResponseRequestAttribte = tipResponse.getJsonArray("request");
     String allowedId = tipResponseRequestAttribte.getJsonObject(0).getString("id");
     String requestedId = userRequest.getString("id");
+    System.out.println("requestedId :"+requestedId);
     List<String> allowedEndpoints =
         toList(tipResponseRequestAttribte.getJsonObject(0).getJsonArray("apis"));
     String endpoint = authenticationInfo.getString("apiEndpoint");
@@ -176,8 +178,14 @@ public class AuthServiceImpl implements AuthService {
 
   public boolean isAllowedId(String allowedId, String requestedId) {
     String allowedGroupID = allowedId.substring(0, allowedId.lastIndexOf("/"));
-    String requestedGroupID = requestedId.substring(0, requestedId.lastIndexOf("/"));
-    return allowedId.equals(requestedId) || allowedGroupID.equals(requestedGroupID);
+    //String requestedGroupID = requestedId.substring(0, requestedId.lastIndexOf("/"));
+    LOGGER.debug("allowed ids : "+allowedId);
+    LOGGER.debug("allowed group id : "+allowedGroupID);
+    
+    LOGGER.debug("requested id :"+requestedId);
+    //LOGGER.debug("requested group id : "+requestedGroupID);
+    
+    return allowedId.equals(requestedId) || allowedGroupID.equals(requestedId);
   }
 
   public boolean isAllowedEndpoint(List<String> allowedEndpoints, String endpoint) {

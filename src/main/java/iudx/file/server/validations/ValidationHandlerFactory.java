@@ -47,7 +47,7 @@ public class ValidationHandlerFactory {
         .addFormParamWithCustomTypeValidator(PARAM_START_TIME, dateTypeValidator, false, false)
         .addFormParamWithCustomTypeValidator(PARAM_SAMPLE, sampleValueValidator, false, false)
         .addFormParamWithCustomTypeValidator(PARAM_END_TIME, dateTypeValidator, false, false)
-        .addHeaderParamWithCustomTypeValidator(HEADER_TOKEN, tokenTypeValidator, false, false);
+        .addHeaderParamWithCustomTypeValidator(HEADER_TOKEN, tokenTypeValidator, true, false);
     return validator;
   }
 

@@ -7,6 +7,7 @@ import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.Handler;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -47,8 +48,15 @@ public class AuthHandler implements Handler<RoutingContext> {
         .put(HEADER_TOKEN, token)
         .put(API_METHOD, method);
 
-    JsonObject requestJson = new JsonObject().put(PARAM_ID, request.getParam("id"));
-
+    
+    String id = null;
+    if("POST".equalsIgnoreCase(method)) {
+      id= request.getFormAttribute("id");
+    }else if("GET".equalsIgnoreCase(method) || "DELETE".equalsIgnoreCase(method)){
+      String fileId=request.getParam("file-id");
+      id=fileId.substring(0,fileId.lastIndexOf("/"));
+    }
+    JsonObject requestJson = new JsonObject().put(PARAM_ID, id);
     if (token == null) {
       processUnauthorized(context, "no token");
       return;

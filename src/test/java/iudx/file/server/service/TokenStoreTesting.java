@@ -27,7 +27,7 @@ import io.vertx.pgclient.PgPool;
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Testcontainers
-public class TokenStoreTest {
+public class TokenStoreTesting {
   
   @Rule
   @Container

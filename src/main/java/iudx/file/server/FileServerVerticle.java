@@ -219,6 +219,7 @@ public class FileServerVerticle extends AbstractVerticle {
     String fileIdComponent[] = getFileIdComponents(id);
     StringBuilder uploadPath = new StringBuilder();
     uploadPath.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
+
     Set<FileUpload> files = routingContext.fileUploads();
     if (!isValidFileContentType(files)) {
       ValidationException ex = new ValidationException("Invalid file type");
@@ -229,9 +230,9 @@ public class FileServerVerticle extends AbstractVerticle {
     if (isSample) {
       if (fileIdComponent.length >= 5)
         uploadPath.append("/" + fileIdComponent[4]);
-      sampleFileUpload(response, files, "sample", uploadPath.toString(), id);
+      sampleFileUpload(response, formParam, files, "sample", uploadPath.toString(), id);
     } else {
-      archiveFileUpload(response, files, uploadPath.toString(), id);
+      archiveFileUpload(response, formParam, files, uploadPath.toString(), id);
     }
   }
 
@@ -244,7 +245,8 @@ public class FileServerVerticle extends AbstractVerticle {
    * @param filePath
    * @param id
    */
-  private void sampleFileUpload(HttpServerResponse response, Set<FileUpload> files, String fileName,
+  private void sampleFileUpload(HttpServerResponse response, MultiMap params, Set<FileUpload> files,
+      String fileName,
       String filePath, String id) {
     fileService.upload(files, fileName, filePath, handler -> {
       if (handler.succeeded()) {
@@ -268,7 +270,8 @@ public class FileServerVerticle extends AbstractVerticle {
    * @param filePath
    * @param id
    */
-  private void archiveFileUpload(HttpServerResponse response, Set<FileUpload> files,
+  private void archiveFileUpload(HttpServerResponse response, MultiMap params,
+      Set<FileUpload> files,
       String filePath, String id) {
     fileService.upload(files, filePath, handler -> {
       if (handler.succeeded()) {
@@ -282,6 +285,19 @@ public class FileServerVerticle extends AbstractVerticle {
         processResponse(response, handler.cause().getMessage());
       }
     });
+  }
+
+
+  private void insertFileRecord(MultiMap formParams, String fileId) {
+    JsonObject json = new JsonObject();
+    json.put("id", formParams.get("id"));
+    json.put("timeRange", new JsonObject()
+                          .put("startTime", formParams.get("startTime"))
+                          .put("endTime", formParams.get("endTime"))
+             );
+    json.put("file-id", fileId);
+    //insert record in elastic index.
+
   }
 
   /**
@@ -393,7 +409,7 @@ public class FileServerVerticle extends AbstractVerticle {
   }
 
   /**
-   * retreicve components from id index : 0 - Domain 1 - user SHA 2 - File Server 3 - File group 4 -
+   * retreive components from id index : 0 - Domain 1 - user SHA 2 - File Server 3 - File group 4 -
    * Resource/ File id(for Group level file, index 4 represent file Id(optional)) 5 - File id
    * (optional)
    * 
@@ -442,6 +458,7 @@ public class FileServerVerticle extends AbstractVerticle {
 
   private boolean isValidFileContentType(Set<FileUpload> files) {
     for (FileUpload file : files) {
+      System.out.println(file.contentType());
       if (!ContentTypeValidator.isValid(file.contentType())) {
         return false;
       }

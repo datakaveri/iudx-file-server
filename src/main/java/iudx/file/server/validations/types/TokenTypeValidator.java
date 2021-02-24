@@ -16,6 +16,10 @@ public class TokenTypeValidator {
     @Override
     public RequestParameter isValid(String value) throws ValidationException {
       // TODO match regex for token
+      if (value.isBlank()) {
+        throw ValidationException.ValidationExceptionFactory
+            .generateNotMatchValidationException("Empty values are not allowed in parameter.");
+      }
       return RequestParameter.create(value);
     }
 

@@ -7,5 +7,8 @@ import io.vertx.core.json.JsonObject;
 public interface DBService {
 
   public void query(final JsonObject query, final Handler<AsyncResult<JsonObject>> handler);
+  
+  
+  public void update(final JsonObject value,final Handler<AsyncResult<JsonObject>> handler);
 
 }

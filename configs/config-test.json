@@ -45,7 +45,9 @@
             "domains": "",
             
             "tmp_dir":"",
-            "upload_dir":""
+            "upload_dir":"",
+            
+            "testToken":""
         }
     ]
 }
