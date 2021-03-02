@@ -1,25 +1,23 @@
 package iudx.file.server;
 
-import static iudx.file.server.utilities.Constants.API_FILE_DELETE;
-import static iudx.file.server.utilities.Constants.API_FILE_DOWNLOAD;
-import static iudx.file.server.utilities.Constants.API_FILE_UPLOAD;
-import static iudx.file.server.utilities.Constants.API_TEMPORAL;
-import static iudx.file.server.utilities.Constants.APPLICATION_JSON;
-import static iudx.file.server.utilities.Constants.CONTENT_TYPE;
-import static iudx.file.server.utilities.Constants.JSON_TYPE;
-import static iudx.file.server.utilities.Constants.MAX_SIZE;
+import static iudx.file.server.utilities.Constants.*;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import io.netty.handler.codec.http.HttpConstants;
+import io.netty.handler.codec.http.QueryStringDecoder;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
@@ -44,14 +42,14 @@ import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import iudx.file.server.handlers.AuthHandler;
 import iudx.file.server.service.AuthService;
+import iudx.file.server.service.DBService;
 import iudx.file.server.service.FileService;
-import iudx.file.server.service.TokenStore;
 import iudx.file.server.service.impl.AuthServiceImpl;
+import iudx.file.server.service.impl.DBServiceImpl;
 import iudx.file.server.service.impl.LocalStorageFileServiceImpl;
-import iudx.file.server.service.impl.PGTokenStoreImpl;
-import iudx.file.server.utilities.DefaultAsyncResult;
 import iudx.file.server.utilities.RestResponse;
 import iudx.file.server.validations.ContentTypeValidator;
+import iudx.file.server.validations.QueryParamsValidator;
 import iudx.file.server.validations.RequestType;
 import iudx.file.server.validations.ValidationFailureHandler;
 import iudx.file.server.validations.ValidationHandlerFactory;
@@ -98,7 +96,9 @@ public class FileServerVerticle extends AbstractVerticle {
   private String temp_directory;
 
   private AuthService authService;
+  private DBService dbService;
   private WebClient webClient;
+  private QueryParamsValidator queryParamValidator;
 
 
   @Override
@@ -120,8 +120,10 @@ public class FileServerVerticle extends AbstractVerticle {
         inputstream = null;
         ValidationHandlerFactory validations = new ValidationHandlerFactory();
         ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
-        authService = new AuthServiceImpl(vertx, getWebClient(vertx, config()), config());
+        queryParamValidator = new QueryParamsValidator();
 
+        authService = new AuthServiceImpl(vertx, getWebClient(vertx, config()), config());
+        dbService = new DBServiceImpl(config());
         // router.route().handler(BodyHandler.create());
         // router.route().handler(AuthHandler.create(authService));
 
@@ -129,7 +131,11 @@ public class FileServerVerticle extends AbstractVerticle {
         directory = config().getString("upload_dir");
         temp_directory = config().getString("tmp_dir");
 
-        router.post(API_TEMPORAL).handler(this::query);
+        router.get(API_TEMPORAL)
+            .handler(BodyHandler.create())
+            .handler(validations.create(RequestType.QUERY))
+            .handler(this::query)
+            .failureHandler(validationsFailureHandler);
 
         router.post(API_FILE_UPLOAD)
             .handler(BodyHandler.create()
@@ -232,6 +238,12 @@ public class FileServerVerticle extends AbstractVerticle {
         uploadPath.append("/" + fileIdComponent[4]);
       sampleFileUpload(response, formParam, files, "sample", uploadPath.toString(), id);
     } else {
+      if(!formParam.contains("startTime") && !formParam.contains("endTime")) {
+        ValidationException ex = new ValidationException("Mandatory fields required");
+        ex.setParameterName("startTime/endTime");
+        routingContext.fail(ex);
+        return;
+      }
       archiveFileUpload(response, formParam, files, uploadPath.toString(), id);
     }
   }
@@ -252,7 +264,9 @@ public class FileServerVerticle extends AbstractVerticle {
       if (handler.succeeded()) {
         JsonObject uploadResult = handler.result();
         JsonObject responseJson = new JsonObject();
-        responseJson.put("file-id", id + "/" + uploadResult.getString("file-id"));
+        String fileId=id + "/" +uploadResult.getString("file-id");
+        responseJson.put("file-id",fileId);
+        insertFileRecord(params, fileId);
         response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
             .setStatusCode(HttpStatus.SC_OK)
             .end(responseJson.toString());
@@ -273,11 +287,14 @@ public class FileServerVerticle extends AbstractVerticle {
   private void archiveFileUpload(HttpServerResponse response, MultiMap params,
       Set<FileUpload> files,
       String filePath, String id) {
+    
     fileService.upload(files, filePath, handler -> {
       if (handler.succeeded()) {
         JsonObject uploadResult = handler.result();
         JsonObject responseJson = new JsonObject();
-        responseJson.put("file-id", id + "/" + uploadResult.getString("file-id"));
+        String fileId=id + "/" +uploadResult.getString("file-id");
+        responseJson.put("file-id",fileId);
+        insertFileRecord(params, fileId);
         response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
             .setStatusCode(HttpStatus.SC_OK)
             .end(responseJson.toString());
@@ -292,11 +309,18 @@ public class FileServerVerticle extends AbstractVerticle {
     JsonObject json = new JsonObject();
     json.put("id", formParams.get("id"));
     json.put("timeRange", new JsonObject()
-                          .put("startTime", formParams.get("startTime"))
-                          .put("endTime", formParams.get("endTime"))
-             );
+        .put("startTime", formParams.get("startTime"))
+        .put("endTime", formParams.get("endTime")));
     json.put("file-id", fileId);
-    //insert record in elastic index.
+    // insert record in elastic index.
+    dbService.insert(json, handler->{
+      if(handler.succeeded()) {
+        LOGGER.info("Record inserted in DB");
+      }else {
+        LOGGER.error("failed to PUT record");
+        LOGGER.error(json);
+      }
+    });
 
   }
 
@@ -333,9 +357,30 @@ public class FileServerVerticle extends AbstractVerticle {
 
 
   public void query(RoutingContext context) {
-    HttpServerRequest request = context.request();
     HttpServerResponse response = context.response();
-    MultiMap queryParams = MultiMap.caseInsensitiveMultiMap();
+    MultiMap queryParams = getQueryParams(context, response).get();
+    System.out.println(queryParams);
+    Future<Boolean> queryParamsValidator = queryParamValidator.isValid(queryParams);
+    JsonObject query = new JsonObject();
+    for (Map.Entry<String, String> entry : queryParams.entries()) {
+      query.put(entry.getKey(), entry.getValue());
+    }
+    queryParamsValidator.onComplete(validationHandler -> {
+      if (validationHandler.succeeded()) {
+        dbService.query(query, queryHandler -> {
+          if (queryHandler.succeeded()) {
+            response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .setStatusCode(HttpStatus.SC_OK)
+                .end(queryHandler.result().toString());
+
+          } else {
+            processResponse(response, queryHandler.cause().getMessage());
+          }
+        });
+      } else {
+        LOGGER.error(validationHandler.cause().getMessage());
+      }
+    });
   }
 
 
@@ -399,10 +444,10 @@ public class FileServerVerticle extends AbstractVerticle {
               }
             });
           } else {
-            handler.handle(new DefaultAsyncResult<>((Void) null));
+            handler.handle(Future.succeededFuture());
           }
         } else {
-          handler.handle(new DefaultAsyncResult<Void>(event.cause()));
+          handler.handle(Future.failedFuture("Failed to create directory."));
         }
       }
     });
@@ -466,4 +511,31 @@ public class FileServerVerticle extends AbstractVerticle {
     return true;
   }
 
+  private Optional<MultiMap> getQueryParams(RoutingContext routingContext,
+      HttpServerResponse response) {
+    MultiMap queryParams = null;
+    try {
+      queryParams = MultiMap.caseInsensitiveMultiMap();
+      // Internally + sign is dropped and treated as space, replacing + with %2B do the trick
+      String uri = routingContext.request().uri().toString().replaceAll("\\+", "%2B");
+      Map<String, List<String>> decodedParams =
+          new QueryStringDecoder(uri, HttpConstants.DEFAULT_CHARSET, true, 1024, true).parameters();
+      for (Map.Entry<String, List<String>> entry : decodedParams.entrySet()) {
+        queryParams.add(entry.getKey(), entry.getValue());
+      }
+      LOGGER.debug("Info: Decoded multimap");
+    } catch (IllegalArgumentException ex) {
+      response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
+          .setStatusCode(HttpStatus.SC_BAD_REQUEST)
+          .end(new RestResponse.Builder()
+              .type(HttpStatus.SC_BAD_REQUEST)
+              .title("Bad request")
+              .details("Error while decoding params.")
+              .build().toJson().toString());
+
+
+    }
+    return Optional.of(queryParams);
+  }
+  
 }

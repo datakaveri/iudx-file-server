@@ -202,6 +202,8 @@ public class FileServiceTest {
         .binaryFileUpload("text", "uploadtest.txt", "src/test/resources/uploadtest.txt",
             "text/plain");
     form.attribute("id", resourceId);
+    form.attribute("startTime", "2020-09-05T00:00:00Z");
+    form.attribute("endTime","2020-09-15T00:00:00Z");
 
     HttpRequest<Buffer> req = client.post(8443, "localhost", API_FILE_UPLOAD);
     req.putHeader("token", token);
@@ -227,6 +229,8 @@ public class FileServiceTest {
         .binaryFileUpload("text", "uploadtest.txt", "src/test/resources/uploadtest.txt",
             "text/plain");
     form.attribute("id", groupId);
+    form.attribute("startTime", "2020-09-05T00:00:00Z");
+    form.attribute("endTime","2020-09-15T00:00:00Z");
 
     HttpRequest<Buffer> req = client.post(8443, "localhost", API_FILE_UPLOAD);
     req.putHeader("token", token);

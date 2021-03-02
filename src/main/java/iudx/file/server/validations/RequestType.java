@@ -1,5 +1,5 @@
 package iudx.file.server.validations;
 
 public enum RequestType {
-  UPLOAD, DOWNLOAD, DELETE;
+  UPLOAD, DOWNLOAD, DELETE, QUERY;
 }

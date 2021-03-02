@@ -13,6 +13,7 @@ import iudx.file.server.validations.types.DateTypeValidator;
 import iudx.file.server.validations.types.FileIdTypeValidator;
 import iudx.file.server.validations.types.IDTypeValidator;
 import iudx.file.server.validations.types.SampleTypeValidator;
+import iudx.file.server.validations.types.TemporalRelTypeValidator;
 import iudx.file.server.validations.types.TokenTypeValidator;
 
 public class ValidationHandlerFactory {
@@ -29,6 +30,9 @@ public class ValidationHandlerFactory {
       case DELETE:
         validator = getDeleteRequestValidations();
         break;
+      case QUERY:
+        validator=getQueryRequestValidator();
+        break;
       default:
         break;
     }
@@ -40,6 +44,7 @@ public class ValidationHandlerFactory {
   private final ParameterTypeValidator sampleValueValidator = new SampleTypeValidator().create();
   private final ParameterTypeValidator dateTypeValidator = new DateTypeValidator().create();
   private final ParameterTypeValidator tokenTypeValidator = new TokenTypeValidator().create();
+  private final ParameterTypeValidator timeRelTypeValidator=new TemporalRelTypeValidator().create();
 
   private HTTPRequestValidationHandler getUploadRequestValidations() {
     final HTTPRequestValidationHandler validator = HTTPRequestValidationHandler.create()
@@ -63,5 +68,15 @@ public class ValidationHandlerFactory {
         .addQueryParamWithCustomTypeValidator(PARAM_FILE_ID, fileIdValueValidator, true, false)
         .addHeaderParamWithCustomTypeValidator(HEADER_TOKEN, tokenTypeValidator, true, false);
     return validator;
+  }
+  
+  private HTTPRequestValidationHandler getQueryRequestValidator() {
+    final HTTPRequestValidationHandler validator=HTTPRequestValidationHandler.create()
+        .addQueryParamWithCustomTypeValidator(PARAM_ID, idTypeValidator, true, false)
+        .addQueryParamWithCustomTypeValidator("time", dateTypeValidator, true, false)
+        .addQueryParamWithCustomTypeValidator("endTime", dateTypeValidator, true, false)
+        .addQueryParamWithCustomTypeValidator("timerel", timeRelTypeValidator, true, false);
+    return validator;
+        
   }
 }
