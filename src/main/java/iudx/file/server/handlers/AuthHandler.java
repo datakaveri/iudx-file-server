@@ -36,10 +36,10 @@ public class AuthHandler implements Handler<RoutingContext> {
 
     String token = request.getHeader("token");
     final String path = request.path();
+    LOGGER.debug("path : "+path);
     final String method = context.request().method().toString();
 
-    // TODO : for test remove when item available in cat/ policy created in auth
-    JsonObject authInfo = new JsonObject().put(API_ENDPOINT, "/ngsi-ld/v1/entities")
+    JsonObject authInfo = new JsonObject().put(API_ENDPOINT, path)
         .put(HEADER_TOKEN, token)
         .put(API_METHOD, method);
 
