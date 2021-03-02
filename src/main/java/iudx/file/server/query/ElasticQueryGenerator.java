@@ -11,7 +11,7 @@ public class ElasticQueryGenerator {
   public String getQuery(JsonObject json,QueryType type) {
     
     BoolQueryBuilder boolQuery=QueryBuilders.boolQuery()
-        //.filter(QueryBuilders.termsQuery("id", json.getString("id")))
+        .filter(QueryBuilders.termsQuery("id", json.getString("id")))
         .filter(QueryBuilders.rangeQuery("timeRange.startTime").lte(json.getString("time")))
         .filter(QueryBuilders.rangeQuery("timeRange.endTime").gte(json.getString("endTime")));
     

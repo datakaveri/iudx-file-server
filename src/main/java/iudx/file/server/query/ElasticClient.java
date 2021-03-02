@@ -1,13 +1,6 @@
 package iudx.file.server.query;
 
-import static iudx.file.server.utilities.Constants.BAD_PARAMETERS;
-import static iudx.file.server.utilities.Constants.DOCS_KEY;
-import static iudx.file.server.utilities.Constants.EMPTY_RESPONSE;
-import static iudx.file.server.utilities.Constants.FAILED;
-import static iudx.file.server.utilities.Constants.FILTER_PATH;
-import static iudx.file.server.utilities.Constants.HITS;
-import static iudx.file.server.utilities.Constants.SOURCE_FILTER_KEY;
-import static iudx.file.server.utilities.Constants.SUCCESS;
+import static iudx.file.server.utilities.Constants.*;
 import java.io.IOException;
 import java.util.UUID;
 import org.apache.http.HttpHost;
@@ -18,8 +11,6 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
-import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseListener;

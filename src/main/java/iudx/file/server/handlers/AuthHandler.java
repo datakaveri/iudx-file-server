@@ -1,28 +1,23 @@
 package iudx.file.server.handlers;
 
 import static iudx.file.server.utilities.Constants.*;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.Handler;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import iudx.file.server.service.AuthService;
 
-// TODO : incomplete integration.
 public class AuthHandler implements Handler<RoutingContext> {
 
   private static final Logger LOGGER = LogManager.getLogger(AuthHandler.class);
 
-  private DateTimeFormatter formatter =
-      DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss[.SSSSSS]");
 
   private static AuthService authService;
-  private final List<String> noUserAuthRequired = List.of("/token");
+  private final List<String> noUserAuthRequired = List.of("/ngsi-ld/v1/temporal/entities");
 
   public static AuthHandler create(AuthService authServiceImpl) {
     authService = authServiceImpl;

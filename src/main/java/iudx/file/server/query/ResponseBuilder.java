@@ -1,20 +1,7 @@
 package iudx.file.server.query;
 
 
-import static iudx.file.server.utilities.Constants.COUNT;
-import static iudx.file.server.utilities.Constants.DETAIL;
-import static iudx.file.server.utilities.Constants.ERROR;
-import static iudx.file.server.utilities.Constants.ERROR_TYPE;
-import static iudx.file.server.utilities.Constants.FAILED;
-import static iudx.file.server.utilities.Constants.INDEX_NOT_FOUND;
-import static iudx.file.server.utilities.Constants.INVALID_RESOURCE_ID;
-import static iudx.file.server.utilities.Constants.REASON;
-import static iudx.file.server.utilities.Constants.RESULTS;
-import static iudx.file.server.utilities.Constants.ROOT_CAUSE;
-import static iudx.file.server.utilities.Constants.STATUS;
-import static iudx.file.server.utilities.Constants.SUCCESS;
-import static iudx.file.server.utilities.Constants.TITLE;
-import static iudx.file.server.utilities.Constants.TYPE_KEY;
+import static iudx.file.server.utilities.Constants.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 

@@ -1,12 +1,7 @@
 package iudx.file.server.validations;
 
 
-import static iudx.file.server.utilities.Constants.HEADER_TOKEN;
-import static iudx.file.server.utilities.Constants.PARAM_END_TIME;
-import static iudx.file.server.utilities.Constants.PARAM_FILE_ID;
-import static iudx.file.server.utilities.Constants.PARAM_ID;
-import static iudx.file.server.utilities.Constants.PARAM_SAMPLE;
-import static iudx.file.server.utilities.Constants.PARAM_START_TIME;
+import static iudx.file.server.utilities.Constants.*;
 import io.vertx.ext.web.api.validation.HTTPRequestValidationHandler;
 import io.vertx.ext.web.api.validation.ParameterTypeValidator;
 import iudx.file.server.validations.types.DateTypeValidator;

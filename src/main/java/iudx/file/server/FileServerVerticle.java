@@ -1,14 +1,10 @@
 package iudx.file.server;
 
 import static iudx.file.server.utilities.Constants.*;
-import java.io.InputStream;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -79,15 +75,11 @@ public class FileServerVerticle extends AbstractVerticle {
   private ClusterManager mgr;
   private VertxOptions options;
   private HttpServer server;
-  private Properties properties;
-  private InputStream inputstream;
   private String keystore;
   private String keystorePassword;
   private Router router;
   // private FileServer fileServer;
   private FileService fileService;
-  private Map<String, String> tokens = new HashMap<String, String>();
-  private Map<String, Date> validity = new HashMap<String, Date>();
   private String allowedDomain, truststore, truststorePassword;
   private String[] allowedDomains;
   private HashSet<String> instanceIDs = new HashSet<String>();
@@ -97,7 +89,6 @@ public class FileServerVerticle extends AbstractVerticle {
 
   private AuthService authService;
   private DBService dbService;
-  private WebClient webClient;
   private QueryParamsValidator queryParamValidator;
 
 
@@ -116,8 +107,6 @@ public class FileServerVerticle extends AbstractVerticle {
 
         vertx = res.result();
         router = Router.router(vertx);
-        properties = new Properties();
-        inputstream = null;
         ValidationHandlerFactory validations = new ValidationHandlerFactory();
         ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
         queryParamValidator = new QueryParamsValidator();
