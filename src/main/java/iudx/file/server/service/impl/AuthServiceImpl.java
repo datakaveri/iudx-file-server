@@ -4,6 +4,7 @@ import static iudx.file.server.utilities.Constants.*;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -59,7 +60,7 @@ public class AuthServiceImpl implements AuthService {
   @Override
   public Future<JsonObject> tokenInterospect(JsonObject request, JsonObject authenticationInfo) {
     Promise<JsonObject> promise = Promise.promise();
-    System.out.println("userRequest : "+request);
+    System.out.println("userRequest : " + request);
     String token = authenticationInfo.getString("token");
     TokenInterospectionResultContainer responseContainer =
         new TokenInterospectionResultContainer();
@@ -67,7 +68,7 @@ public class AuthServiceImpl implements AuthService {
     tipResponseFut.compose(tipResponse -> {
       responseContainer.tipResponse = tipResponse;
       LOGGER.debug("Info: TIP Response is : " + tipResponse);
-      String id = tipResponse.getJsonArray("request").getJsonObject(0).getString("id");
+      String id = request.getString("id");
       return isItemExist(id);
     }).onSuccess(success -> {
       responseContainer.isItemExist = success;
@@ -156,15 +157,15 @@ public class AuthServiceImpl implements AuthService {
     Promise<JsonObject> promise = Promise.promise();
 
     JsonArray tipResponseRequestAttribte = tipResponse.getJsonArray("request");
-    String allowedId = tipResponseRequestAttribte.getJsonObject(0).getString("id");
+    String allowedIds = tipResponseRequestAttribte.getJsonObject(0).getString("id");
     String requestedId = userRequest.getString("id");
-    System.out.println("requestedId :"+requestedId);
+    System.out.println("requestedId :" + requestedId);
     List<String> allowedEndpoints =
         toList(tipResponseRequestAttribte.getJsonObject(0).getJsonArray("apis"));
     String endpoint = authenticationInfo.getString("apiEndpoint");
 
     if (isExist) {
-      if (isAllowedId(allowedId, requestedId) && isAllowedEndpoint(allowedEndpoints, endpoint)) {
+      if (isAllowedId(allowedIds, requestedId) && isAllowedEndpoint(allowedEndpoints, endpoint)) {
         promise.complete();
       } else {
         promise.fail("Operation not allowed.");
@@ -177,15 +178,17 @@ public class AuthServiceImpl implements AuthService {
   }
 
   public boolean isAllowedId(String allowedId, String requestedId) {
+    boolean isResourceLevel = isResourceLevelId(requestedId);
+    String requestedGroupID =
+        isResourceLevel ? requestedId.substring(0, requestedId.lastIndexOf("/")) : requestedId;
     String allowedGroupID = allowedId.substring(0, allowedId.lastIndexOf("/"));
-    //String requestedGroupID = requestedId.substring(0, requestedId.lastIndexOf("/"));
-    LOGGER.debug("allowed ids : "+allowedId);
-    LOGGER.debug("allowed group id : "+allowedGroupID);
     
-    LOGGER.debug("requested id :"+requestedId);
-    //LOGGER.debug("requested group id : "+requestedGroupID);
-    
-    return allowedId.equals(requestedId) || allowedGroupID.equals(requestedId);
+    LOGGER.debug("allowed ids : " + allowedId);
+    LOGGER.debug("allowed group id : " + allowedGroupID);
+    LOGGER.debug("requested id :" + requestedId);
+    LOGGER.debug("requested group id : " + requestedGroupID);
+
+    return allowedId.equals(requestedId) || allowedGroupID.equals(requestedGroupID);
   }
 
   public boolean isAllowedEndpoint(List<String> allowedEndpoints, String endpoint) {
@@ -204,6 +207,11 @@ public class AuthServiceImpl implements AuthService {
     } else {
       return (List<T>) arr.getList();
     }
+  }
+
+
+  public boolean isResourceLevelId(String id) {
+    return id.split("/").length >= 5;
   }
 
 }

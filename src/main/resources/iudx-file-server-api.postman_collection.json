@@ -17,8 +17,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "userToken",
-								"disabled": true
+								"value": "{{consumerToken}}"
 							},
 							{
 								"key": "fileServerToken",
@@ -31,13 +30,13 @@
 							"mode": "formdata",
 							"formdata": [
 								{
-									"key": "file1",
+									"key": "file",
 									"type": "file",
-									"src": "/home/kailash/Downloads/test.txt"
+									"src": "/home/kailash/Desktop/test.txt"
 								},
 								{
 									"key": "id",
-									"value": "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/file.iudx.org.in/surat-itms-additional-info/surat-itms-depot-info",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
 									"type": "text"
 								},
 								{
@@ -71,8 +70,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "userToken",
-								"disabled": true
+								"value": "{{consumerToken}}"
 							},
 							{
 								"key": "fileServerToken",
@@ -87,11 +85,11 @@
 								{
 									"key": "file1",
 									"type": "file",
-									"src": "/home/kailash/Downloads/test.txt"
+									"src": "/home/kailash/Desktop/test.txt"
 								},
 								{
 									"key": "id",
-									"value": "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/file.iudx.org.in/surat-itms-additional-info",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information",
 									"type": "text"
 								},
 								{
@@ -125,8 +123,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "userToken",
-								"disabled": true
+								"value": "{{consumerToken}}"
 							},
 							{
 								"key": "fileServerToken",
@@ -141,18 +138,22 @@
 								{
 									"key": "file1",
 									"type": "file",
-									"src": "/home/kailash/Downloads/5m-Sales-Records/5m Sales Records.csv"
+									"src": "/home/kailash/Desktop/test.txt"
 								},
 								{
 									"key": "id",
-									"value": "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/file.iudx.org.in/surat-itms-additional-info/surat-itms-depot-info",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
 									"type": "text"
 								},
 								{
-									"key": "isSample",
-									"value": "true",
-									"type": "text",
-									"disabled": true
+									"key": "startTime",
+									"value": "2020-09-05T00:00:00Z",
+									"type": "text"
+								},
+								{
+									"key": "endTime",
+									"value": "2020-09-15T00:00:00Z",
+									"type": "text"
 								}
 							]
 						},
@@ -180,8 +181,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "userToken",
-								"disabled": true
+								"value": "{{consumerToken}}"
 							},
 							{
 								"key": "fileServerToken",
@@ -196,18 +196,181 @@
 								{
 									"key": "file1",
 									"type": "file",
-									"src": "/home/kailash/Downloads/5m-Sales-Records/5m Sales Records.csv"
+									"src": "/home/kailash/Desktop/test.txt"
 								},
 								{
 									"key": "id",
-									"value": "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/file.iudx.org.in/surat-itms-additional-info",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information",
+									"type": "text"
+								},
+								{
+									"key": "startTime",
+									"value": "2020-09-05T00:00:00Z",
+									"type": "text"
+								},
+								{
+									"key": "endTime",
+									"value": "2020-09-25T00:00:00Z",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://localhost:8443/iudx/v1/upload",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8443",
+							"path": [
+								"iudx",
+								"v1",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "IUDX file upload - 400 (No id param in request)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"type": "text",
+								"value": "authtest.iudx.io/kailash.adhikari@india.nec.com/ebc50279bd4cae670444499fcbf36f32"
+							},
+							{
+								"key": "fileServerToken",
+								"type": "text",
+								"value": "fcff7e13-eb2d-4843-a2a2-99eedbf73c12",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/home/kailash/Desktop/test.txt"
+								},
+								{
+									"key": "id1",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
 									"type": "text"
 								},
 								{
 									"key": "isSample",
 									"value": "true",
-									"type": "text",
-									"disabled": true
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://localhost:8443/iudx/v1/upload",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8443",
+							"path": [
+								"iudx",
+								"v1",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "IUDX file upload - 400 (No id in request) Copy",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"type": "text",
+								"value": "authtest.iudx.io/kailash.adhikari@india.nec.com/ebc50279bd4cae670444499fcbf36f32"
+							},
+							{
+								"key": "fileServerToken",
+								"type": "text",
+								"value": "fcff7e13-eb2d-4843-a2a2-99eedbf73c12",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/home/kailash/Desktop/test.txt"
+								},
+								{
+									"key": "id1",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
+									"type": "text"
+								},
+								{
+									"key": "isSample",
+									"value": "true",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://localhost:8443/iudx/v1/upload",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8443",
+							"path": [
+								"iudx",
+								"v1",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "IUDX file upload - 400 (Invalid isSample value)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"type": "text",
+								"value": "authtest.iudx.io/kailash.adhikari@india.nec.com/ebc50279bd4cae670444499fcbf36f32"
+							},
+							{
+								"key": "fileServerToken",
+								"type": "text",
+								"value": "fcff7e13-eb2d-4843-a2a2-99eedbf73c12",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/home/kailash/Desktop/test.txt"
+								},
+								{
+									"key": "id1",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
+									"type": "text"
+								},
+								{
+									"key": "isSample",
+									"value": "true1",
+									"type": "text"
 								}
 							]
 						},
@@ -233,12 +396,18 @@
 			"name": "download",
 			"item": [
 				{
-					"name": "IUDX file download - (Sample file )",
+					"name": "IUDX file download - RL (Sample file )",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{consumerToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/download?file-id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/file.iudx.org.in/surat-itms-additional-info/surat-itms-depot-info/sample.txt",
+							"raw": "https://localhost:8443/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/sample.txt",
 							"protocol": "https",
 							"host": [
 								"localhost"
@@ -252,7 +421,73 @@
 							"query": [
 								{
 									"key": "file-id",
-									"value": "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/file.iudx.org.in/surat-itms-additional-info/surat-itms-depot-info/sample.txt"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/sample.txt"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "IUDX file download -400 (invalid file id)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "authtest.iudx.io/kailash.adhikari@india.nec.com/3f60f585870dc24746287efe3b9c309f",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://localhost:8443/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8443",
+							"path": [
+								"iudx",
+								"v1",
+								"download"
+							],
+							"query": [
+								{
+									"key": "file-id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "IUDX file download - GL (Sample file )",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{consumerToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://localhost:8443/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/sample.txt",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8443",
+							"path": [
+								"iudx",
+								"v1",
+								"download"
+							],
+							"query": [
+								{
+									"key": "file-id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/sample.txt"
 								}
 							]
 						}
@@ -263,9 +498,15 @@
 					"name": "IUDX file download -Resource level (Archive file )",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{consumerToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/download?file-id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/file.iudx.org.in/surat-itms-additional-info/surat-itms-depot-info/992cad13-6725-42ab-bcee-e4e53fda03a1.csv",
+							"raw": "https://localhost:8443/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/8185010f-705d-4966-ac44-2050887c68f3.txt",
 							"protocol": "https",
 							"host": [
 								"localhost"
@@ -279,7 +520,7 @@
 							"query": [
 								{
 									"key": "file-id",
-									"value": "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/file.iudx.org.in/surat-itms-additional-info/surat-itms-depot-info/992cad13-6725-42ab-bcee-e4e53fda03a1.csv"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/8185010f-705d-4966-ac44-2050887c68f3.txt"
 								}
 							]
 						}
@@ -290,9 +531,15 @@
 					"name": "IUDX file download 404 -Resource level (Archive file )",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{consumerToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/download?file-id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/file.iudx.org.in/surat-itms-additional-info/surat-itms-depot-info/992cad13-6725-42ab-bcee-e4e53fda03.csv",
+							"raw": "https://localhost:8443/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/8185010f-705d-4966-ac44-2050887c68f3_invalid.txt",
 							"protocol": "https",
 							"host": [
 								"localhost"
@@ -306,7 +553,7 @@
 							"query": [
 								{
 									"key": "file-id",
-									"value": "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/file.iudx.org.in/surat-itms-additional-info/surat-itms-depot-info/992cad13-6725-42ab-bcee-e4e53fda03.csv"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/8185010f-705d-4966-ac44-2050887c68f3_invalid.txt"
 								}
 							]
 						}
@@ -317,9 +564,15 @@
 					"name": "IUDX file download -Group level (Archive file )",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{consumerToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/download?file-id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/file.iudx.org.in/surat-itms-additional-info/bf7b00db-0b5f-489f-b33e-3ae901144afc.csv",
+							"raw": "https://localhost:8443/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/96e50bbb-1a8c-4503-92c9-2760b437ab73.txt",
 							"protocol": "https",
 							"host": [
 								"localhost"
@@ -333,7 +586,7 @@
 							"query": [
 								{
 									"key": "file-id",
-									"value": "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/file.iudx.org.in/surat-itms-additional-info/bf7b00db-0b5f-489f-b33e-3ae901144afc.csv"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/96e50bbb-1a8c-4503-92c9-2760b437ab73.txt"
 								}
 							]
 						}
@@ -344,9 +597,15 @@
 					"name": "IUDX file download 404 -Group level (Archive file )",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{consumerToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/download?file-id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/file.iudx.org.in/surat-itms-additional-info/bf7b00db-0b5f-489f-b33e-3ae901144.csv",
+							"raw": "https://localhost:8443/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/96e50bbb-1a8c-4503-92c9-2760b437ab73_invalid.txt",
 							"protocol": "https",
 							"host": [
 								"localhost"
@@ -360,7 +619,7 @@
 							"query": [
 								{
 									"key": "file-id",
-									"value": "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/file.iudx.org.in/surat-itms-additional-info/bf7b00db-0b5f-489f-b33e-3ae901144.csv"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/96e50bbb-1a8c-4503-92c9-2760b437ab73_invalid.txt"
 								}
 							]
 						}
@@ -373,12 +632,18 @@
 			"name": "delete",
 			"item": [
 				{
-					"name": "IUDX file delete - 404 (sample file)",
+					"name": "IUDX file delete - RL 404 (sample file)",
 					"request": {
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{consumerToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/delete?file-id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/file.iudx.org.in/surat-itms-additional-info/surat-itms-depot-info/sample1.txt",
+							"raw": "https://localhost:8443/iudx/v1/delete?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/sample1.txt",
 							"protocol": "https",
 							"host": [
 								"localhost"
@@ -392,7 +657,7 @@
 							"query": [
 								{
 									"key": "file-id",
-									"value": "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/file.iudx.org.in/surat-itms-additional-info/surat-itms-depot-info/sample1.txt"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/sample1.txt"
 								}
 							]
 						}
@@ -454,12 +719,18 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file delete - (sample file)",
+					"name": "IUDX file delete -RL  (sample file)",
 					"request": {
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{consumerToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/delete?file-id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/file.iudx.org.in/surat-itms-additional-info/surat-itms-depot-info/sample.txt",
+							"raw": "https://localhost:8443/iudx/v1/delete?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/sample.txt",
 							"protocol": "https",
 							"host": [
 								"localhost"
@@ -473,7 +744,40 @@
 							"query": [
 								{
 									"key": "file-id",
-									"value": "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/file.iudx.org.in/surat-itms-additional-info/surat-itms-depot-info/sample.txt"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/sample.txt"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "IUDX file delete -GL (sample file)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{consumerToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://localhost:8443/iudx/v1/delete?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/sample.txt",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8443",
+							"path": [
+								"iudx",
+								"v1",
+								"delete"
+							],
+							"query": [
+								{
+									"key": "file-id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/sample.txt"
 								}
 							]
 						}
@@ -484,9 +788,15 @@
 					"name": "IUDX file delete - RL  (Archive file)",
 					"request": {
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{consumerToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/delete?file-id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/file.iudx.org.in/surat-itms-additional-info/surat-itms-depot-info/992cad13-6725-42ab-bcee-e4e53fda03a1.csv",
+							"raw": "https://localhost:8443/iudx/v1/delete?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/69b88e29-f3ee-4ef0-a289-ce3fb8572a24.txt",
 							"protocol": "https",
 							"host": [
 								"localhost"
@@ -500,7 +810,7 @@
 							"query": [
 								{
 									"key": "file-id",
-									"value": "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/file.iudx.org.in/surat-itms-additional-info/surat-itms-depot-info/992cad13-6725-42ab-bcee-e4e53fda03a1.csv"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/69b88e29-f3ee-4ef0-a289-ce3fb8572a24.txt"
 								}
 							]
 						}
@@ -528,6 +838,51 @@
 								{
 									"key": "file-id",
 									"value": "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/file.iudx.org.in/surat-itms-additional-info/bf7b00db-0b5f-489f-b33e-3ae901144afc.csv"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "query",
+			"item": [
+				{
+					"name": "Query",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:8443/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&time=2020-09-10T00:00:00Z&endTime=2020-09-15T00:00:00Z&timerel=during",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8443",
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "time",
+									"value": "2020-09-10T00:00:00Z"
+								},
+								{
+									"key": "endTime",
+									"value": "2020-09-15T00:00:00Z"
+								},
+								{
+									"key": "timerel",
+									"value": "during"
 								}
 							]
 						}

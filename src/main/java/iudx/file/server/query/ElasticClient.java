@@ -169,4 +169,54 @@ public class ElasticClient {
     return this;
   }
 
+
+  public ElasticClient deleteAsync(String index, String id, String query,
+      Handler<AsyncResult<JsonObject>> deletetHandler) {
+    StringBuilder deleteURI = new StringBuilder(index);
+    deleteURI.append("/_delete_by_query");
+
+    Request deleteRequest = new Request("POST", deleteURI.toString());
+    deleteRequest.setJsonEntity(query);
+
+    client.performRequestAsync(deleteRequest, new ResponseListener() {
+
+      @Override
+      public void onSuccess(Response response) {
+        try {
+          JsonObject responseJson = new JsonObject(EntityUtils.toString(response.getEntity()));
+          JsonArray failures = responseJson.getJsonArray("failures");
+          if (failures != null && failures.size() > 0) {
+            responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
+                .setMessage("Error while deleting.");
+            deletetHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+          }
+          responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(200);
+          deletetHandler.handle(Future.succeededFuture(responseBuilder.getResponse()));
+        } catch (IOException e) {
+          LOGGER.error("IO Execption from Database: " + e.getMessage());
+          JsonObject ioError = new JsonObject(e.getMessage());
+          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(ioError);
+          deletetHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+        }
+      }
+
+      @Override
+      public void onFailure(Exception ex) {
+        try {
+          String error = ex.getMessage().substring(ex.getMessage().indexOf("{"),
+              ex.getMessage().lastIndexOf("}") + 1);
+          JsonObject dbError = new JsonObject(error);
+          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(dbError);
+          deletetHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+        } catch (DecodeException jsonError) {
+          LOGGER.error("Json parsing exception: " + jsonError);
+          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
+              .setMessage(BAD_PARAMETERS);
+          deletetHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+        }
+      }
+    });
+    return this;
+  }
+
 }

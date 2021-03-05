@@ -63,7 +63,7 @@ public class LocalStorageFileServiceImpl implements FileService {
               metadata.put("content-transfer-encoding", fileUpload.contentTransferEncoding());
               metadata.put("char-set", fileUpload.charSet());
               metadata.put("size", fileUpload.size() + " Bytes");
-              metadata.put("uploaded path", fileUploadPath);
+              metadata.put("uploaded_path", fileUploadPath);
               metadata.put("file-id", uuid + "." + fileExtension);
               handler.handle(Future.succeededFuture(metadata));
             } else {

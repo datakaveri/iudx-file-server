@@ -16,6 +16,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.file.FileSystem;
@@ -113,9 +114,6 @@ public class FileServerVerticle extends AbstractVerticle {
 
         authService = new AuthServiceImpl(vertx, getWebClient(vertx, config()), config());
         dbService = new DBServiceImpl(config());
-        // router.route().handler(BodyHandler.create());
-        // router.route().handler(AuthHandler.create(authService));
-
 
         directory = config().getString("upload_dir");
         temp_directory = config().getString("tmp_dir");
@@ -196,7 +194,6 @@ public class FileServerVerticle extends AbstractVerticle {
     });
 
     LOGGER.info("FileServerVerticle started successfully");
-    // for unit testing - later it must be removed
   }
 
   /**
@@ -227,7 +224,7 @@ public class FileServerVerticle extends AbstractVerticle {
         uploadPath.append("/" + fileIdComponent[4]);
       sampleFileUpload(response, formParam, files, "sample", uploadPath.toString(), id);
     } else {
-      if(!formParam.contains("startTime") && !formParam.contains("endTime")) {
+      if (!formParam.contains("startTime") && !formParam.contains("endTime")) {
         ValidationException ex = new ValidationException("Mandatory fields required");
         ex.setParameterName("startTime/endTime");
         routingContext.fail(ex);
@@ -253,9 +250,9 @@ public class FileServerVerticle extends AbstractVerticle {
       if (handler.succeeded()) {
         JsonObject uploadResult = handler.result();
         JsonObject responseJson = new JsonObject();
-        String fileId=id + "/" +uploadResult.getString("file-id");
-        responseJson.put("file-id",fileId);
-        insertFileRecord(params, fileId);
+        String fileId = id + "/" + uploadResult.getString("file-id");
+        responseJson.put("file-id", fileId);
+        // insertFileRecord(params, fileId); no need to insert in DB
         response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
             .setStatusCode(HttpStatus.SC_OK)
             .end(responseJson.toString());
@@ -276,17 +273,24 @@ public class FileServerVerticle extends AbstractVerticle {
   private void archiveFileUpload(HttpServerResponse response, MultiMap params,
       Set<FileUpload> files,
       String filePath, String id) {
-    
+
     fileService.upload(files, filePath, handler -> {
       if (handler.succeeded()) {
         JsonObject uploadResult = handler.result();
         JsonObject responseJson = new JsonObject();
-        String fileId=id + "/" +uploadResult.getString("file-id");
-        responseJson.put("file-id",fileId);
-        insertFileRecord(params, fileId);
-        response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .setStatusCode(HttpStatus.SC_OK)
-            .end(responseJson.toString());
+        String fileId = id + "/" + uploadResult.getString("file-id");
+        responseJson.put("file-id", fileId);
+        saveFileRecord(params, fileId).onComplete(dbInsertHandler -> {
+          if (dbInsertHandler.succeeded()) {
+            response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .setStatusCode(HttpStatus.SC_OK)
+                .end(responseJson.toString());
+          } else {
+            // DB insert fail, run Compensating service to clean/undo upload.
+            vertx.fileSystem().deleteBlocking(responseJson.getString("uploaded_path"));
+            processResponse(response, "File upload failed due to DB error.");
+          }
+        });
       } else {
         processResponse(response, handler.cause().getMessage());
       }
@@ -294,7 +298,8 @@ public class FileServerVerticle extends AbstractVerticle {
   }
 
 
-  private void insertFileRecord(MultiMap formParams, String fileId) {
+  private Future<Boolean> saveFileRecord(MultiMap formParams, String fileId) {
+    Promise<Boolean> promise = Promise.promise();
     JsonObject json = new JsonObject();
     json.put("id", formParams.get("id"));
     json.put("timeRange", new JsonObject()
@@ -302,15 +307,17 @@ public class FileServerVerticle extends AbstractVerticle {
         .put("endTime", formParams.get("endTime")));
     json.put("file-id", fileId);
     // insert record in elastic index.
-    dbService.insert(json, handler->{
-      if(handler.succeeded()) {
+    dbService.save(json, handler -> {
+      if (handler.succeeded()) {
         LOGGER.info("Record inserted in DB");
-      }else {
+        promise.complete();
+      } else {
         LOGGER.error("failed to PUT record");
         LOGGER.error(json);
+        promise.fail("failed to PUT record");
       }
     });
-
+    return promise.future();
   }
 
   /**
@@ -373,6 +380,17 @@ public class FileServerVerticle extends AbstractVerticle {
   }
 
 
+  private void deleteFileRecord(String id) {
+    dbService.delete(id, handler -> {
+      if (handler.succeeded()) {
+        LOGGER.info("Record deleted in DB");
+      } else {
+        LOGGER.error("failed to DELETE record");
+        LOGGER.error(id);
+      }
+    });
+  }
+
   /**
    * Download File service allows to download a file from the server after authenticating the user.
    */
@@ -389,14 +407,31 @@ public class FileServerVerticle extends AbstractVerticle {
     // group level(pos:5) and resource level(pos:4)
     String fileUUID = fileIdComponent.length >= 6 ? fileIdComponent[5] : fileIdComponent[4];
     System.out.println(fileUUID);
-    if (fileUUID.contains("sample") && fileIdComponent.length >= 6) {
-      uploadDir.append("/" + fileIdComponent[4]);
+    boolean isArchiveFile = true;
+    if (fileUUID.contains("sample")) {
+      isArchiveFile = false;
+      if (fileIdComponent.length >= 6) {
+        uploadDir.append("/" + fileIdComponent[4]);
+      }
     }
     System.out.println(uploadDir);
+    System.out.println("is archieve : " + isArchiveFile);
+    if (isArchiveFile) {
+      deleteArchiveFile(response, id, fileUUID, uploadDir.toString());
+    } else {
+      deleteSampleFile(response, id, fileUUID, uploadDir.toString());
+    }
+
+
+
+  }
+
+  private void deleteSampleFile(HttpServerResponse response, String id, String fileUUID,
+      String uploadDir) {
+    System.out.println("delete sample file");
     fileService.delete(fileUUID, uploadDir.toString(), handler -> {
       if (handler.succeeded()) {
         JsonObject deleteResult = handler.result();
-        LOGGER.info(deleteResult);
         response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
             .setStatusCode(HttpStatus.SC_OK)
             .end(new RestResponse.Builder()
@@ -406,6 +441,31 @@ public class FileServerVerticle extends AbstractVerticle {
                 .toString());
       } else {
         processResponse(response, handler.cause().getMessage());
+      }
+    });
+  }
+
+  private void deleteArchiveFile(HttpServerResponse response, String id, String fileUUID,
+      String uploadDir) {
+    dbService.delete(id, dbDeleteHandler -> {
+      if (dbDeleteHandler.succeeded()) {
+        fileService.delete(fileUUID, uploadDir.toString(), handler -> {
+          if (handler.succeeded()) {
+            JsonObject deleteResult = handler.result();
+            LOGGER.info(deleteResult);
+            response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .setStatusCode(HttpStatus.SC_OK)
+                .end(new RestResponse.Builder()
+                    .type(200)
+                    .title(deleteResult.getString("title"))
+                    .details("File with id : " + id + " deleted successfully").build().toJson()
+                    .toString());
+          } else {
+            processResponse(response, handler.cause().getMessage());
+          }
+        });
+      } else {
+        processResponse(response, dbDeleteHandler.cause().getMessage());
       }
     });
   }
@@ -526,5 +586,5 @@ public class FileServerVerticle extends AbstractVerticle {
     }
     return Optional.of(queryParams);
   }
-  
+
 }
