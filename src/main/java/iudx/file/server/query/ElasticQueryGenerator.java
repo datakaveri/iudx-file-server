@@ -21,15 +21,18 @@ public class ElasticQueryGenerator {
 
   // TODO : discuss if it will be better to include other filters.
   public String deleteQuery(String id) {
-    /*
-     * JsonObject json=new JsonObject(); JsonObject matchJson=new JsonObject();
-     * matchJson.put("file-id", id); json.put("match", matchJson);
-     */
+    
+      JsonObject json=new JsonObject(); 
+      JsonObject matchJson=new JsonObject();
+      matchJson.put("fileId", id); 
+      json.put("match", matchJson);
+     
 
-    BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
-        .filter(QueryBuilders.termsQuery("file-id", id));
+    /*
+     * BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
+     * .filter(QueryBuilders.termsQuery("file-id", id));
+     */
     
-    
-    return boolQuery.toString();
+    return json.toString();
   }
 }

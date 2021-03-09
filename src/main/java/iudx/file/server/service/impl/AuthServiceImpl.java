@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -68,7 +69,7 @@ public class AuthServiceImpl implements AuthService {
     tipResponseFut.compose(tipResponse -> {
       responseContainer.tipResponse = tipResponse;
       LOGGER.debug("Info: TIP Response is : " + tipResponse);
-      String id = request.getString("id");
+      String id = request.getJsonArray("ids").getString(0);
       return isItemExist(id);
     }).onSuccess(success -> {
       responseContainer.isItemExist = success;
@@ -157,15 +158,24 @@ public class AuthServiceImpl implements AuthService {
     Promise<JsonObject> promise = Promise.promise();
 
     JsonArray tipResponseRequestAttribte = tipResponse.getJsonArray("request");
-    String allowedIds = tipResponseRequestAttribte.getJsonObject(0).getString("id");
-    String requestedId = userRequest.getString("id");
-    System.out.println("requestedId :" + requestedId);
-    List<String> allowedEndpoints =
-        toList(tipResponseRequestAttribte.getJsonObject(0).getJsonArray("apis"));
+
+    List<String> allowedIds = extractAllowedIds(tipResponse);
+    List<String> allowedGroupIds = allowedIds.stream()
+        .map(id -> id.substring(0, id.lastIndexOf("/")))
+        .collect(Collectors.toList());
+
+
+    List<String> requestedIds = toList(userRequest.getJsonArray("ids"));
+    List<String> requestedGroupIds = requestedIds.stream()
+        .map(id -> id.substring(0, id.lastIndexOf("/")))
+        .collect(Collectors.toList());
+
+
     String endpoint = authenticationInfo.getString("apiEndpoint");
 
     if (isExist) {
-      if (isAllowedId(allowedIds, requestedId) && isAllowedEndpoint(allowedEndpoints, endpoint)) {
+      if (isAllowedId(allowedIds, requestedIds)
+          && isAllowedEndpoint(endpoint, tipResponseRequestAttribte, requestedGroupIds)) {
         promise.complete();
       } else {
         promise.fail("Operation not allowed.");
@@ -177,22 +187,53 @@ public class AuthServiceImpl implements AuthService {
     return promise.future();
   }
 
-  public boolean isAllowedId(String allowedId, String requestedId) {
-    boolean isResourceLevel = isResourceLevelId(requestedId);
-    String requestedGroupID =
-        isResourceLevel ? requestedId.substring(0, requestedId.lastIndexOf("/")) : requestedId;
-    String allowedGroupID = allowedId.substring(0, allowedId.lastIndexOf("/"));
-    
-    LOGGER.debug("allowed ids : " + allowedId);
-    LOGGER.debug("allowed group id : " + allowedGroupID);
-    LOGGER.debug("requested id :" + requestedId);
-    LOGGER.debug("requested group id : " + requestedGroupID);
+  public boolean isAllowedId(List<String> allowedIds, List<String> requestedIds) {
 
-    return allowedId.equals(requestedId) || allowedGroupID.equals(requestedGroupID);
+    List<String> requestedGroupIDs = requestedIds.stream()
+        .map(id -> isResourceLevelId(id) ? id.substring(0, id.lastIndexOf("/")) : id)
+        .collect(Collectors.toList());
+
+    List<String> allowedGroupIDs = allowedIds.stream()
+        .map(id -> id.substring(0, id.lastIndexOf("/")))
+        .collect(Collectors.toList());;
+
+    LOGGER.debug("allowed ids : " + allowedIds);
+    LOGGER.debug("allowed group id : " + allowedGroupIDs);
+    LOGGER.debug("requested id :" + requestedIds);
+    LOGGER.debug("requested group id : " + requestedGroupIDs);
+
+    return requestedGroupIDs.stream().anyMatch(item -> allowedGroupIDs.contains(item));
   }
 
   public boolean isAllowedEndpoint(List<String> allowedEndpoints, String endpoint) {
     return allowedEndpoints.contains(endpoint);
+  }
+
+  private boolean isAllowedEndpoint(String endpoint, JsonArray tipResponseRequestArray,
+      List<String> requestedGroupIds) {
+    if (tipResponseRequestArray != null) {
+      for (int i = 0; i < tipResponseRequestArray.size(); i++) {
+        JsonObject json = tipResponseRequestArray.getJsonObject(i);
+        String id = json.getString("id");
+        JsonArray allowedApis = json.getJsonArray("apis");
+        String allowedGroupId = id.substring(0, id.lastIndexOf("/"));
+        if (requestedGroupIds.contains(allowedGroupId)) {
+          if (!allowedApis.contains(endpoint)) {
+            return false;
+          }
+        }
+      }
+    }
+    return true;
+  }
+
+  private List<String> extractAllowedIds(JsonObject json) {
+    List<String> allowedIds = new ArrayList<String>();
+    json.getJsonArray("request").forEach(requestJson -> {
+      JsonObject idJson = (JsonObject) requestJson;
+      allowedIds.add(idJson.getString("id"));
+    });
+    return allowedIds;
   }
 
   private class TokenInterospectionResultContainer {

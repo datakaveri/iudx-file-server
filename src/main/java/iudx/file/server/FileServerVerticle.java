@@ -251,7 +251,7 @@ public class FileServerVerticle extends AbstractVerticle {
         JsonObject uploadResult = handler.result();
         JsonObject responseJson = new JsonObject();
         String fileId = id + "/" + uploadResult.getString("file-id");
-        responseJson.put("file-id", fileId);
+        responseJson.put("fileId", fileId);
         // insertFileRecord(params, fileId); no need to insert in DB
         response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
             .setStatusCode(HttpStatus.SC_OK)
@@ -279,7 +279,7 @@ public class FileServerVerticle extends AbstractVerticle {
         JsonObject uploadResult = handler.result();
         JsonObject responseJson = new JsonObject();
         String fileId = id + "/" + uploadResult.getString("file-id");
-        responseJson.put("file-id", fileId);
+        responseJson.put("fileId", fileId);
         saveFileRecord(params, fileId).onComplete(dbInsertHandler -> {
           if (dbInsertHandler.succeeded()) {
             response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
@@ -305,7 +305,7 @@ public class FileServerVerticle extends AbstractVerticle {
     json.put("timeRange", new JsonObject()
         .put("startTime", formParams.get("startTime"))
         .put("endTime", formParams.get("endTime")));
-    json.put("file-id", fileId);
+    json.put("fileId", fileId);
     // insert record in elastic index.
     dbService.save(json, handler -> {
       if (handler.succeeded()) {
