@@ -167,7 +167,7 @@ public class AuthServiceImpl implements AuthService {
 
     List<String> requestedIds = toList(userRequest.getJsonArray("ids"));
     List<String> requestedGroupIds = requestedIds.stream()
-        .map(id -> id.substring(0, id.lastIndexOf("/")))
+        .map(id -> isResourceLevelId(id) ? id.substring(0, id.lastIndexOf("/")) : id)
         .collect(Collectors.toList());
 
 
@@ -211,20 +211,26 @@ public class AuthServiceImpl implements AuthService {
 
   private boolean isAllowedEndpoint(String endpoint, JsonArray tipResponseRequestArray,
       List<String> requestedGroupIds) {
+    LOGGER.debug("isAllowedEndpoint");
+    boolean isAllowed=false;
     if (tipResponseRequestArray != null) {
       for (int i = 0; i < tipResponseRequestArray.size(); i++) {
         JsonObject json = tipResponseRequestArray.getJsonObject(i);
         String id = json.getString("id");
+        LOGGER.debug("id :"+id);
         JsonArray allowedApis = json.getJsonArray("apis");
+        LOGGER.debug("apis :"+allowedApis);
         String allowedGroupId = id.substring(0, id.lastIndexOf("/"));
+        LOGGER.debug("allowedGroupId :"+allowedGroupId);
         if (requestedGroupIds.contains(allowedGroupId)) {
-          if (!allowedApis.contains(endpoint)) {
-            return false;
+          if (allowedApis.contains(endpoint)) {
+            isAllowed=true;
+            break;
           }
         }
       }
     }
-    return true;
+    return isAllowed;
   }
 
   private List<String> extractAllowedIds(JsonObject json) {

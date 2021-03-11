@@ -147,6 +147,24 @@ public class FileServerVerticle extends AbstractVerticle {
             .handler(AuthHandler.create(authService))
             .handler(this::delete)
             .failureHandler(validationsFailureHandler);
+        
+        
+        
+        router.get("/apis/spec")
+            .produces("application/json")
+            .handler(routingContext -> {
+              HttpServerResponse response = routingContext.response();
+              response.sendFile("docs/openapi.yaml");
+            });
+        /* Get redoc */
+        router.get("/apis")
+            .produces("text/html")
+            .handler(routingContext -> {
+              HttpServerResponse response = routingContext.response();
+              response.sendFile("docs/apidoc.html");
+            });
+
+        
 
         /* Read the configuration and set the HTTPs server properties. */
         ClientAuth clientAuth = ClientAuth.REQUEST;
@@ -286,9 +304,16 @@ public class FileServerVerticle extends AbstractVerticle {
                 .setStatusCode(HttpStatus.SC_OK)
                 .end(responseJson.toString());
           } else {
+            LOGGER.debug(dbInsertHandler.cause());
             // DB insert fail, run Compensating service to clean/undo upload.
-            vertx.fileSystem().deleteBlocking(responseJson.getString("uploaded_path"));
-            processResponse(response, "File upload failed due to DB error.");
+            String fileIdComponent[] = getFileIdComponents(responseJson.getString("fileId"));
+            StringBuilder uploadDir = new StringBuilder();
+            uploadDir.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
+            String fileUUID = fileIdComponent.length >= 6 ? fileIdComponent[5] : fileIdComponent[4];
+            
+            LOGGER.debug("deleting file :"+fileUUID);
+            vertx.fileSystem().deleteBlocking(directory+"/"+uploadDir+"/"+fileUUID);
+            processResponse(response, dbInsertHandler.cause().getMessage());
           }
         });
       } else {
@@ -313,8 +338,7 @@ public class FileServerVerticle extends AbstractVerticle {
         promise.complete();
       } else {
         LOGGER.error("failed to PUT record");
-        LOGGER.error(json);
-        promise.fail("failed to PUT record");
+        promise.fail(handler.cause().getMessage());
       }
     });
     return promise.future();

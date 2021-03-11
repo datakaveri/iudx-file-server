@@ -65,6 +65,7 @@ public class DBServiceImpl implements DBService {
       if (insertHandler.succeeded()) {
         handler.handle(Future.succeededFuture(insertHandler.result()));
       } else {
+        System.out.println(insertHandler.cause().getMessage());
         handler.handle(Future.failedFuture(insertHandler.cause().getMessage()));
       }
     });

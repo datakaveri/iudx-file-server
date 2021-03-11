@@ -18,7 +18,7 @@ public class AuthHandler implements Handler<RoutingContext> {
 
 
   private static AuthService authService;
-  private final List<String> noUserAuthRequired = List.of("/ngsi-ld/v1/temporal/entities");
+  private final List<String> noUserAuthRequired = List.of("/apis/specs","/apis");
 
   public static AuthHandler create(AuthService authServiceImpl) {
     authService = authServiceImpl;
