@@ -1,42 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="WARN">
+<Configuration status="WARN" shutdownHook="disable">
     <Properties>
         <Property name="LOG_EXCEPTION_CONVERSION_WORD">%xEx</Property>
         <Property name="LOG_LEVEL_PATTERN">%p</Property>
-         <Property name="CONSOLE_LOG_PATTERN">[%style{%d{MM-dd HH:mm:ss}}][%highlight{${LOG_LEVEL_PATTERN}}][%c]%style{:}{faint}%m%n${sys:LOG_EXCEPTION_CONVERSION_WORD}</Property>
+        <!-- <Property name="CONSOLE_LOG_PATTERN">[%style{%d{MM-dd HH:mm:ss}}][%highlight{${LOG_LEVEL_PATTERN}}][%c]%style{:}{faint}%m%n${sys:LOG_EXCEPTION_CONVERSION_WORD}</Property> -->
         <!-- <Property name="FILE_LOG_PATTERN">[%d{MM-dd HH:mm:ss}][${LOG_LEVEL_PATTERN}][%c]:%m%n${sys:LOG_EXCEPTION_CONVERSION_WORD}</Property> -->
-        <!--  <Property name="CONSOLE_LOG_PATTERN">time=%d{YYYY-MM-dd'T'HH:mm:ssZ} level="%highlight{${LOG_LEVEL_PATTERN}}" loggerName=%c message="%m" source=rs sourceUrl=$${env:RS_URL} exception="%xThrowable{separator(|)}"%n</Property>  -->
+	<Property name="CONSOLE_LOG_PATTERN">time=%d{YYYY-MM-dd'T'HH:mm:ssZ} level="%highlight{${LOG_LEVEL_PATTERN}}" loggerName=%c message="%m" source=fs sourceUrl=$${env:FS_URL:-http://localhost} exception="%xThrowable{separator(|)}"%n</Property>
     </Properties>
     <Appenders>
         <Console name="ConsoleAppender" target="SYSTEM_OUT" follow="true">
             <PatternLayout pattern="${CONSOLE_LOG_PATTERN}" />
         </Console>
-		<!-- <RollingFile name="RollingFile" append="false" ignoreExceptions="false">
-            <FileName>/tmp/iudx/rs.log</FileName>
-            <FilePattern>/tmp/iudx/rs.log</FilePattern>
-            <JSONLayout compact="true" eventEol="true" stacktraceAsString="true" includeTimeMillis="true">
-                <KeyValuePair key="source" value="rs"/>
-                <KeyValuePair key="sourceURL" value="$${env:RS_URL}"/>
-            </JSONLayout>
-			<Policies>
-				<SizeBasedTriggeringPolicy size="10 MB"/>
-			</Policies>
-			<DefaultRolloverStrategy max="1" />
-		</RollingFile> -->
     </Appenders>
     <Loggers>
-        <logger name="iudx.file.server" level="DEBUG"
+        <logger name="iudx.file.server" level="${env:LOG_LEVEL:-DEBUG}"
             additivity="false">
             <appender-ref ref="ConsoleAppender" />
-			<!-- <appender-ref ref="RollingFile" /> -->
         </logger>
-        <logger name="com.hazelcast" level="DEBUG" additivity="false">
+        <logger name="com.hazelcast" level="ERROR" additivity="false">
             <appender-ref ref="ConsoleAppender" />
         </logger>
-        <logger name="io.netty" level="DEBUG" additivity="false">
+        <logger name="io.netty" level="ERROR" additivity="false">
             <appender-ref ref="ConsoleAppender" />
         </logger>
-        <Root level="DEBUG">
+        <Root level="ERROR">
             <appender-ref ref="ConsoleAppender"/>
         </Root>
     </Loggers>

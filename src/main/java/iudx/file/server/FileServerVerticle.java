@@ -18,7 +18,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.ClientAuth;
 import io.vertx.core.http.HttpServer;
@@ -28,7 +27,6 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.JksOptions;
-import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -36,7 +34,6 @@ import io.vertx.ext.web.api.validation.ValidationException;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import iudx.file.server.handlers.AuthHandler;
 import iudx.file.server.service.AuthService;
 import iudx.file.server.service.DBService;
@@ -72,9 +69,6 @@ public class FileServerVerticle extends AbstractVerticle {
 
   private static final Logger LOGGER = LogManager.getLogger(FileServerVerticle.class);
 
-  private Vertx vertx;
-  private ClusterManager mgr;
-  private VertxOptions options;
   private HttpServer server;
   private String keystore;
   private String keystorePassword;
@@ -95,111 +89,98 @@ public class FileServerVerticle extends AbstractVerticle {
 
   @Override
   public void start() throws Exception {
+    int port;
+    boolean isSSL;
+    router = Router.router(vertx);
+    ValidationHandlerFactory validations = new ValidationHandlerFactory();
+    ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
+    queryParamValidator = new QueryParamsValidator();
 
-    /* Create a reference to HazelcastClusterManager. */
+    authService = new AuthServiceImpl(vertx, getWebClient(vertx, config()), config());
+    dbService = new DBServiceImpl(config());
 
-    mgr = new HazelcastClusterManager();
-    options = new VertxOptions().setClusterManager(mgr);
+    directory = config().getString("upload_dir");
+    temp_directory = config().getString("tmp_dir");
 
-    /* Create or Join a Vert.x Cluster. */
+    router.get(API_TEMPORAL).handler(BodyHandler.create())
+        .handler(validations.create(RequestType.QUERY)).handler(this::query)
+        .failureHandler(validationsFailureHandler);
 
-    Vertx.clusteredVertx(options, res -> {
-      if (res.succeeded()) {
+    router.post(API_FILE_UPLOAD)
+        .handler(BodyHandler.create().setUploadsDirectory(temp_directory).setBodyLimit(MAX_SIZE)
+            .setDeleteUploadedFilesOnEnd(true))
+        .handler(validations.create(RequestType.UPLOAD)).handler(AuthHandler.create(authService))
+        .handler(this::upload).failureHandler(validationsFailureHandler);
 
-        vertx = res.result();
-        router = Router.router(vertx);
-        ValidationHandlerFactory validations = new ValidationHandlerFactory();
-        ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
-        queryParamValidator = new QueryParamsValidator();
+    router.get(API_FILE_DOWNLOAD).handler(BodyHandler.create())
+        .handler(validations.create(RequestType.DOWNLOAD)).handler(AuthHandler.create(authService))
+        .handler(this::download).failureHandler(validationsFailureHandler);
 
-        authService = new AuthServiceImpl(vertx, getWebClient(vertx, config()), config());
-        dbService = new DBServiceImpl(config());
-
-        directory = config().getString("upload_dir");
-        temp_directory = config().getString("tmp_dir");
-
-        router.get(API_TEMPORAL)
-            .handler(BodyHandler.create())
-            .handler(validations.create(RequestType.QUERY))
-            .handler(this::query)
-            .failureHandler(validationsFailureHandler);
-
-        router.post(API_FILE_UPLOAD)
-            .handler(BodyHandler.create()
-                .setUploadsDirectory(temp_directory)
-                .setBodyLimit(MAX_SIZE)
-                .setDeleteUploadedFilesOnEnd(true))
-            .handler(validations.create(RequestType.UPLOAD))
-            .handler(AuthHandler.create(authService))
-            .handler(this::upload)
-            .failureHandler(validationsFailureHandler);
-
-        router.get(API_FILE_DOWNLOAD)
-            .handler(BodyHandler.create())
-            .handler(validations.create(RequestType.DOWNLOAD))
-            .handler(AuthHandler.create(authService))
-            .handler(this::download)
-            .failureHandler(validationsFailureHandler);
-
-        router.delete(API_FILE_DELETE)
-            .handler(BodyHandler.create())
-            .handler(validations.create(RequestType.DELETE))
-            .handler(AuthHandler.create(authService))
-            .handler(this::delete)
-            .failureHandler(validationsFailureHandler);
-        
-        
-        
-        router.get("/apis/spec")
-            .produces("application/json")
-            .handler(routingContext -> {
-              HttpServerResponse response = routingContext.response();
-              response.sendFile("docs/openapi.yaml");
-            });
-        /* Get redoc */
-        router.get("/apis")
-            .produces("text/html")
-            .handler(routingContext -> {
-              HttpServerResponse response = routingContext.response();
-              response.sendFile("docs/apidoc.html");
-            });
-
-        
-
-        /* Read the configuration and set the HTTPs server properties. */
-        ClientAuth clientAuth = ClientAuth.REQUEST;
+    router.delete(API_FILE_DELETE).handler(BodyHandler.create())
+        .handler(validations.create(RequestType.DELETE)).handler(AuthHandler.create(authService))
+        .handler(this::delete).failureHandler(validationsFailureHandler);
 
 
-        keystore = config().getString("keystore");
-        keystorePassword = config().getString("keystorePassword");
-        truststore = config().getString("truststore");
-        truststorePassword = config().getString("truststorePassword");
 
-        LOGGER.info("starting server");
-        server =
-            vertx.createHttpServer(new HttpServerOptions().setSsl(true).setClientAuth(clientAuth)
-                .setKeyStoreOptions(
-                    new JksOptions().setPath(keystore).setPassword(keystorePassword))
-                .setTrustStoreOptions(
-                    new JksOptions().setPath(truststore).setPassword(truststorePassword)));
-
-        server.requestHandler(router).listen(config().getInteger("port"));
-
-      }
-      fileService = new LocalStorageFileServiceImpl(vertx.fileSystem(), directory);
-      // check upload dir exist or not.
-      mkdirsIfNotExists(vertx.fileSystem(), directory, new Handler<AsyncResult<Void>>() {
-        @Override
-        public void handle(AsyncResult<Void> event) {
-          if (event.succeeded()) {
-            LOGGER.info("directory exist/created successfully.");
-          } else {
-            LOGGER.error(event.cause().getMessage(), event.cause());
-          }
-        }
-      });
+    router.get("/apis/spec").produces("application/json").handler(routingContext -> {
+      HttpServerResponse response = routingContext.response();
+      response.sendFile("docs/openapi.yaml");
+    });
+    /* Get redoc */
+    router.get("/apis").produces("text/html").handler(routingContext -> {
+      HttpServerResponse response = routingContext.response();
+      response.sendFile("docs/apidoc.html");
     });
 
+
+
+    /* Read the configuration and set the HTTPs server properties. */
+    ClientAuth clientAuth = ClientAuth.REQUEST;
+    truststore = config().getString("truststore");
+    truststorePassword = config().getString("truststorePassword");
+
+    LOGGER.info("starting server");
+    /* Read ssl configuration. */
+    isSSL = config().getBoolean("ssl");
+    port = config().getInteger("port");
+    HttpServerOptions serverOptions = new HttpServerOptions();
+    if (isSSL) {
+      LOGGER.debug("Info: Starting HTTPs server");
+
+      /* Read the configuration and set the HTTPs server properties. */
+
+      keystore = config().getString("keystore");
+      keystorePassword = config().getString("keystorePassword");
+
+      /* Setup the HTTPs server properties, APIs and port. */
+
+      serverOptions.setSsl(true)
+          .setKeyStoreOptions(new JksOptions().setPath(keystore).setPassword(keystorePassword));
+
+    } else {
+      LOGGER.debug("Info: Starting HTTP server");
+
+      /* Setup the HTTP server properties, APIs and port. */
+
+      serverOptions.setSsl(false);
+    }
+    server = vertx.createHttpServer(serverOptions.setTrustStoreOptions(
+        new JksOptions().setPath(truststore).setPassword(truststorePassword)));
+
+    server.requestHandler(router).listen(port);
+
+    fileService = new LocalStorageFileServiceImpl(vertx.fileSystem(), directory);
+    // check upload dir exist or not.
+    mkdirsIfNotExists(vertx.fileSystem(), directory, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> event) {
+        if (event.succeeded()) {
+          LOGGER.info("directory exist/created successfully.");
+        } else {
+          LOGGER.error(event.cause().getMessage(), event.cause());
+        }
+          }
+    });
     LOGGER.info("FileServerVerticle started successfully");
   }
 
@@ -600,4 +581,8 @@ public class FileServerVerticle extends AbstractVerticle {
     return Optional.of(queryParams);
   }
 
+  @Override
+  public void stop() {
+    LOGGER.info("Stopping the File server");
+  }
 }
