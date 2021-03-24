@@ -1,0 +1,314 @@
+openapi: '3.0.2'
+
+info:
+  title: "IUDX File Server APIs"
+  version: '1.0'
+  description: |
+    The The File Server is IUDX File store which allows upload, download and discovery of Files.
+    For Upload it allows uploading Files with group id or resourcer item id.
+    For Discovery it allows temporal queries to search files data within time ranges.
+  x-logo:
+    url: "https://iudx.s3.ap-south-1.amazonaws.com/iudx_logo.png"
+    backgroundColor: "#FFFFFF"
+    altText: "IUDX"
+
+tags:
+-  name: Files
+   x-displayName: Files
+   description: APIs to upload, download and delete Files from file Server
+
+-  name: Discovery
+   x-displayName: Discovery
+   description: A temporal search to discover files available for provoded time range
+     
+paths:
+  /iudx/v1/upload:
+    post:
+      tags:
+      - Files
+      summary: Upload a File
+      operationId: upload-document
+      parameters:
+      - name: token
+        in: header
+        description: A valid <b> IUDX Auth token </b> to process the requests.
+        required: true
+        schema:
+          type: string
+          format: string
+          maxLength: 512
+          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                file:
+                  type: string
+                  description: file to upload
+                  format: binary
+                isSample:
+                  type: boolean
+                  description: a boolean flag indicating whether a sample file is being uploaded or a Archive file is uploaded
+                  default: false
+                startTime:
+                  type: string
+                  description: Specifies the start time for the data within the document (`ISO8601`) `*not required for sample file upload`
+                  
+                endTime:
+                  type: string
+                  description: Specifies the end time for the data within the document (`ISO8601`) `*not required for sample file upload`
+      responses:
+        '200':
+          description: 'Successfully uploaded a file'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/fileUploadResponse'
+        '400':
+          description: 'Bad query'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/standardBadRequestErrorResponse'
+        '401':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+          
+          
+  /iudx/v1/download/{file-id}:
+    get:
+      tags:
+      - Files
+      summary: Download a file
+      operationId: download-file
+      parameters:
+      - name: token
+        in: header
+        description: A valid <b> IUDX Auth token </b> to process the requests. token is mandatory to download archive files, for sample file a token is not required.
+        schema:
+          type: string
+          format: string
+          maxLength: 512
+          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+      - name: 'file-id'
+        in: path
+        description: valid IUDX uploaded file name
+        required: true
+        schema:
+          type: string
+          maxLength: 512
+      responses:  
+        '200':
+          description: 'Successfully downloaded a file'
+          content:
+            application/octate-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: 'Bad query'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/standardBadRequestErrorResponse'
+        '401':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+        '404':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardFileNotFoundErrorResponse"
+          description: 'File not found'  
+        
+  /iudx/v1/delete/{file-id}:
+    delete:
+      tags:
+      - Files
+      summary: Delete a file
+      operationId: delete-file
+      parameters:
+      - name: token
+        in: header
+        description: A valid <b> IUDX Auth token </b> to process the requests.
+        required: true
+        schema:
+          type: string
+          format: string
+          maxLength: 512
+          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+      - name: 'file-id'
+        in: path
+        description: valid IUDX uploaded file name
+        required: true
+        schema:
+          type: string
+          maxLength: 512
+      responses:  
+        '200':
+          description: 'Successfully deleted a file'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/standardDeleteSuccessResponse'
+        '400':
+          description: 'Bad query'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/standardBadRequestErrorResponse'
+        '401':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+        '404':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardFileNotFoundErrorResponse"
+          description: 'File not found'
+  
+  /ngsi-ld/v1/temporal/entities:
+    get:
+      tags:
+      - Discovery
+      summary: search for files
+      operationId: search-file
+      parameters:
+      - name: id
+        in: query
+        description: valid IUDX group or resource id
+        required: true
+        schema:
+          type: string
+          maxLength: 512
+      - name: time
+        in: query
+        description: start time in `ISO8601`
+        required: true
+        schema:
+          type: string
+      - name: endTime
+        in: query
+        description: end time in `ISO8601`
+        required: true
+        schema:
+          type: string
+      - name: timerel
+        in: query
+        description: The temporal relation type of timerel to be performed
+        required: true
+        schema:
+          type: string
+          enum: [during]
+      responses:  
+        '200':
+          description: 'Successfully deleted a file'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/standardQueryResponse'
+        '400':
+          description: 'Bad query'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/standardBadRequestErrorResponse'
+        '401':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+          
+components:
+  schemas:
+    standardBadRequestErrorResponse:
+      title: standardBadRequestErrorResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: 400
+        title: Bad Request Data
+        detail: Bad query
+    fileUploadResponse:
+      title: fileUploadSuccessResponse
+      required:
+      - fileId
+      type: object
+      properties:
+        fileId:
+          type: string
+    standardInvalidTokenErrorResponse:
+      title: standardInvalidTokenErrorResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: 401
+        title: Invalid credentials
+        detail: Invalid credentials
+    standardFileNotFoundErrorResponse:
+      title: standardFileNotFoundErrorResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: 404
+        title: File does not exist
+        detail: File does not exist
+    standardQueryResponse:
+      title: standardBadRequestErrorResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        results:
+          type: object
+      example:
+        type: 200
+        title: Success
+        results: [{
+          "id":"suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta",
+          "timeRange":{
+            "startTime":"2020-06-01T14:20:00Z",
+            "endTime":"2020-06-10T14:20:00Z"
+          },
+          "fileID":"suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta/sample.txt"
+        }]
+    standardDeleteSuccessResponse:
+      title: standardDeleteSuccessResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: 200
+        title: deleted successfully
+        detail: successfully deleted file <<file-id>>

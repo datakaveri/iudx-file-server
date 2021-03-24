@@ -1,22 +1,22 @@
 package iudx.file.server;
 
 import static iudx.file.server.utilities.Constants.*;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Properties;
+import java.util.Optional;
 import java.util.Set;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import io.netty.handler.codec.http.HttpConstants;
+import io.netty.handler.codec.http.QueryStringDecoder;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.file.FileSystem;
@@ -32,15 +32,24 @@ import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.api.validation.ValidationException;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
+import iudx.file.server.handlers.AuthHandler;
+import iudx.file.server.service.AuthService;
+import iudx.file.server.service.DBService;
 import iudx.file.server.service.FileService;
-import iudx.file.server.service.TokenStore;
+import iudx.file.server.service.impl.AuthServiceImpl;
+import iudx.file.server.service.impl.DBServiceImpl;
 import iudx.file.server.service.impl.LocalStorageFileServiceImpl;
-import iudx.file.server.service.impl.PGTokenStoreImpl;
-import iudx.file.server.utilities.Constants;
-import iudx.file.server.utilities.DefaultAsyncResult;
 import iudx.file.server.utilities.RestResponse;
+import iudx.file.server.validations.ContentTypeValidator;
+import iudx.file.server.validations.QueryParamsValidator;
+import iudx.file.server.validations.RequestType;
+import iudx.file.server.validations.ValidationFailureHandler;
+import iudx.file.server.validations.ValidationHandlerFactory;
 
 /**
  * The File Server API Verticle.
@@ -67,21 +76,21 @@ public class FileServerVerticle extends AbstractVerticle {
   private ClusterManager mgr;
   private VertxOptions options;
   private HttpServer server;
-  private Properties properties;
-  private InputStream inputstream;
   private String keystore;
   private String keystorePassword;
   private Router router;
   // private FileServer fileServer;
   private FileService fileService;
-  private Map<String, String> tokens = new HashMap<String, String>();
-  private Map<String, Date> validity = new HashMap<String, Date>();
   private String allowedDomain, truststore, truststorePassword;
   private String[] allowedDomains;
   private HashSet<String> instanceIDs = new HashSet<String>();
-  private TokenStore tokenStoreClient;
+
   private String directory;
   private String temp_directory;
+
+  private AuthService authService;
+  private DBService dbService;
+  private QueryParamsValidator queryParamValidator;
 
 
   @Override
@@ -99,33 +108,63 @@ public class FileServerVerticle extends AbstractVerticle {
 
         vertx = res.result();
         router = Router.router(vertx);
-        properties = new Properties();
-        inputstream = null;
-        tokenStoreClient = new PGTokenStoreImpl(vertx, config());
+        ValidationHandlerFactory validations = new ValidationHandlerFactory();
+        ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
+        queryParamValidator = new QueryParamsValidator();
 
-        router.route().handler(BodyHandler.create());
-
-        // router.route().handler(UserAuthorizationHandler.create(tokenStoreClient));
-
-        router.route().failureHandler(failureHandler -> {
-          failureHandler.failure().printStackTrace();
-          LOGGER.error(failureHandler.failure());
-        });
+        authService = new AuthServiceImpl(vertx, getWebClient(vertx, config()), config());
+        dbService = new DBServiceImpl(config());
 
         directory = config().getString("upload_dir");
         temp_directory = config().getString("tmp_dir");
 
-        router.post(API_TEMPORAL).handler(this::query);
+        router.get(API_TEMPORAL)
+            .handler(BodyHandler.create())
+            .handler(validations.create(RequestType.QUERY))
+            .handler(this::query)
+            .failureHandler(validationsFailureHandler);
 
         router.post(API_FILE_UPLOAD)
             .handler(BodyHandler.create()
                 .setUploadsDirectory(temp_directory)
                 .setBodyLimit(MAX_SIZE)
                 .setDeleteUploadedFilesOnEnd(true))
-            .handler(this::upload);
+            .handler(validations.create(RequestType.UPLOAD))
+            .handler(AuthHandler.create(authService))
+            .handler(this::upload)
+            .failureHandler(validationsFailureHandler);
 
-        router.get(API_FILE_DOWNLOAD).handler(this::download);
-        router.delete(API_FILE_DELETE).handler(this::delete);
+        router.get(API_FILE_DOWNLOAD)
+            .handler(BodyHandler.create())
+            .handler(validations.create(RequestType.DOWNLOAD))
+            .handler(AuthHandler.create(authService))
+            .handler(this::download)
+            .failureHandler(validationsFailureHandler);
+
+        router.delete(API_FILE_DELETE)
+            .handler(BodyHandler.create())
+            .handler(validations.create(RequestType.DELETE))
+            .handler(AuthHandler.create(authService))
+            .handler(this::delete)
+            .failureHandler(validationsFailureHandler);
+        
+        
+        
+        router.get("/apis/spec")
+            .produces("application/json")
+            .handler(routingContext -> {
+              HttpServerResponse response = routingContext.response();
+              response.sendFile("docs/openapi.yaml");
+            });
+        /* Get redoc */
+        router.get("/apis")
+            .produces("text/html")
+            .handler(routingContext -> {
+              HttpServerResponse response = routingContext.response();
+              response.sendFile("docs/apidoc.html");
+            });
+
+        
 
         /* Read the configuration and set the HTTPs server properties. */
         ClientAuth clientAuth = ClientAuth.REQUEST;
@@ -135,17 +174,6 @@ public class FileServerVerticle extends AbstractVerticle {
         keystorePassword = config().getString("keystorePassword");
         truststore = config().getString("truststore");
         truststorePassword = config().getString("truststorePassword");
-        allowedDomain = config().getString("domains");
-
-
-        allowedDomains = allowedDomain.split(",");
-
-        for (int i = 0; i < allowedDomains.length; i++) {
-          LOGGER.info(allowedDomains[i].toLowerCase());
-          instanceIDs.add(allowedDomains[i].toLowerCase());
-        }
-
-        LOGGER.info("Updated domain list. Serving " + instanceIDs.size() + " tenants");
 
         LOGGER.info("starting server");
         server =
@@ -173,7 +201,6 @@ public class FileServerVerticle extends AbstractVerticle {
     });
 
     LOGGER.info("FileServerVerticle started successfully");
-    // for unit testing - later it must be removed
   }
 
   /**
@@ -189,12 +216,28 @@ public class FileServerVerticle extends AbstractVerticle {
     response.putHeader("content-type", "application/json");
     LOGGER.debug("id :" + id);
     String fileIdComponent[] = getFileIdComponents(id);
-    String uploadPath = fileIdComponent[1] + "/" + fileIdComponent[3];
+    StringBuilder uploadPath = new StringBuilder();
+    uploadPath.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
+
     Set<FileUpload> files = routingContext.fileUploads();
+    if (!isValidFileContentType(files)) {
+      ValidationException ex = new ValidationException("Invalid file type");
+      ex.setParameterName("content-type");
+      routingContext.fail(ex);
+      return;
+    }
     if (isSample) {
-      sampleFileUpload(response, files, "sample", uploadPath, id);
+      if (fileIdComponent.length >= 5)
+        uploadPath.append("/" + fileIdComponent[4]);
+      sampleFileUpload(response, formParam, files, "sample", uploadPath.toString(), id);
     } else {
-      archiveFileUpload(response, files, uploadPath, id);
+      if (!formParam.contains("startTime") && !formParam.contains("endTime")) {
+        ValidationException ex = new ValidationException("Mandatory fields required");
+        ex.setParameterName("startTime/endTime");
+        routingContext.fail(ex);
+        return;
+      }
+      archiveFileUpload(response, formParam, files, uploadPath.toString(), id);
     }
   }
 
@@ -207,13 +250,16 @@ public class FileServerVerticle extends AbstractVerticle {
    * @param filePath
    * @param id
    */
-  private void sampleFileUpload(HttpServerResponse response, Set<FileUpload> files, String fileName,
+  private void sampleFileUpload(HttpServerResponse response, MultiMap params, Set<FileUpload> files,
+      String fileName,
       String filePath, String id) {
     fileService.upload(files, fileName, filePath, handler -> {
       if (handler.succeeded()) {
         JsonObject uploadResult = handler.result();
         JsonObject responseJson = new JsonObject();
-        responseJson.put("file-id", id + "/" + uploadResult.getString("file-id"));
+        String fileId = id + "/" + uploadResult.getString("file-id");
+        responseJson.put("fileId", fileId);
+        // insertFileRecord(params, fileId); no need to insert in DB
         response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
             .setStatusCode(HttpStatus.SC_OK)
             .end(responseJson.toString());
@@ -231,20 +277,60 @@ public class FileServerVerticle extends AbstractVerticle {
    * @param filePath
    * @param id
    */
-  private void archiveFileUpload(HttpServerResponse response, Set<FileUpload> files,
+  private void archiveFileUpload(HttpServerResponse response, MultiMap params,
+      Set<FileUpload> files,
       String filePath, String id) {
+
     fileService.upload(files, filePath, handler -> {
       if (handler.succeeded()) {
         JsonObject uploadResult = handler.result();
         JsonObject responseJson = new JsonObject();
-        responseJson.put("file-id", id + "/" + uploadResult.getString("file-id"));
-        response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .setStatusCode(HttpStatus.SC_OK)
-            .end(responseJson.toString());
+        String fileId = id + "/" + uploadResult.getString("file-id");
+        responseJson.put("fileId", fileId);
+        saveFileRecord(params, fileId).onComplete(dbInsertHandler -> {
+          if (dbInsertHandler.succeeded()) {
+            response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .setStatusCode(HttpStatus.SC_OK)
+                .end(responseJson.toString());
+          } else {
+            LOGGER.debug(dbInsertHandler.cause());
+            // DB insert fail, run Compensating service to clean/undo upload.
+            String fileIdComponent[] = getFileIdComponents(responseJson.getString("fileId"));
+            StringBuilder uploadDir = new StringBuilder();
+            uploadDir.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
+            String fileUUID = fileIdComponent.length >= 6 ? fileIdComponent[5] : fileIdComponent[4];
+            
+            LOGGER.debug("deleting file :"+fileUUID);
+            vertx.fileSystem().deleteBlocking(directory+"/"+uploadDir+"/"+fileUUID);
+            processResponse(response, dbInsertHandler.cause().getMessage());
+          }
+        });
       } else {
         processResponse(response, handler.cause().getMessage());
       }
     });
+  }
+
+
+  private Future<Boolean> saveFileRecord(MultiMap formParams, String fileId) {
+    Promise<Boolean> promise = Promise.promise();
+    JsonObject json = new JsonObject();
+    json.put("id", formParams.get("id"));
+    json.put("timeRange", new JsonObject()
+        .put("startTime", formParams.get("startTime"))
+        .put("endTime", formParams.get("endTime")));
+    json.put("fileId", fileId);
+    // insert record in elastic index.
+    dbService.save(json, handler -> {
+      if (handler.succeeded()) {
+        LOGGER.info("Record inserted in DB");
+        promise.complete();
+      } else {
+        LOGGER.error("failed to PUT record");
+        promise.fail(handler.cause().getMessage());
+      }
+    });
+    return promise.future();
   }
 
   /**
@@ -259,11 +345,17 @@ public class FileServerVerticle extends AbstractVerticle {
     response.setChunked(true);
     String id = request.getParam("file-id");
     String fileIdComponent[] = getFileIdComponents(id);
-    String uploadDir = fileIdComponent[1] + "/" + fileIdComponent[3];
+    StringBuilder uploadDir = new StringBuilder();
+    uploadDir.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
     // extract the file-uuid from supplied id, since position of file-id in id will be different for
     // group level(pos:5) and resource level(pos:4)
     String fileUUID = fileIdComponent.length >= 6 ? fileIdComponent[5] : fileIdComponent[4];
-    fileService.download(fileUUID, uploadDir, response, handler -> {
+    System.out.println(fileUUID);
+    if (fileUUID.contains("sample") && fileIdComponent.length >= 6) {
+      uploadDir.append("/" + fileIdComponent[4]);
+    }
+    System.out.println(uploadDir);
+    fileService.download(fileUUID, uploadDir.toString(), response, handler -> {
       if (handler.succeeded()) {
         // do nothing response is already written and file is served using content-disposition.
       } else {
@@ -274,11 +366,43 @@ public class FileServerVerticle extends AbstractVerticle {
 
 
   public void query(RoutingContext context) {
-    HttpServerRequest request = context.request();
     HttpServerResponse response = context.response();
-    MultiMap queryParams = MultiMap.caseInsensitiveMultiMap();
+    MultiMap queryParams = getQueryParams(context, response).get();
+    System.out.println(queryParams);
+    Future<Boolean> queryParamsValidator = queryParamValidator.isValid(queryParams);
+    JsonObject query = new JsonObject();
+    for (Map.Entry<String, String> entry : queryParams.entries()) {
+      query.put(entry.getKey(), entry.getValue());
+    }
+    queryParamsValidator.onComplete(validationHandler -> {
+      if (validationHandler.succeeded()) {
+        dbService.query(query, queryHandler -> {
+          if (queryHandler.succeeded()) {
+            response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .setStatusCode(HttpStatus.SC_OK)
+                .end(queryHandler.result().toString());
+
+          } else {
+            processResponse(response, queryHandler.cause().getMessage());
+          }
+        });
+      } else {
+        LOGGER.error(validationHandler.cause().getMessage());
+      }
+    });
   }
 
+
+  private void deleteFileRecord(String id) {
+    dbService.delete(id, handler -> {
+      if (handler.succeeded()) {
+        LOGGER.info("Record deleted in DB");
+      } else {
+        LOGGER.error("failed to DELETE record");
+        LOGGER.error(id);
+      }
+    });
+  }
 
   /**
    * Download File service allows to download a file from the server after authenticating the user.
@@ -290,14 +414,37 @@ public class FileServerVerticle extends AbstractVerticle {
     response.putHeader("content-type", "application/json");
     String id = request.getParam("file-id");
     String fileIdComponent[] = getFileIdComponents(id);
-    String uploadDir = fileIdComponent[1] + "/" + fileIdComponent[3];
+    StringBuilder uploadDir = new StringBuilder();
+    uploadDir.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
     // extract the file-uuid from supplied id, since position of file-id in id will be different for
     // group level(pos:5) and resource level(pos:4)
     String fileUUID = fileIdComponent.length >= 6 ? fileIdComponent[5] : fileIdComponent[4];
-    fileService.delete(fileUUID, uploadDir, handler -> {
+    System.out.println(fileUUID);
+    boolean isArchiveFile = true;
+    if (fileUUID.contains("sample")) {
+      isArchiveFile = false;
+      if (fileIdComponent.length >= 6) {
+        uploadDir.append("/" + fileIdComponent[4]);
+      }
+    }
+    System.out.println(uploadDir);
+    System.out.println("is archieve : " + isArchiveFile);
+    if (isArchiveFile) {
+      deleteArchiveFile(response, id, fileUUID, uploadDir.toString());
+    } else {
+      deleteSampleFile(response, id, fileUUID, uploadDir.toString());
+    }
+
+
+
+  }
+
+  private void deleteSampleFile(HttpServerResponse response, String id, String fileUUID,
+      String uploadDir) {
+    System.out.println("delete sample file");
+    fileService.delete(fileUUID, uploadDir.toString(), handler -> {
       if (handler.succeeded()) {
         JsonObject deleteResult = handler.result();
-        LOGGER.info(deleteResult);
         response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
             .setStatusCode(HttpStatus.SC_OK)
             .end(new RestResponse.Builder()
@@ -307,6 +454,31 @@ public class FileServerVerticle extends AbstractVerticle {
                 .toString());
       } else {
         processResponse(response, handler.cause().getMessage());
+      }
+    });
+  }
+
+  private void deleteArchiveFile(HttpServerResponse response, String id, String fileUUID,
+      String uploadDir) {
+    dbService.delete(id, dbDeleteHandler -> {
+      if (dbDeleteHandler.succeeded()) {
+        fileService.delete(fileUUID, uploadDir.toString(), handler -> {
+          if (handler.succeeded()) {
+            JsonObject deleteResult = handler.result();
+            LOGGER.info(deleteResult);
+            response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .setStatusCode(HttpStatus.SC_OK)
+                .end(new RestResponse.Builder()
+                    .type(200)
+                    .title(deleteResult.getString("title"))
+                    .details("File with id : " + id + " deleted successfully").build().toJson()
+                    .toString());
+          } else {
+            processResponse(response, handler.cause().getMessage());
+          }
+        });
+      } else {
+        processResponse(response, dbDeleteHandler.cause().getMessage());
       }
     });
   }
@@ -326,7 +498,7 @@ public class FileServerVerticle extends AbstractVerticle {
       public void handle(AsyncResult<Boolean> event) {
         if (event.succeeded()) {
           if (Boolean.FALSE.equals(event.result())) {
-            LOGGER.info("Creating parent directory structure ...  "+basePath);
+            LOGGER.info("Creating parent directory structure ...  " + basePath);
             fileSystem.mkdirs(basePath, new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> event) {
@@ -334,16 +506,23 @@ public class FileServerVerticle extends AbstractVerticle {
               }
             });
           } else {
-            handler.handle(new DefaultAsyncResult<>((Void) null));
+            handler.handle(Future.succeededFuture());
           }
         } else {
-          handler.handle(new DefaultAsyncResult<Void>(event.cause()));
+          handler.handle(Future.failedFuture("Failed to create directory."));
         }
       }
     });
   }
 
-
+  /**
+   * retreive components from id index : 0 - Domain 1 - user SHA 2 - File Server 3 - File group 4 -
+   * Resource/ File id(for Group level file, index 4 represent file Id(optional)) 5 - File id
+   * (optional)
+   * 
+   * @param fileId
+   * @return
+   */
   private String[] getFileIdComponents(String fileId) {
     return fileId.split("/");
   }
@@ -371,6 +550,54 @@ public class FileServerVerticle extends AbstractVerticle {
               .build().toJson().toString());
     }
 
+  }
+
+
+  private WebClient getWebClient(Vertx vertx, JsonObject config) {
+    WebClientOptions options =
+        new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true)
+            .setKeyStoreOptions(
+                new JksOptions()
+                    .setPath(config.getString("keystore"))
+                    .setPassword(config.getString("keystorePassword")));
+    return WebClient.create(vertx, options);
+  }
+
+  private boolean isValidFileContentType(Set<FileUpload> files) {
+    for (FileUpload file : files) {
+      System.out.println(file.contentType());
+      if (!ContentTypeValidator.isValid(file.contentType())) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private Optional<MultiMap> getQueryParams(RoutingContext routingContext,
+      HttpServerResponse response) {
+    MultiMap queryParams = null;
+    try {
+      queryParams = MultiMap.caseInsensitiveMultiMap();
+      // Internally + sign is dropped and treated as space, replacing + with %2B do the trick
+      String uri = routingContext.request().uri().toString().replaceAll("\\+", "%2B");
+      Map<String, List<String>> decodedParams =
+          new QueryStringDecoder(uri, HttpConstants.DEFAULT_CHARSET, true, 1024, true).parameters();
+      for (Map.Entry<String, List<String>> entry : decodedParams.entrySet()) {
+        queryParams.add(entry.getKey(), entry.getValue());
+      }
+      LOGGER.debug("Info: Decoded multimap");
+    } catch (IllegalArgumentException ex) {
+      response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
+          .setStatusCode(HttpStatus.SC_BAD_REQUEST)
+          .end(new RestResponse.Builder()
+              .type(HttpStatus.SC_BAD_REQUEST)
+              .title("Bad request")
+              .details("Error while decoding params.")
+              .build().toJson().toString());
+
+
+    }
+    return Optional.of(queryParams);
   }
 
 }

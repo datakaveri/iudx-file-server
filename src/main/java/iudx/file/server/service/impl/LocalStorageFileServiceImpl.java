@@ -27,7 +27,7 @@ public class LocalStorageFileServiceImpl implements FileService {
   private static final Logger LOGGER = LogManager.getLogger(LocalStorageFileServiceImpl.class);
 
   private final SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSS");
-  private final FileSystem fileSystem;
+  private FileSystem fileSystem;
   private final String directory;
 
   public LocalStorageFileServiceImpl(FileSystem fileSystem,String directory) {
@@ -44,7 +44,8 @@ public class LocalStorageFileServiceImpl implements FileService {
     LOGGER.debug("uploading.. files to file system.");
     final JsonObject metadata = new JsonObject();
     final JsonObject finalResponse = new JsonObject();
-    fileSystem.mkdirsBlocking(directory + filePath);
+    System.out.println(directory+filePath);
+    fileSystem=fileSystem.mkdirsBlocking(directory + filePath);
     Iterator<FileUpload> fileUploadIterator = files.iterator();
     while (fileUploadIterator.hasNext()) {
       FileUpload fileUpload = fileUploadIterator.next();
@@ -62,7 +63,7 @@ public class LocalStorageFileServiceImpl implements FileService {
               metadata.put("content-transfer-encoding", fileUpload.contentTransferEncoding());
               metadata.put("char-set", fileUpload.charSet());
               metadata.put("size", fileUpload.size() + " Bytes");
-              metadata.put("uploaded path", fileUploadPath);
+              metadata.put("uploaded_path", fileUploadPath);
               metadata.put("file-id", uuid + "." + fileExtension);
               handler.handle(Future.succeededFuture(metadata));
             } else {
@@ -91,6 +92,7 @@ public class LocalStorageFileServiceImpl implements FileService {
     JsonObject finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
     String path = directory + uploadDir + "/" + fileName;
+    System.out.println(path);
     response.setChunked(true);
     fileSystem.exists(path, existHandler -> {
       if (existHandler.succeeded()) {

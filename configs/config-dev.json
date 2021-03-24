@@ -18,24 +18,17 @@
 			"databasePort":80 ,
 			"databaseUser": "",
 			"databasePassword": "",
-			"databaseUsed":"",
 			
-			"dataBrokerIP": "",
-			"dataBrokerPort": 5672,
-			"dataBrokerVhost": "",
-			"dataBrokerUserName": "",
-			"dataBrokerPassword": "",
-			"dataBrokerManagementPort": 15672,
-			"connectionTimeout": 6000,
-			"requestedHeartbeat": 60,
-			"handshakeTimeout": 6000,
-			"requestedChannelMax": 5,
-			"networkRecoveryInterval": 500,
+			"catalogueHost":"",
+            "cataloguePort":443,
+            
+            "authHost":"",
+            "authPort":443,
+            
 			
 			"automaticRecoveryEnabled": true,
 			"truststore": "configs/keystore.jks",
 			"truststorePassword": "",
-			"domains": "",
 			
 			"tmp_dir":"",
 			"upload_dir":""

@@ -12,33 +12,29 @@
             "keystorePassword": "",
             "verticleInstances": 2,
             "ssl": true,
+            "host":"localhost",
             "port":8443,
             
             "databaseIP": "",
-            "databasePort":5432 ,
+            "databasePort":80 ,
             "databaseUser": "",
             "databasePassword": "",
-            "databaseUsed":"",
             
-            "dataBrokerIP": "",
-            "dataBrokerPort": 5432,
-            "dataBrokerVhost": "",
-            "dataBrokerUserName": "",
-            "dataBrokerPassword": "",
-            "dataBrokerManagementPort": 15672,
-            "connectionTimeout": 6000,
-            "requestedHeartbeat": 60,
-            "handshakeTimeout": 6000,
-            "requestedChannelMax": 5,
-            "networkRecoveryInterval": 500,
+            "catalogueHost":"",
+            "cataloguePort":443,
+            
+            "authHost":"",
+            "authPort":443,
+            
             
             "automaticRecoveryEnabled": true,
             "truststore": "configs/keystore.jks",
             "truststorePassword": "",
-            "domains": "example.com",
             
             "tmp_dir":"",
-            "upload_dir":""
+            "upload_dir":"",
+            
+            "testToken":""
         }
     ]
 }
