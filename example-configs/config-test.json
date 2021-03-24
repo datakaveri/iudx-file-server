@@ -8,12 +8,12 @@
     "modules": [
         {
             "id": "iudx.file.server.FileServerVerticle",
-            "keystore": "configs/keystore.jks",
+            "keystore": "secrets/keystore.jks",
             "keystorePassword": "",
             "verticleInstances": 2,
-            "ssl": true,
+            "ssl": false,
             "host":"localhost",
-            "port":8443,
+            "port": 80,
             
             "databaseIP": "",
             "databasePort":80 ,
@@ -28,12 +28,12 @@
             
             
             "automaticRecoveryEnabled": true,
-            "truststore": "configs/keystore.jks",
+            "truststore": "secrets/keystore.jks",
             "truststorePassword": "",
-            
-            "tmp_dir":"",
-            "upload_dir":"",
-            
+	    
+	    "tmp_dir":"/usr/share/app/temp-dir",
+	    "upload_dir":"/usr/share/app/upload-dir",
+
             "testToken":""
         }
     ]

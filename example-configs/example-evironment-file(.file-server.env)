@@ -1,0 +1,6 @@
+# Note: Don't include any statements with '#' because that's not comment, it is been used for only elaborating 
+# the environment variables. Defaults apply if the environment variables are not explicitly defined in env file.
+FS_URL=http://localhost         # File server URL, default value is http://localhost
+LOG_LEVEL=INFO                  # LOG_LEVEL can be TRACE, DEBUG, INFO, WARN, ERROR,FATAL, OFF, ALL, default is DEBUG
+FS_JAVA_OPTS=-Xmx4096m          # FS_JAVA_OPTS can be any java options but as of now heap max size is sufficient, default is 2GiB
+
