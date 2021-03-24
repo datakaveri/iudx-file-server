@@ -34,15 +34,17 @@ public class FileServiceTest {
   private static WebClient client;
   private static JsonObject config;
   private static String resourceId =
-      "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta";
+      "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta";
   private static String groupId =
-      "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information";
+      "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information";
   private static String token;
   private static String uploadedRLSampleFileId;
   private static String uploadedGLSampleFileId;
   private static String uploadedRLArchiveFileId;
   private static String uploadedGLArchiveFileId;
   private static FileCheckUtil fileUtil;
+  private static String host;
+  private static int port;
 
   @BeforeAll
   @DisplayName("Deploy a verticle")
@@ -60,6 +62,8 @@ public class FileServiceTest {
     client = WebClient.create(vertx, clientOptions);
     token = config.getString("testToken");
     fileUtil = new FileCheckUtil(vertx, config.getString("upload_dir"));
+    host=config.getString("host");
+    port=config.getInteger("port");
     testContext.completeNow();
   }
 
@@ -73,7 +77,7 @@ public class FileServiceTest {
     form.attribute("isSample", "true");
     form.attribute("id", "invalid/id/format");
 
-    HttpRequest<Buffer> req = client.post(8443, "localhost", API_FILE_UPLOAD);
+    HttpRequest<Buffer> req = client.post(port, host, API_FILE_UPLOAD);
     req.putHeader("token", token);
     req.sendMultipartForm(form, handler -> {
       if (handler.succeeded()) {
@@ -98,7 +102,7 @@ public class FileServiceTest {
     form.attribute("isSample", "abc");
     form.attribute("id", resourceId);
 
-    HttpRequest<Buffer> req = client.post(8443, "localhost", API_FILE_UPLOAD);
+    HttpRequest<Buffer> req = client.post(port, host, API_FILE_UPLOAD);
     req.putHeader("token", token);
     req.sendMultipartForm(form, handler -> {
       if (handler.succeeded()) {
@@ -123,7 +127,7 @@ public class FileServiceTest {
     form.attribute("isSample", "true");
     form.attribute("id", resourceId);
 
-    HttpRequest<Buffer> req = client.post(8443, "localhost", API_FILE_UPLOAD);
+    HttpRequest<Buffer> req = client.post(port, host, API_FILE_UPLOAD);
     req.putHeader("token", token);
     req.sendMultipartForm(form, handler -> {
       if (handler.succeeded()) {
@@ -151,14 +155,14 @@ public class FileServiceTest {
     form.attribute("isSample", "true");
     form.attribute("id", resourceId);
 
-    HttpRequest<Buffer> req = client.post(8443, "localhost", API_FILE_UPLOAD);
+    HttpRequest<Buffer> req = client.post(port, host, API_FILE_UPLOAD);
     req.putHeader("token", token);
     req.sendMultipartForm(form, handler -> {
       if (handler.succeeded()) {
         assertEquals(HttpStatus.SC_OK, handler.result().statusCode());
         JsonObject result = handler.result().bodyAsJsonObject();
-        assertTrue(result.containsKey("file-id"));
-        uploadedRLSampleFileId = result.getString("file-id");
+        assertTrue(result.containsKey("fileId"));
+        uploadedRLSampleFileId = result.getString("fileId");
         assertTrue(fileUtil.isFileExist(uploadedRLSampleFileId));
         testContext.completeNow();
       } else {
@@ -177,14 +181,14 @@ public class FileServiceTest {
     form.attribute("isSample", "true");
     form.attribute("id", groupId);
 
-    HttpRequest<Buffer> req = client.post(8443, "localhost", API_FILE_UPLOAD);
+    HttpRequest<Buffer> req = client.post(port, host, API_FILE_UPLOAD);
     req.putHeader("token", token);
     req.sendMultipartForm(form, handler -> {
       if (handler.succeeded()) {
         assertEquals(HttpStatus.SC_OK, handler.result().statusCode());
         JsonObject result = handler.result().bodyAsJsonObject();
-        assertTrue(result.containsKey("file-id"));
-        uploadedGLSampleFileId = result.getString("file-id");
+        assertTrue(result.containsKey("fileId"));
+        uploadedGLSampleFileId = result.getString("fileId");
         assertTrue(fileUtil.isFileExist(uploadedGLSampleFileId));
         testContext.completeNow();
       } else {
@@ -205,14 +209,14 @@ public class FileServiceTest {
     form.attribute("startTime", "2020-09-05T00:00:00Z");
     form.attribute("endTime","2020-09-15T00:00:00Z");
 
-    HttpRequest<Buffer> req = client.post(8443, "localhost", API_FILE_UPLOAD);
+    HttpRequest<Buffer> req = client.post(port, host, API_FILE_UPLOAD);
     req.putHeader("token", token);
     req.sendMultipartForm(form, handler -> {
       if (handler.succeeded()) {
         assertEquals(HttpStatus.SC_OK, handler.result().statusCode());
         JsonObject result = handler.result().bodyAsJsonObject();
-        assertTrue(result.containsKey("file-id"));
-        uploadedRLArchiveFileId = result.getString("file-id");
+        assertTrue(result.containsKey("fileId"));
+        uploadedRLArchiveFileId = result.getString("fileId");
         assertTrue(fileUtil.isFileExist(uploadedRLArchiveFileId));
         testContext.completeNow();
       } else {
@@ -232,14 +236,14 @@ public class FileServiceTest {
     form.attribute("startTime", "2020-09-05T00:00:00Z");
     form.attribute("endTime","2020-09-15T00:00:00Z");
 
-    HttpRequest<Buffer> req = client.post(8443, "localhost", API_FILE_UPLOAD);
+    HttpRequest<Buffer> req = client.post(port, host, API_FILE_UPLOAD);
     req.putHeader("token", token);
     req.sendMultipartForm(form, handler -> {
       if (handler.succeeded()) {
         assertEquals(HttpStatus.SC_OK, handler.result().statusCode());
         JsonObject result = handler.result().bodyAsJsonObject();
-        assertTrue(result.containsKey("file-id"));
-        uploadedGLArchiveFileId = result.getString("file-id");
+        assertTrue(result.containsKey("fileId"));
+        uploadedGLArchiveFileId = result.getString("fileId");
         assertTrue(fileUtil.isFileExist(uploadedGLArchiveFileId));
         testContext.completeNow();
       } else {
@@ -252,7 +256,7 @@ public class FileServiceTest {
   @Test
   @DisplayName("404 - download a file (Invalid file)")
   void testDownloadFileInvalidFileId(Vertx vertx, VertxTestContext testContext) {
-    client.get(8443, "localhost", API_FILE_DOWNLOAD)
+    client.get(port, host, API_FILE_DOWNLOAD)
         .putHeader("token", token)
         .addQueryParam("file-id", uploadedRLSampleFileId + "invalidfile.txt")
         .send(handler -> {
@@ -268,8 +272,8 @@ public class FileServiceTest {
   @Test
   @DisplayName("401 - download a file (Invalid id)")
   void testDownloadFileInvalidWithoutToken(Vertx vertx, VertxTestContext testContext) {
-    client.get(8443, "localhost", API_FILE_DOWNLOAD)
-        .addQueryParam("file-id", uploadedRLSampleFileId)
+    client.get(port, host, API_FILE_DOWNLOAD)
+        .addQueryParam("file-id", uploadedGLArchiveFileId)
         .send(handler -> {
           if (handler.succeeded()) {
             assertEquals(HttpStatus.SC_UNAUTHORIZED, handler.result().statusCode());
@@ -284,7 +288,7 @@ public class FileServiceTest {
   @Order(2)
   @DisplayName("download a sample file (resource level)")
   void testDownloadSampleRLFileSuccess(Vertx vertx, VertxTestContext testContext) {
-    client.get(8443, "localhost", API_FILE_DOWNLOAD)
+    client.get(port, host, API_FILE_DOWNLOAD)
         .putHeader("token", token)
         .addQueryParam("file-id", uploadedRLSampleFileId)
         .send(handler -> {
@@ -304,7 +308,7 @@ public class FileServiceTest {
   @Order(2)
   @DisplayName("download a sample file (group level)")
   void testDownloadSampleGLFileSuccess(Vertx vertx, VertxTestContext testContext) {
-    client.get(8443, "localhost", API_FILE_DOWNLOAD)
+    client.get(port, host, API_FILE_DOWNLOAD)
         .putHeader("token", token)
         .addQueryParam("file-id", uploadedGLSampleFileId)
         .send(handler -> {
@@ -324,7 +328,7 @@ public class FileServiceTest {
   @Order(2)
   @DisplayName("download a archive file (resource level)")
   void testDownloadArchiveRLFileSuccess(Vertx vertx, VertxTestContext testContext) {
-    client.get(8443, "localhost", API_FILE_DOWNLOAD)
+    client.get(port, host, API_FILE_DOWNLOAD)
         .putHeader("token", token)
         .addQueryParam("file-id", uploadedRLArchiveFileId)
         .send(handler -> {
@@ -344,7 +348,7 @@ public class FileServiceTest {
   @Order(2)
   @DisplayName("download a archive file (group level)")
   void testDownloadArchiveGLFileSuccess(Vertx vertx, VertxTestContext testContext) {
-    client.get(8443, "localhost", API_FILE_DOWNLOAD)
+    client.get(port, host, API_FILE_DOWNLOAD)
         .putHeader("token", token)
         .addQueryParam("file-id", uploadedGLArchiveFileId)
         .send(handler -> {
@@ -364,7 +368,7 @@ public class FileServiceTest {
   @Test
   @DisplayName("404 - delete a file (Invalid file)")
   void testDeleteFileInvalidFileId(Vertx vertx, VertxTestContext testContext) {
-    client.delete(8443, "localhost", API_FILE_DELETE)
+    client.delete(port, host, API_FILE_DELETE)
         .putHeader("token", token)
         .addQueryParam("file-id", uploadedRLSampleFileId + "invalidfile.txt")
         .send(handler -> {
@@ -380,7 +384,7 @@ public class FileServiceTest {
   @Test
   @DisplayName("401 - delete a file (Invalid id)")
   void testDeleteFileWithoutToken(Vertx vertx, VertxTestContext testContext) {
-    client.delete(8443, "localhost", API_FILE_DELETE)
+    client.delete(port, host, API_FILE_DELETE)
         .addQueryParam("file-id", uploadedRLSampleFileId)
         .send(handler -> {
           if (handler.succeeded()) {
@@ -396,7 +400,7 @@ public class FileServiceTest {
   @Order(3)
   @DisplayName("delete a sample file (resource level)")
   void testDeleteRLSampleFileSuccess(Vertx vertx, VertxTestContext testContext) {
-    client.delete(8443, "localhost", API_FILE_DELETE)
+    client.delete(port, host, API_FILE_DELETE)
         .putHeader("token", token)
         .addQueryParam("file-id", uploadedRLSampleFileId)
         .send(handler -> {
@@ -414,7 +418,7 @@ public class FileServiceTest {
   @Order(3)
   @DisplayName("delete a sample file(group level)")
   void testDeleteGLSampleFileSuccess(Vertx vertx, VertxTestContext testContext) {
-    client.delete(8443, "localhost", API_FILE_DELETE)
+    client.delete(port, host, API_FILE_DELETE)
         .putHeader("token", token)
         .addQueryParam("file-id", uploadedGLSampleFileId)
         .send(handler -> {
@@ -432,7 +436,7 @@ public class FileServiceTest {
   @Order(3)
   @DisplayName("delete a archive file(resource level)")
   void testDeleteRLArchiveFileSuccess(Vertx vertx, VertxTestContext testContext) {
-    client.delete(8443, "localhost", API_FILE_DELETE)
+    client.delete(port, host, API_FILE_DELETE)
         .putHeader("token", token)
         .addQueryParam("file-id", uploadedRLArchiveFileId)
         .send(handler -> {
@@ -450,7 +454,7 @@ public class FileServiceTest {
   @Order(3)
   @DisplayName("delete a archive file(group level)")
   void testDeleteGLArchiveFileSuccess(Vertx vertx, VertxTestContext testContext) {
-    client.delete(8443, "localhost", API_FILE_DELETE)
+    client.delete(port, host, API_FILE_DELETE)
         .putHeader("token", token)
         .addQueryParam("file-id", uploadedGLArchiveFileId)
         .send(handler -> {
