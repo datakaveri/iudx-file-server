@@ -174,17 +174,6 @@ public class FileServerVerticle extends AbstractVerticle {
         keystorePassword = config().getString("keystorePassword");
         truststore = config().getString("truststore");
         truststorePassword = config().getString("truststorePassword");
-        allowedDomain = config().getString("domains");
-
-
-        allowedDomains = allowedDomain.split(",");
-
-        for (int i = 0; i < allowedDomains.length; i++) {
-          LOGGER.info(allowedDomains[i].toLowerCase());
-          instanceIDs.add(allowedDomains[i].toLowerCase());
-        }
-
-        LOGGER.info("Updated domain list. Serving " + instanceIDs.size() + " tenants");
 
         LOGGER.info("starting server");
         server =
