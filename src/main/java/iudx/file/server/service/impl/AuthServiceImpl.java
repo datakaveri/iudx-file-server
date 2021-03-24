@@ -71,6 +71,8 @@ public class AuthServiceImpl implements AuthService {
       LOGGER.debug("Info: TIP Response is : " + tipResponse);
       String id = request.getJsonArray("ids").getString(0);
       return isItemExist(id);
+    }).onFailure(failure -> {
+        promise.fail("Invalid Token");    	
     }).onSuccess(success -> {
       responseContainer.isItemExist = success;
       Future<JsonObject> isValid =
