@@ -7,6 +7,8 @@ secrets/*.jks
 .*.env
 docker-compose.temp.yml
 config.properties
+upload-dir/
+temp-dir/
 ### STS ###
 .apt_generated
 .classpath

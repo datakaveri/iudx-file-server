@@ -7,13 +7,13 @@ services:
       - ./docs/:/usr/share/app/docs
       - ./secrets/keystore.jks:/usr/share/app/secrets/keystore.jks
       - type: volume
-        source: upload-volume
-        target: /usr/share/app/upload-dir
+        source: fs-upload-volume
+        target: /usr/share/app/upload-dir/
         volume:
           nocopy: true
       - type: volume
-        source: temp-volume
-        target: /usr/share/app/temp-dir
+        source: fs-temp-volume
+        target: /usr/share/app/temp-dir/
         volume:
           nocopy: true
     restart: always
@@ -25,7 +25,7 @@ services:
     command: bash -c "exec java $$FS_JAVA_OPTS  -jar ./fatjar.jar  --host $$(hostname) -c secrets/all-verticles-configs/config.json"
 
 volumes:
-  upload-volume:
+  fs-upload-volume:
     external: true
-  temp-volume:
+  fs-temp-volume:
     external: true

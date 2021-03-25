@@ -19,18 +19,18 @@
 			"databasePassword": "",
 			
 			"catalogueHost":"",
-            		"cataloguePort":443,
-            
-            		"authHost":"",
-            		"authPort":443,
-            
+			"cataloguePort":443,
+			
+			"authHost":"",
+			"authPort":443,
+			
 			
 			"automaticRecoveryEnabled": true,
 			"truststore": "secrets/keystore.jks",
 			"truststorePassword": "",
 			
-			"tmp_dir":"/usr/share/app/temp-dir",
-			"upload_dir":"/usr/share/app/upload-dir"
+			"tmp_dir":"temp-dir/",
+			"upload_dir":"upload-dir/"
 		}
 	]
 }
