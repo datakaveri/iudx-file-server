@@ -1,5 +1,22 @@
-# iudx-file-server
+![IUDX](./docs/iudx.png)
 
+# iudx-file-server
+The file server is [IUDXs](https://iudx.org.in) an archival, sample data file store which allows users to discovery, download and upload files.
+It allows data providers to upload their archives of data *resources* in accordance to the IUDX vocabulary annotated meta-data document, data consumers to query the meta-data and download files as per the consent of the provider.
+The consumers can query the metadata and download files from the file server using HTTPs.
+
+<p align="center">
+<img src="./docs/file_server_overview.png">
+</p>
+
+## Features
+
+- Provides file data access from available resources using standard APIs
+- Search APIs for searching available files through meta data search
+- Integration with authorization server (token introspection) to serve private files as per the access control policies set by the provider
+- Secure data access over TLS
+- Scalable, service mesh architecture based implementation using open source components: Vert.X API framework, Elasticsearch for database
+- Hazelcast and Zookeeper based cluster management and service discovery
 
 ## Get Started
 
@@ -9,7 +26,7 @@
    git clone https://github.com/datakaveri/iudx-file-server.git && cd iudx-file-server
    ```
 2. Make a config file based on the template in `example-configs/config-dev.json` for non-clustered vertx and  `example-configs/config-depl.json` for clustered vertx.
-   - Generate a certificate using Lets Encrypt or other methods
+   - Generate a certificate using Lets Encrypt or other methods. Ensure that the domain name of the server is in the CN of the certificate to integrate with IUDX auth server.
    - Make a Java Keystore File and mention its path and password in the appropriate sections
    - Modify the database url and associated credentials in the appropriate sections. Don't modify the field names`upload_dir` and `temp_dir`, leave it as it is from the example-configs.
    - Populate secrets directory with following structure in the present directory:
@@ -83,3 +100,31 @@
    ```sh
    mvn clean compile  exec:java@file-server -Dconfig-dev.file=config-x.json
    ```
+### Testing
+
+### Unit tests
+1. Run the server through either docker or maven
+2. Run the unit tests and generate a surefire report 
+   `mvn clean test-compile surefire:test surefire-report:report`
+3. Reports are stored in `./target/`
+
+### Integration tests
+Integration tests are through Postman/Newman whose script can be found from [here](./src/test/resources/iudx-file-server-api.Release-v2.5.postman_collection.json).
+1. Install prerequisites 
+   - [postman](https://www.postman.com/) + [newman](https://www.npmjs.com/package/newman)
+   - [newman reporter-htmlextra](https://www.npmjs.com/package/newman-reporter-htmlextra)
+2. Example Postman environment can be found [here](./src/test/resources/file.iudx.io.Release-v2.5.postman_environment.json)
+3. Run the server through either docker or maven
+4. Run the integration tests and generate the newman report 
+   `newman run <postman-collection-path> -e <postman-environment> --insecure -r htmlextra --reporter-htmlextra-export .`
+5. Reports are stored in `./target/`
+
+## Contributing
+We follow Git Merge based workflow 
+1. Fork this repo
+2. Create a new feature branch in your fork. Multiple features must have a hyphen separated name, or refer to a milestone name as mentioned in Github -> Projects 
+3. Commit to your fork and raise a Pull Request with upstream
+
+## License
+[MIT](./LICENSE.txt)   
+   
