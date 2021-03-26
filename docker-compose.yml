@@ -1,0 +1,31 @@
+version: '3.7'
+services:
+  file-server:
+    env_file:
+      - ./.file-server.env
+    volumes:
+      - ./docs/:/usr/share/app/docs
+      - ./secrets/keystore.jks:/usr/share/app/secrets/keystore.jks
+      - type: volume
+        source: fs-upload-volume
+        target: /usr/share/app/upload-dir/
+        volume:
+          nocopy: true
+      - type: volume
+        source: fs-temp-volume
+        target: /usr/share/app/temp-dir/
+        volume:
+          nocopy: true
+    restart: always
+    logging:
+       driver: "json-file"
+       options:
+          max-file: "3"
+          max-size: "5m"
+    command: bash -c "exec java $$FS_JAVA_OPTS  -jar ./fatjar.jar  --host $$(hostname) -c secrets/all-verticles-configs/config.json"
+
+volumes:
+  fs-upload-volume:
+    external: true
+  fs-temp-volume:
+    external: true

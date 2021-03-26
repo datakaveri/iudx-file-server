@@ -1,6 +1,14 @@
 /target/
 !.mvn/wrapper/maven-wrapper.jar
-
+###IUDX###
+secrets/all-verticles-configs/*.json
+secrets/one-verticle-configs/*.json
+secrets/*.jks
+.*.env
+docker-compose.temp.yml
+config.properties
+upload-dir/
+temp-dir/
 ### STS ###
 .apt_generated
 .classpath

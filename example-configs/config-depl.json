@@ -4,15 +4,14 @@
 		"zookeeper"
 	],
 	"clusterId": "iudx-fs-cluster",
-	"host": "server",
 	"modules": [
 		{
 			"id": "iudx.file.server.FileServerVerticle",
-			"keystore": "configs/keystore.jks",
+			"keystore": "secrets/keystore.jks",
 			"keystorePassword": "",
 			"verticleInstances": 2,
-			"ssl": true,
-			"port":8443,
+			"ssl": false,
+			"port":80,
 			
 			"databaseIP": "",
 			"databasePort":80 ,
@@ -20,18 +19,18 @@
 			"databasePassword": "",
 			
 			"catalogueHost":"",
-            "cataloguePort":443,
-            
-            "authHost":"",
-            "authPort":443,
-            
+			"cataloguePort":443,
+			
+			"authHost":"",
+			"authPort":443,
+			
 			
 			"automaticRecoveryEnabled": true,
-			"truststore": "configs/keystore.jks",
+			"truststore": "secrets/keystore.jks",
 			"truststorePassword": "",
 			
-			"tmp_dir":"",
-			"upload_dir":""
+			"tmp_dir":"temp-dir/",
+			"upload_dir":"upload-dir/"
 		}
 	]
 }

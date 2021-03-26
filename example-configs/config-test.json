@@ -1,0 +1,40 @@
+{
+    "version": "1.0",
+    "zookeepers": [
+        "zookeeper"
+    ],
+    "clusterId": "iudx-fs-cluster",
+    "host": "server",
+    "modules": [
+        {
+			"id": "iudx.file.server.FileServerVerticle",
+			"keystore": "secrets/keystore.jks",
+			"keystorePassword": "",
+			"verticleInstances": 2,
+			"ssl": false,
+			"host":"localhost",
+			"port": 80,
+			
+			"databaseIP": "",
+			"databasePort":80 ,
+			"databaseUser": "",
+			"databasePassword": "",
+			
+			"catalogueHost":"",
+			"cataloguePort":443,
+			
+			"authHost":"",
+			"authPort":443,
+			
+			
+			"automaticRecoveryEnabled": true,
+			"truststore": "secrets/keystore.jks",
+			"truststorePassword": "",
+			
+			"tmp_dir":"temp-dir/",
+			"upload_dir":"upload-dir/",
+			
+			"testToken":""
+        }
+    ]
+}

@@ -1,0 +1,13 @@
+version: '3.7'
+networks:
+  fs-net:
+    driver: bridge
+services:
+  file-server:
+    image: iudx/fs-dev:latest
+    volumes:
+      - ./secrets/all-verticles-configs/config-dev.json:/usr/share/app/secrets/all-verticles-configs/config.json
+    ports:
+      - "8080:8080"
+    networks: 
+      - fs-net
