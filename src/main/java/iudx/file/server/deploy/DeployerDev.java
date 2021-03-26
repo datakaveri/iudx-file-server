@@ -61,7 +61,7 @@ public class DeployerDev {
   }
 
   public static void main(String[] args) {
-    CLI cli = CLI.create("IUDX Cat").setSummary("A CLI to deploy the resource server")
+    CLI cli = CLI.create("IUDX File Server").setSummary("A CLI to deploy the resource server")
         .addOption(new Option().setLongName("help").setShortName("h").setFlag(true)
             .setDescription("display help"))
         .addOption(new Option().setLongName("config").setShortName("c")
