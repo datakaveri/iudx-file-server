@@ -9,7 +9,7 @@ services:
     volumes:
       - ./secrets/all-verticles-configs/config-depl.json:/usr/share/app/secrets/all-verticles-configs/config.json
     expose:
-      - "80"
+      - "8080"
       - "9000"
     networks: 
       - overlay-net

@@ -8,6 +8,6 @@ services:
     volumes:
       - ./secrets/all-verticles-configs/config-dev.json:/usr/share/app/secrets/all-verticles-configs/config.json
     ports:
-      - "8081:80"
+      - "8080:8080"
     networks: 
       - fs-net
