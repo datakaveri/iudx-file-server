@@ -1,8 +1,8 @@
 ![IUDX](./docs/iudx.png)
 
 # iudx-file-server
-The file server is [IUDXs](https://iudx.org.in) an archival, sample data file store which allows users to discovery, download and upload files.
-It allows data providers to upload their archives of data *resources* in accordance to the IUDX vocabulary annotated meta-data document, data consumers to query the meta-data and download files as per the consent of the provider.
+The file server is [IUDX](https://iudx.org.in) archival, sample file data store which allows users to discovery, download and upload files.
+It allows data providers to upload and manage archives of data *resources* and its associated meta-data documents through APIs. It also allows data consumers to query the meta-data and download files as per the consent of the providers.
 The consumers can query the metadata and download files from the file server using HTTPs.
 
 <p align="center">
