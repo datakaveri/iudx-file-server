@@ -85,6 +85,7 @@ public class FileServerVerticle extends AbstractVerticle {
   private AuthService authService;
   private DBService dbService;
   private QueryParamsValidator queryParamValidator;
+  private ContentTypeValidator contentTypeValidator;
 
 
   @Override
@@ -95,6 +96,7 @@ public class FileServerVerticle extends AbstractVerticle {
     ValidationHandlerFactory validations = new ValidationHandlerFactory();
     ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
     queryParamValidator = new QueryParamsValidator();
+    contentTypeValidator=new ContentTypeValidator(config().getJsonObject("allowedContentType"));
 
     authService = new AuthServiceImpl(vertx, getWebClient(vertx, config()), config());
     dbService = new DBServiceImpl(config());
@@ -212,7 +214,7 @@ public class FileServerVerticle extends AbstractVerticle {
         uploadPath.append("/" + fileIdComponent[4]);
       sampleFileUpload(response, formParam, files, "sample", uploadPath.toString(), id);
     } else {
-      if (!formParam.contains("startTime") && !formParam.contains("endTime")) {
+      if (!formParam.contains("startTime") || !formParam.contains("endTime")) {
         ValidationException ex = new ValidationException("Mandatory fields required");
         ex.setParameterName("startTime/endTime");
         routingContext.fail(ex);
@@ -547,7 +549,7 @@ public class FileServerVerticle extends AbstractVerticle {
   private boolean isValidFileContentType(Set<FileUpload> files) {
     for (FileUpload file : files) {
       System.out.println(file.contentType());
-      if (!ContentTypeValidator.isValid(file.contentType())) {
+      if (!contentTypeValidator.isValid(file.contentType())) {
         return false;
       }
     }
