@@ -7,26 +7,36 @@
 			"keystorePassword": "",
 			"verticleInstances": 2,
 			"ssl": false,
-			"port":80,
+			"port": 80,
 			
 			"databaseIP": "",
-			"databasePort":80 ,
+			"databasePort": 80,
 			"databaseUser": "",
 			"databasePassword": "",
 			
-			"catalogueHost":"",
-			"cataloguePort":443,
+			"catalogueHost": "",
+			"cataloguePort": 443,
 			
-			"authHost":"",
-			"authPort":443,
-			
+			"authHost": "",
+			"authPort": 443,
 			
 			"automaticRecoveryEnabled": true,
 			"truststore": "secrets/keystore.jks",
 			"truststorePassword": "",
 			
-			"tmp_dir":"temp-dir/",
-			"upload_dir":"upload-dir/"
+			"tmp_dir": "temp-dir/",
+			"upload_dir": "upload-dir/",
+			
+			"allowedContentType": {
+				"text/plain": "txt",
+				"text/csv": "csv",
+				"application/pdf": "pdf",
+				"video/mp4": "mp4",
+				"application/zip": "zip",
+				"application/x-7z-compressed": "7z",
+				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
+				"application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx"
+			}
 		}
 	]
 }
