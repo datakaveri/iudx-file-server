@@ -251,6 +251,51 @@ public class FileServiceTest {
       }
     });
   }
+  
+  @Test
+  @Order(1)
+  @DisplayName("upload a Archive file (Group level) without start date")
+  void testUploadArchiveGLFileNoEndDate(Vertx vertx, VertxTestContext testContext) {
+    MultipartForm form = MultipartForm.create()
+        .binaryFileUpload("text", "uploadtest.txt", "src/test/resources/uploadtest.txt",
+            "text/plain");
+    form.attribute("id", groupId);
+    form.attribute("startTime", "2020-09-05T00:00:00Z");
+
+    HttpRequest<Buffer> req = client.post(port, host, API_FILE_UPLOAD);
+    req.putHeader("token", token);
+    req.sendMultipartForm(form, handler -> {
+      if (handler.succeeded()) {
+        assertEquals(HttpStatus.SC_BAD_REQUEST, handler.result().statusCode());
+        testContext.completeNow();
+      } else {
+        testContext.failNow(handler.cause());
+      }
+    });
+  }
+  
+  @Test
+  @Order(1)
+  @DisplayName("upload a Archive file (Group level) without end date")
+  void testUploadArchiveGLFile400NoStartDate(Vertx vertx, VertxTestContext testContext) {
+    MultipartForm form = MultipartForm.create()
+        .binaryFileUpload("text", "uploadtest.txt", "src/test/resources/uploadtest.txt",
+            "text/plain");
+    form.attribute("id", groupId);
+    form.attribute("startTime", "2020-09-05T00:00:00Z");
+
+    HttpRequest<Buffer> req = client.post(port, host, API_FILE_UPLOAD);
+    req.putHeader("token", token);
+    req.sendMultipartForm(form, handler -> {
+      if (handler.succeeded()) {
+        assertEquals(HttpStatus.SC_BAD_REQUEST, handler.result().statusCode());
+        testContext.completeNow();
+      } else {
+        testContext.failNow(handler.cause());
+      }
+    });
+  }
+
 
 
   @Test
