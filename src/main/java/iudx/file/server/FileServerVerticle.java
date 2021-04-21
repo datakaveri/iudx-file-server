@@ -333,11 +333,11 @@ public class FileServerVerticle extends AbstractVerticle {
     // extract the file-uuid from supplied id, since position of file-id in id will be different for
     // group level(pos:5) and resource level(pos:4)
     String fileUUID = fileIdComponent.length >= 6 ? fileIdComponent[5] : fileIdComponent[4];
-    System.out.println(fileUUID);
+    LOGGER.info(fileUUID);
     if (fileUUID.contains("sample") && fileIdComponent.length >= 6) {
       uploadDir.append("/" + fileIdComponent[4]);
     }
-    System.out.println(uploadDir);
+    LOGGER.info(uploadDir);
     fileService.download(fileUUID, uploadDir.toString(), response, handler -> {
       if (handler.succeeded()) {
         // do nothing response is already written and file is served using content-disposition.
@@ -351,7 +351,7 @@ public class FileServerVerticle extends AbstractVerticle {
   public void query(RoutingContext context) {
     HttpServerResponse response = context.response();
     MultiMap queryParams = getQueryParams(context, response).get();
-    System.out.println(queryParams);
+    LOGGER.info(queryParams);
     Future<Boolean> queryParamsValidator = queryParamValidator.isValid(queryParams);
     JsonObject query = new JsonObject();
     for (Map.Entry<String, String> entry : queryParams.entries()) {
@@ -402,7 +402,7 @@ public class FileServerVerticle extends AbstractVerticle {
     // extract the file-uuid from supplied id, since position of file-id in id will be different for
     // group level(pos:5) and resource level(pos:4)
     String fileUUID = fileIdComponent.length >= 6 ? fileIdComponent[5] : fileIdComponent[4];
-    System.out.println(fileUUID);
+    LOGGER.info(fileUUID);
     boolean isArchiveFile = true;
     if (fileUUID.contains("sample")) {
       isArchiveFile = false;
@@ -410,8 +410,8 @@ public class FileServerVerticle extends AbstractVerticle {
         uploadDir.append("/" + fileIdComponent[4]);
       }
     }
-    System.out.println(uploadDir);
-    System.out.println("is archieve : " + isArchiveFile);
+    LOGGER.info(uploadDir);
+    LOGGER.info("is archieve : " + isArchiveFile);
     if (isArchiveFile) {
       deleteArchiveFile(response, id, fileUUID, uploadDir.toString());
     } else {
@@ -424,7 +424,7 @@ public class FileServerVerticle extends AbstractVerticle {
 
   private void deleteSampleFile(HttpServerResponse response, String id, String fileUUID,
       String uploadDir) {
-    System.out.println("delete sample file");
+    LOGGER.info("delete sample file");
     fileService.delete(fileUUID, uploadDir.toString(), handler -> {
       if (handler.succeeded()) {
         JsonObject deleteResult = handler.result();
@@ -548,7 +548,7 @@ public class FileServerVerticle extends AbstractVerticle {
 
   private boolean isValidFileContentType(Set<FileUpload> files) {
     for (FileUpload file : files) {
-      System.out.println(file.contentType());
+      LOGGER.info(file.contentType());
       if (!contentTypeValidator.isValid(file.contentType())) {
         return false;
       }

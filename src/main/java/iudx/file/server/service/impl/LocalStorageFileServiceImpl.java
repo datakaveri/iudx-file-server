@@ -44,7 +44,7 @@ public class LocalStorageFileServiceImpl implements FileService {
     LOGGER.debug("uploading.. files to file system.");
     final JsonObject metadata = new JsonObject();
     final JsonObject finalResponse = new JsonObject();
-    System.out.println(directory+filePath);
+    LOGGER.info(directory+filePath);
     fileSystem=fileSystem.mkdirsBlocking(directory + filePath);
     Iterator<FileUpload> fileUploadIterator = files.iterator();
     while (fileUploadIterator.hasNext()) {
@@ -92,7 +92,7 @@ public class LocalStorageFileServiceImpl implements FileService {
     JsonObject finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
     String path = directory + uploadDir + "/" + fileName;
-    System.out.println(path);
+    LOGGER.info(path);
     response.setChunked(true);
     fileSystem.exists(path, existHandler -> {
       if (existHandler.succeeded()) {

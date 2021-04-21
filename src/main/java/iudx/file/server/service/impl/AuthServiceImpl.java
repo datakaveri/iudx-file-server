@@ -61,7 +61,7 @@ public class AuthServiceImpl implements AuthService {
   @Override
   public Future<JsonObject> tokenInterospect(JsonObject request, JsonObject authenticationInfo) {
     Promise<JsonObject> promise = Promise.promise();
-    System.out.println("userRequest : " + request);
+    LOGGER.info("userRequest : " + request);
     String token = authenticationInfo.getString("token");
     TokenInterospectionResultContainer responseContainer =
         new TokenInterospectionResultContainer();
@@ -99,12 +99,12 @@ public class AuthServiceImpl implements AuthService {
       // call cat-server only when token not found in cache.
       JsonObject body = new JsonObject();
       body.put("token", token);
-      System.out.println(body);
+      LOGGER.info(body);
       webClient.post(authPort, authHost, "/auth/v1/token/introspect")
           .expect(ResponsePredicate.JSON)
           .sendJsonObject(body, httpResponseAsyncResult -> {
             if (httpResponseAsyncResult.failed()) {
-              System.out.println(httpResponseAsyncResult.cause());
+              LOGGER.info(httpResponseAsyncResult.cause());
               promise.fail(httpResponseAsyncResult.cause());
               return;
             }
@@ -116,7 +116,7 @@ public class AuthServiceImpl implements AuthService {
               return;
             }
             JsonObject responseBody = response.bodyAsJsonObject();
-            System.out.println(responseBody);
+            LOGGER.info(responseBody);
             String cacheExpiry = Instant.now(Clock.systemUTC())
                 .plus(CACHE_TIMEOUT, ChronoUnit.MINUTES)
                 .toString();

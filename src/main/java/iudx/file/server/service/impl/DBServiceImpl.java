@@ -44,9 +44,9 @@ public class DBServiceImpl implements DBService {
     elasticQuery.put("size", 1000);
     elasticQuery.put("query", boolQuery);
 
-    System.out.println(elasticQuery);
+    LOGGER.info(elasticQuery);
     String index = getIndex(query);
-    System.out.println(index);
+    LOGGER.info(index);
     index = index.concat(SEARCH_REQ_PARAM);
     client.searchAsync(index, FILTER_PATH_VAL, elasticQuery.toString(), searchHandler -> {
       if (searchHandler.succeeded()) {
@@ -60,12 +60,12 @@ public class DBServiceImpl implements DBService {
   @Override
   public void save(JsonObject document, Handler<AsyncResult<JsonObject>> handler) {
     String index = getIndex(document);
-    System.out.println(index);
+    LOGGER.info(index);
     client.insertAsync(index, document, insertHandler -> {
       if (insertHandler.succeeded()) {
         handler.handle(Future.succeededFuture(insertHandler.result()));
       } else {
-        System.out.println(insertHandler.cause().getMessage());
+        LOGGER.info(insertHandler.cause().getMessage());
         handler.handle(Future.failedFuture(insertHandler.cause().getMessage()));
       }
     });

@@ -1,9 +1,12 @@
 package iudx.file.server.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import io.vertx.core.Vertx;
 import io.vertx.core.file.FileSystem;
 
 public class FileCheckUtil {
+  private static final Logger LOGGER = LogManager.getLogger(FileCheckUtil.class);
   
   private FileSystem fs;
   private String directory;
@@ -32,7 +35,7 @@ public class FileCheckUtil {
       //group level sample and archive file are saved in same location.
     }
     fileId.append("/").append(idComponents[totalComponents-1]);
-    System.out.println("file to check from system ::: "+fileId.toString());
+    LOGGER.info("file to check from system ::: "+fileId.toString());
     return fs.existsBlocking(fileId.toString());
   }
 }
