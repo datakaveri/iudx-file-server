@@ -24,16 +24,19 @@ import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import iudx.file.server.service.AuthService;
+import iudx.file.server.service.ServerType;
+import iudx.file.server.service.WebClientFactory;
 
 public class AuthServiceImpl implements AuthService {
 
   private static final Logger LOGGER = LogManager.getLogger(AuthServiceImpl.class);
-  private final WebClient webClient;
+  private final WebClientFactory webClientFactory;
   private final Vertx vertx;
   private final int catPort;
   private final String catHost;
   private final String authHost;
   private final int authPort;
+  private final JsonObject config;
 
 
   private final Cache<String, JsonObject> tipCache = CacheBuilder.newBuilder()
@@ -47,9 +50,10 @@ public class AuthServiceImpl implements AuthService {
       .build();
 
 
-  public AuthServiceImpl(Vertx vertx, WebClient webClient, JsonObject config) {
+  public AuthServiceImpl(Vertx vertx, WebClientFactory webClientFactory, JsonObject config) {
     this.vertx = vertx;
-    this.webClient = webClient;
+    this.webClientFactory = webClientFactory;
+    this.config=config;
     this.catPort = config.getInteger("cataloguePort");
     this.catHost = config.getString("catalogueHost");
     this.authHost = config.getString("authHost");
@@ -63,14 +67,24 @@ public class AuthServiceImpl implements AuthService {
     Promise<JsonObject> promise = Promise.promise();
     LOGGER.info("userRequest : " + request);
     String token = authenticationInfo.getString("token");
+    WebClient webClient;
+    String idPassed=request.getJsonArray("ids").getString(0);
+    if(idPassed.matches(FILE_SERVER_REGEX)) {
+      LOGGER.debug("creating web client with file-server cert.");
+      webClient=getWebClient(ServerType.FILE_SERVER);
+    }else {
+      LOGGER.debug("creating web client with rs-server cert.");
+      webClient=getWebClient(ServerType.RESOURCE_SERVER);
+    }
+    
     TokenInterospectionResultContainer responseContainer =
         new TokenInterospectionResultContainer();
-    Future<JsonObject> tipResponseFut = retrieveTipResponse(token);
+    Future<JsonObject> tipResponseFut = retrieveTipResponse(token,webClient);
     tipResponseFut.compose(tipResponse -> {
       responseContainer.tipResponse = tipResponse;
       LOGGER.debug("Info: TIP Response is : " + tipResponse);
       String id = request.getJsonArray("ids").getString(0);
-      return isItemExist(id);
+      return isItemExist(id,webClient);
     }).onFailure(failure -> {
         promise.fail("Invalid Token");    	
     }).onSuccess(success -> {
@@ -90,7 +104,7 @@ public class AuthServiceImpl implements AuthService {
 
 
 
-  private Future<JsonObject> retrieveTipResponse(String token) {
+  private Future<JsonObject> retrieveTipResponse(String token,WebClient webClient) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject cacheResponse = tipCache.getIfPresent(token);
     if (cacheResponse == null) {
@@ -131,7 +145,7 @@ public class AuthServiceImpl implements AuthService {
     return promise.future();
   }
 
-  private Future<Boolean> isItemExist(String id) {
+  private Future<Boolean> isItemExist(String id,WebClient webClient) {
     LOGGER.debug("isItemExist() started");
     Promise<Boolean> promise = Promise.promise();
     // String id = itemId.replace("/*", "");
@@ -261,6 +275,10 @@ public class AuthServiceImpl implements AuthService {
 
   public boolean isResourceLevelId(String id) {
     return id.split("/").length >= 5;
+  }
+  
+  public WebClient getWebClient(ServerType serverType) {
+    return webClientFactory.getWebClientFor(serverType);
   }
 
 }

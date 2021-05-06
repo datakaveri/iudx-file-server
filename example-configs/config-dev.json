@@ -3,8 +3,6 @@
 	"modules": [
 		{
 			"id": "iudx.file.server.FileServerVerticle",
-			"keystore": "secrets/keystore.jks",
-			"keystorePassword": "",
 			"verticleInstances": 2,
 			"ssl": false,
 			"port": 80,
@@ -21,8 +19,12 @@
 			"authPort": 443,
 			
 			"automaticRecoveryEnabled": true,
-			"truststore": "secrets/keystore.jks",
-			"truststorePassword": "",
+			
+			"file-keystore":"secrets/keystore-file.jks",
+            "file-keystorePassword":"password",
+            
+            "rs-keystore":"secrets/keystore-rs.jks",
+            "rs-keystorePassword":"password",
 			
 			"tmp_dir": "temp-dir/",
 			"upload_dir": "upload-dir/",

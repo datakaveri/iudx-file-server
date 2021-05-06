@@ -38,6 +38,7 @@ import iudx.file.server.handlers.AuthHandler;
 import iudx.file.server.service.AuthService;
 import iudx.file.server.service.DBService;
 import iudx.file.server.service.FileService;
+import iudx.file.server.service.WebClientFactory;
 import iudx.file.server.service.impl.AuthServiceImpl;
 import iudx.file.server.service.impl.DBServiceImpl;
 import iudx.file.server.service.impl.LocalStorageFileServiceImpl;
@@ -86,6 +87,7 @@ public class FileServerVerticle extends AbstractVerticle {
   private DBService dbService;
   private QueryParamsValidator queryParamValidator;
   private ContentTypeValidator contentTypeValidator;
+  private WebClientFactory webClientFactory;
 
 
   @Override
@@ -98,7 +100,9 @@ public class FileServerVerticle extends AbstractVerticle {
     queryParamValidator = new QueryParamsValidator();
     contentTypeValidator=new ContentTypeValidator(config().getJsonObject("allowedContentType"));
 
-    authService = new AuthServiceImpl(vertx, getWebClient(vertx, config()), config());
+    webClientFactory=new WebClientFactory(vertx, config());
+    
+    authService = new AuthServiceImpl(vertx, webClientFactory, config());
     dbService = new DBServiceImpl(config());
 
     directory = config().getString("upload_dir");
@@ -138,8 +142,8 @@ public class FileServerVerticle extends AbstractVerticle {
 
     /* Read the configuration and set the HTTPs server properties. */
     ClientAuth clientAuth = ClientAuth.REQUEST;
-    truststore = config().getString("truststore");
-    truststorePassword = config().getString("truststorePassword");
+    truststore = config().getString("file-keystore");
+    truststorePassword = config().getString("file-keystorePassword");
 
     LOGGER.info("starting server");
     /* Read ssl configuration. */
@@ -151,8 +155,8 @@ public class FileServerVerticle extends AbstractVerticle {
 
       /* Read the configuration and set the HTTPs server properties. */
 
-      keystore = config().getString("keystore");
-      keystorePassword = config().getString("keystorePassword");
+      keystore = config().getString("file-keystore");
+      keystorePassword = config().getString("file-keystorePassword");
 
       /* Setup the HTTPs server properties, APIs and port. */
 
