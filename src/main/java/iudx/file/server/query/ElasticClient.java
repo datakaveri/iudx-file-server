@@ -128,7 +128,7 @@ public class ElasticClient {
         JsonObject jsonTemp;
         try {
           JsonObject responseJson = new JsonObject(EntityUtils.toString(response.getEntity()));
-          System.out.println("response :"+responseJson);
+          LOGGER.info("response :"+responseJson);
           if (!responseJson.containsKey("result")) {
             responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
                 .setMessage("Error while inserting.");
@@ -151,7 +151,7 @@ public class ElasticClient {
       @Override
       public void onFailure(Exception ex) {
         try {
-          System.out.println("error :"+ex.getMessage());
+          LOGGER.info("error :"+ex.getMessage());
           String error = ex.getMessage().substring(ex.getMessage().indexOf("{"),
               ex.getMessage().lastIndexOf("}") + 1);
           JsonObject dbError = new JsonObject(error);

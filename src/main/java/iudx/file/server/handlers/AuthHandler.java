@@ -57,12 +57,12 @@ public class AuthHandler implements Handler<RoutingContext> {
    
     //bypass auth flow for sample file download.
     if(fileName!=null && fileName.contains("sample")) {
-      System.out.println("sampleFile : "+fileName);
+      LOGGER.info("sampleFile : "+fileName);
       context.next();
       return;
     }
     
-    System.out.println("fileName : "+fileName);
+    LOGGER.info("fileName : "+fileName);
     
     JsonArray idArray=new JsonArray();
     idArray.add(id);

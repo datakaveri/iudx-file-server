@@ -72,6 +72,8 @@ public class Constants {
   public static final String FILTER_PATH_VAL = "took,hits.hits._source";
   public static final String SEARCH_REQ_PARAM = "/_search";
   public static final String ID = "id";
+  
+  public static final String FILE_SERVER_REGEX="(.*)file(.*)";
 
 
 }
