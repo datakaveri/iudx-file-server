@@ -95,7 +95,7 @@ public class Deployer {
               .setEmbeddedServerOptions(new HttpServerOptions().setPort(9000)))
         // .setPublishQuantiles(true))
               .setLabels(EnumSet.of(Label.EB_ADDRESS, Label.EB_FAILURE, Label.HTTP_CODE,
-                    Label.HTTP_METHOD, Label.HTTP_PATH))
+                    Label.HTTP_METHOD))
               .setEnabled(true);
   }
 
