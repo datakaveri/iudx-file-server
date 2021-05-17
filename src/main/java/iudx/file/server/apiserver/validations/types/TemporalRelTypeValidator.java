@@ -21,7 +21,7 @@ public class TemporalRelTypeValidator implements Validator {
 
   @Override
   public boolean isValid() {
-    LOGGER.debug("value : "+value+ "required : "+required);
+    LOGGER.debug("value : " + value + "required : " + required);
     if (required && (value == null || value.isBlank())) {
       LOGGER.error("Validation error : null or blank value for required mandatory field");
       return false;
@@ -48,35 +48,5 @@ public class TemporalRelTypeValidator implements Validator {
     // TODO Auto-generated method stub
     return "invalid time relation value.";
   }
-
-
-
 }
-// public ParameterTypeValidator create() {
-// ParameterTypeValidator relValidator = new TemporalRelValueValidator();
-// return relValidator;
-// }
-//
-//
-// class TemporalRelValueValidator implements ParameterTypeValidator {
-//
-// private boolean isValidValue(String value) {
-// return value.equals("during");
-// }
-//
-// @Override
-// public RequestParameter isValid(String value) throws ValidationException {
-// // TODO Auto-generated method stub
-// if (value.isBlank()) {
-// throw ValidationException.ValidationExceptionFactory
-// .generateNotMatchValidationException("Empty values are not allowed in parameter.");
-// }
-//
-// if (!isValidValue(value)) {
-// throw ValidationException.ValidationExceptionFactory
-// .generateNotMatchValidationException("Not a valid value for timerel");
-// }
-// return RequestParameter.create(value);
-// }
-//
-// }
+

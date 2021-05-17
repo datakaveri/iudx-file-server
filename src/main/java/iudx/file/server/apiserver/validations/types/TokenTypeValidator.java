@@ -39,24 +39,4 @@ public class TokenTypeValidator implements Validator {
     // TODO Auto-generated method stub
     return null;
   }
-
-  // public ParameterTypeValidator create() {
-  // ParameterTypeValidator tokenValidator = new TokenValidator();
-  // return tokenValidator;
-  // }
-  //
-  //
-  // class TokenValidator implements ParameterTypeValidator {
-  // @Override
-  // public RequestParameter isValid(String value) throws ValidationException {
-  // // TODO match regex for token
-  // if (value.isBlank()) {
-  // throw ValidationException.ValidationExceptionFactory
-  // .generateNotMatchValidationException("Empty values are not allowed in parameter.");
-  // }
-  // return RequestParameter.create(value);
-  // }
-  //
-  // }
-
 }

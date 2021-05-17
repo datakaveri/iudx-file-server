@@ -20,13 +20,13 @@ public class SampleTypeValidator implements Validator {
     if (required && (value == null || value.isBlank())) {
       LOGGER.error("Validation error : null or blank value for required mandatory field");
       return false;
-    }else {
-      if(value==null || value.isBlank()) {
+    } else {
+      if (value == null || value.isBlank()) {
         return true;
       }
     }
-    if(!value.equalsIgnoreCase("true")) {
-      LOGGER.error("Validation error : Invalid isSample field value [ "+value+" ]");
+    if (!value.equalsIgnoreCase("true")) {
+      LOGGER.error("Validation error : Invalid isSample field value [ " + value + " ]");
       return false;
     }
     return true;
@@ -42,20 +42,4 @@ public class SampleTypeValidator implements Validator {
     return "invalid sample value provided.";
   }
 
-  // public ParameterTypeValidator create() {
-  // ParameterTypeValidator sampleValueValidator = new SampleValueValidator();
-  // return sampleValueValidator;
-  // }
-  //
-  //
-  // class SampleValueValidator implements ParameterTypeValidator {
-  // @Override
-  // public RequestParameter isValid(String value) throws ValidationException {
-  // if (!value.equals("true")) {
-  // throw ValidationException.ValidationExceptionFactory
-  // .generateNotMatchValidationException("Value not recognized for field");
-  // }
-  // return RequestParameter.create(value);
-  // }
-  // }
 }
