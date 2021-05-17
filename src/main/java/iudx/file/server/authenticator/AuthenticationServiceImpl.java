@@ -1,7 +1,6 @@
 package iudx.file.server.authenticator;
 
-import static iudx.file.server.apiserver.utilities.Constants.CACHE_TIMEOUT;
-import static iudx.file.server.apiserver.utilities.Constants.FILE_SERVER_REGEX;
+import static iudx.file.server.authenticator.utilities.Constants.*;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

@@ -1,6 +1,6 @@
 package iudx.file.server.authenticator;
 
-import static iudx.file.server.common.Constants.AUTH_SERVICE_ADDRESS;
+import static iudx.file.server.authenticator.utilities.Constants.*;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;

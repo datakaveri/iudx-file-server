@@ -23,10 +23,6 @@ public class Constants extends iudx.file.server.common.Constants{
   public static final String JSON_DETAIL = "detail";
 
 
-  // cache
-  public static final long CACHE_TIMEOUT = 30;
-
-
   // Form/Query Params
   public static final String PARAM_FILE = "file";
   public static final String PARAM_ID = "id";
@@ -38,9 +34,6 @@ public class Constants extends iudx.file.server.common.Constants{
 
   public static final String API_ENDPOINT = "apiEndpoint";
   public static final String API_METHOD = "method";
-
-  
-  public static final String FILE_SERVER_REGEX="(.*)file(.*)";
 
 
 }
