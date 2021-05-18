@@ -6,7 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
-import iudx.file.server.FileServerVerticle;
+import iudx.file.server.apiserver.FileServerVerticle;
 
 
 public class FileServerDeployer {

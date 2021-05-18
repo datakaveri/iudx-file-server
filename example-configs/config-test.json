@@ -1,51 +1,60 @@
 {
-	"version": "1.0",
-	"zookeepers": [
-		"zookeeper"
-	],
-	"clusterId": "iudx-fs-cluster",
-	"host": "server",
-	"modules": [
-		{
-			"id": "iudx.file.server.FileServerVerticle",
-			"ssl": false,
-			"host": "localhost",
-			"port": 80,
-			
-			"databaseIP": "",
-			"databasePort": 80,
-			"databaseUser": "",
-			"databasePassword": "",
-			
-			"catalogueHost": "",
-			"cataloguePort": 443,
-			
-			"authHost": "",
-			"authPort": 443,
-			
-			"automaticRecoveryEnabled": true,
-			
-			"file-keystore":"secrets/keystore-file.jks",
-            "file-keystorePassword":"",
+    "version": "1.0",
+    "zookeepers": [
+        "zookeeper"
+    ],
+    "clusterId": "iudx-fs-cluster",
+    "host": "fs",
+    "modules": [
+        {
+            "id": "iudx.file.server.apiserver.FileServerVerticle",
+            "verticleInstances": 1,
+            "ssl": true,
+            "port": 8443,
             
-            "rs-keystore":"secrets/keystore-rs.jks",
-            "rs-keystorePassword":"",
-			
-			"tmp_dir": "temp-dir/",
-			"upload_dir": "upload-dir/",
-			
-			"testToken": "",
-			
-			"allowedContentType": {
-				"text/plain": "txt",
-				"text/csv": "csv",
-				"application/pdf": "pdf",
-				"video/mp4": "mp4",
-				"application/zip": "zip",
-				"application/x-7z-compressed": "7z",
-				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
-				"application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx"
-			}
-		}
-	]
+            "automaticRecoveryEnabled": true,
+            
+            "file-keystore": "secrets/keystore-file.jks",
+            "file-keystorePassword": "",
+            
+            "tmp_dir": "temp-dir/",
+            "upload_dir": "upload-dir/",
+            
+            "allowedContentType": {
+                "text/plain": "txt",
+                "text/csv": "csv",
+                "application/pdf": "pdf",
+                "video/mp4": "mp4",
+                "application/zip": "zip",
+                "application/x-7z-compressed": "7z",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx"
+            }
+        },
+        {
+            "id": "iudx.file.server.authenticator.AuthenticationVerticle",
+            "verticleInstances": 1,
+            
+            "catalogueHost": "",
+            "cataloguePort": 443,
+            
+            "authHost": "",
+            "authPort": 443,
+            
+            "file-keystore": "secrets/keystore-file.jks",
+            "file-keystorePassword": "",
+            
+            "rs-keystore": "secrets/keystore-rs.jks",
+            "rs-keystorePassword": ""
+        },
+        {
+            "id": "iudx.file.server.database.DatabaseVerticle",
+            "verticleInstances": 1,
+            "databaseIP": "localhost",
+            "databasePort": 9200,
+            "databaseUser": "elastic",
+            "databasePassword": "elk@elastic.in",
+            "databaseUsed": ""
+        }
+    ]
 }

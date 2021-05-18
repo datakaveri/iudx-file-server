@@ -1,0 +1,38 @@
+package iudx.file.server.database.utilities;
+
+public class Constants extends iudx.file.server.common.Constants {
+
+  public static final String ERROR = "Error";
+  public static final String COUNT = "count";
+  public static final String DETAIL = "detail";
+  public static final String ERROR_TYPE = "type";
+  public static final String FAILED = "Failed";
+  public static final String INDEX_NOT_FOUND = "index_not_found_exception";
+  public static final String INVALID_RESOURCE_ID = "Invalid resource id";
+  public static final String RESULTS = "results";
+  public static final String ROOT_CAUSE = "root_cause";
+  public static final String REASON = "reason";
+  public static final String SUCCESS = "Success";
+  public static final String TITLE = "title";
+  public static final String TYPE_KEY = "type";
+  public static final String STATUS = "status";
+  public static final String HITS = "hits";
+  public static final String DOCS_KEY = "docs";
+  public static final String EMPTY_RESPONSE = "Empty response";
+  public static final String BAD_PARAMETERS = "Bad parameters";
+  public static final String SOURCE_FILTER_KEY = "_source";
+  public static final String FILTER_PATH = "filter_path";
+  public static final String FILTER_PATH_VAL = "took,hits.hits._source";
+  public static final String SEARCH_REQ_PARAM = "/_search";
+  public static final String ID = "id";
+
+  // SQL
+  public static final String SQL_DELETE = "DELETE FROM file_server_token s where file_token = $1";
+  public static final String SQL_INSERT =
+      "INSERT INTO file_server_token (user_token, file_token, validity_date, server_id ) VALUES ($1, $2, $3,$4)";
+  public static final String SQL_SELECT = "SELECT * FROM file_server_token WHERE user_token = $1";
+
+  public static final String TERM_QUERY = "{\"term\":{\"$1\":\"$2\"}}";
+  public static final String MUST_RANGE_QUERY =
+      "{\"must\":[{\"range\":{\"startTime\":{\"lte\":\"$1\"}}},{\"range\":{\"endTime\":{\"gte\":\"$2\"}}}]}";
+}
