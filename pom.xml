@@ -13,6 +13,30 @@
 		<hazelcast.version>4.0.2</hazelcast.version>
 		<micrometer.version>1.7.0</micrometer.version>
 		<curator.version>5.1.0</curator.version>
+		<maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version> 
+		<junit-jupiter-api.version>5.7.2</junit-jupiter-api.version>
+		<junit-jupiter-params.version>5.7.2</junit-jupiter-params.version>
+		<junit-jupiter-engine.version>5.7.2</junit-jupiter-engine.version>
+		<slf4j-api.version>1.7.30</slf4j-api.version>
+		<slf4j-log4j12.version>1.7.30</slf4j-log4j12.version>
+		<testcontainers.version>1.15.3</testcontainers.version>
+		<log4j-core.version>2.14.1</log4j-core.version>
+		<disruptor.version>3.4.4</disruptor.version>
+		<junit-jupiter.version>1.15.3</junit-jupiter.version>
+		<elasticsearch-rest-client.version>7.12.1</elasticsearch-rest-client.version>
+		<elasticsearch-rest-high-level-client.version>7.12.1</elasticsearch-rest-high-level-client.version>
+		<jacoco-maven-plugin.version>0.8.7</jacoco-maven-plugin.version>
+		<maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
+		<checkstyle.version>8.42</checkstyle.version>
+		<maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
+		<maven-javadoc-plugin.version>3.2.0</maven-javadoc-plugin.version>
+		<exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
+		<maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
+		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+		<maven-pmd-plugin.version>3.14.0</maven-pmd-plugin.version>
+		<maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
+		<maven-surefire-report-plugin.version>3.0.0-M5</maven-surefire-report-plugin.version>
+		
 		<exec.mainClass>iudx.file.server.deploy.Deployer</exec.mainClass>
 		<exec.mainClassDev>iudx.file.server.deploy.DeployerDev</exec.mainClassDev>
 		<config-dev.file>config-dev.json</config-dev.file>
@@ -59,24 +83,24 @@
 		<dependency>
 			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-checkstyle-plugin</artifactId>
-			<version>3.1.1</version>
+			<version>${maven-checkstyle-plugin.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-api</artifactId>
-			<version>5.5.2</version>
+			<version>${junit-jupiter-api.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-params</artifactId>
-			<version>5.5.2</version>
+			<version>${junit-jupiter-params.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
-			<version>5.5.2</version>
+			<version>${junit-jupiter-engine.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
@@ -90,22 +114,22 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.25</version>
+			<version>${slf4j-api.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.25</version>
+			<version>${slf4j-log4j12.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
-			<version>2.13.3</version>
+			<version>${log4j-core.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.lmax</groupId>
 			<artifactId>disruptor</artifactId>
-			<version>3.4.2</version>
+			<version>${disruptor.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
@@ -134,12 +158,12 @@
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>testcontainers</artifactId>
-			<version>1.15.1</version>
+			<version>${testcontainers.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>junit-jupiter</artifactId>
-			<version>1.15.1</version>
+			<version>${junit-jupiter.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -149,12 +173,12 @@
 		<dependency>
 			<groupId>org.elasticsearch.client</groupId>
 			<artifactId>elasticsearch-rest-client</artifactId>
-			<version>7.7.1</version>
+			<version>${elasticsearch-rest-client.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.elasticsearch.client</groupId>
 			<artifactId>elasticsearch-rest-high-level-client</artifactId>
-			<version>7.11.1</version>
+			<version>${elasticsearch-rest-high-level-client.version}</version>
 		</dependency>
 	</dependencies>
 
@@ -163,7 +187,7 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.6</version>
+				<version>${jacoco-maven-plugin.version}</version>
 				<executions>
 					<execution>
 						<id>prepare-agent</id>
@@ -210,12 +234,12 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
-				<version>3.1.1</version>
+				<version>${maven-checkstyle-plugin.version}</version>
 				<dependencies>
 					<dependency>
 						<groupId>com.puppycrawl.tools</groupId>
 						<artifactId>checkstyle</artifactId>
-						<version>8.33</version>
+						<version>${checkstyle.version}</version>
 					</dependency>
 				</dependencies>
 				<configuration>
@@ -231,7 +255,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.2.1</version>
+				<version>${maven-shade-plugin.version}</version>
 				<executions>
 					<execution>
 						<id>dev</id>
@@ -312,7 +336,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>${maven-javadoc-plugin.version}</version>
 				<configuration>
 					<source>${openjdk.version}</source>
 					<target>${openjdk.version}</target>
@@ -321,7 +345,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>${exec-maven-plugin.version}</version>
 				<executions>
 					<execution>
 						<id>file-server</id>
@@ -341,12 +365,12 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.0.0-M5</version>
+				<version>${maven-surefire-plugin.version}</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
+				<version>${maven-compiler-plugin.version}</version>
 				<configuration>
 					<release>${openjdk.version}</release>
 				</configuration>
@@ -359,7 +383,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-pmd-plugin</artifactId>
-				<version>3.13.0</version>
+				<version>${maven-pmd-plugin.version}</version>
 				<configuration>
 					<targetJdk>${openjdk.version}</targetJdk>
 					<rulesets>
@@ -374,7 +398,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
-				<version>3.1.1</version>
+				<version>${maven-checkstyle-plugin.version}</version>
 				<configuration>
 					<consoleOutput>true</consoleOutput>
 					<encoding>UTF-8</encoding>
@@ -393,7 +417,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-report-plugin</artifactId>
-				<version>3.0.0-M5</version>
+				<version>${maven-surefire-report-plugin.version}</version>
 				<reportSets>
 					<reportSet>
 						<reports>
