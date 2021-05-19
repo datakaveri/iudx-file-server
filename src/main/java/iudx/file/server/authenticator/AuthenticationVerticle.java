@@ -5,7 +5,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ServiceBinder;
-import iudx.file.server.authenticator.utilities.WebClientFactory;
+import iudx.file.server.common.WebClientFactory;
 
 public class AuthenticationVerticle extends AbstractVerticle {
 

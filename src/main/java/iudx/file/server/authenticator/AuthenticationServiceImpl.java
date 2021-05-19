@@ -25,8 +25,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
-import iudx.file.server.apiserver.service.ServerType;
-import iudx.file.server.authenticator.utilities.WebClientFactory;
+import iudx.file.server.common.ServerType;
+import iudx.file.server.common.WebClientFactory;
 
 public class AuthenticationServiceImpl implements AuthenticationService {
 

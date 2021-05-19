@@ -1,4 +1,4 @@
-package iudx.file.server.authenticator.utilities;
+package iudx.file.server.common;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -7,7 +7,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
-import iudx.file.server.apiserver.service.ServerType;
 
 public class WebClientFactory {
 

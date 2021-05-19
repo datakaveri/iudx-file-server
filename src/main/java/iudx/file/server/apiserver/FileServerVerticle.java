@@ -36,7 +36,9 @@ import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.json.schema.Schema;
 import iudx.file.server.apiserver.handlers.AuthHandler;
 import iudx.file.server.apiserver.handlers.ValidationsHandler;
+import iudx.file.server.apiserver.service.CatalogueService;
 import iudx.file.server.apiserver.service.FileService;
+import iudx.file.server.apiserver.service.impl.CatalogueServiceImpl;
 import iudx.file.server.apiserver.service.impl.LocalStorageFileServiceImpl;
 import iudx.file.server.apiserver.utilities.RestResponse;
 import iudx.file.server.apiserver.validations.ContentTypeValidator;
@@ -45,7 +47,7 @@ import iudx.file.server.apiserver.validations.RequestType;
 import iudx.file.server.apiserver.validations.ValidationFailureHandler;
 import iudx.file.server.apiserver.validations.ValidationHandlerFactory;
 import iudx.file.server.authenticator.AuthenticationService;
-import iudx.file.server.authenticator.utilities.WebClientFactory;
+import iudx.file.server.common.WebClientFactory;
 import iudx.file.server.database.DatabaseService;
 
 /**
@@ -68,7 +70,7 @@ import iudx.file.server.database.DatabaseService;
 public class FileServerVerticle extends AbstractVerticle {
 
   private static final Logger LOGGER = LogManager.getLogger(FileServerVerticle.class);
-  
+
   /** Service addresses */
   private static final String DATABASE_SERVICE_ADDRESS = DB_SERVICE_ADDRESS;
 
@@ -79,11 +81,7 @@ public class FileServerVerticle extends AbstractVerticle {
   // private FileServer fileServer;
   private FileService fileService;
   private DatabaseService database;
-  private AuthenticationService authenticator;
-  
-  private String allowedDomain, truststore, truststorePassword;
-  private String[] allowedDomains;
-  private HashSet<String> instanceIDs = new HashSet<String>();
+  private String truststore, truststorePassword;
 
   private String directory;
   private String temp_directory;
@@ -91,6 +89,7 @@ public class FileServerVerticle extends AbstractVerticle {
   private QueryParamsValidator queryParamValidator;
   private ContentTypeValidator contentTypeValidator;
   private WebClientFactory webClientFactory;
+  private CatalogueService catalogueService;
 
   private ValidationHandlerFactory validations;
   private final ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
@@ -107,18 +106,19 @@ public class FileServerVerticle extends AbstractVerticle {
 
     webClientFactory = new WebClientFactory(vertx, config());
 
-    //authService = new AuthServiceImpl(vertx, webClientFactory, config());
+    // authService = new AuthServiceImpl(vertx, webClientFactory, config());
+    catalogueService = new CatalogueServiceImpl(vertx, webClientFactory, config());
 
     directory = config().getString("upload_dir");
     temp_directory = config().getString("tmp_dir");
 
-    ValidationsHandler queryVaidationHandler=new ValidationsHandler(RequestType.QUERY);
+    ValidationsHandler queryVaidationHandler = new ValidationsHandler(RequestType.QUERY);
     router.get(API_TEMPORAL).handler(BodyHandler.create())
         .handler(queryVaidationHandler)
         .handler(this::query)
         .failureHandler(validationsFailureHandler);
 
-    ValidationsHandler uploadValidationHandler=new ValidationsHandler(RequestType.UPLOAD);
+    ValidationsHandler uploadValidationHandler = new ValidationsHandler(RequestType.UPLOAD);
     router.post(API_FILE_UPLOAD)
         .handler(BodyHandler.create().setUploadsDirectory(temp_directory).setBodyLimit(MAX_SIZE)
             .setDeleteUploadedFilesOnEnd(false))
@@ -126,13 +126,13 @@ public class FileServerVerticle extends AbstractVerticle {
         .handler(AuthHandler.create(vertx))
         .handler(this::upload).failureHandler(validationsFailureHandler);
 
-    ValidationsHandler downloadValidationHandler=new ValidationsHandler(RequestType.DOWNLOAD);
+    ValidationsHandler downloadValidationHandler = new ValidationsHandler(RequestType.DOWNLOAD);
     router.get(API_FILE_DOWNLOAD).handler(BodyHandler.create())
         .handler(downloadValidationHandler)
         .handler(AuthHandler.create(vertx))
         .handler(this::download).failureHandler(validationsFailureHandler);
 
-    ValidationsHandler deleteValidationHandler=new ValidationsHandler(RequestType.DELETE);
+    ValidationsHandler deleteValidationHandler = new ValidationsHandler(RequestType.DELETE);
     router.delete(API_FILE_DELETE).handler(BodyHandler.create())
         .handler(deleteValidationHandler)
         .handler(AuthHandler.create(vertx))
@@ -186,9 +186,8 @@ public class FileServerVerticle extends AbstractVerticle {
         new JksOptions().setPath(truststore).setPassword(truststorePassword)));
 
     server.requestHandler(router).listen(port);
-    
+
     database = DatabaseService.createProxy(vertx, DATABASE_SERVICE_ADDRESS);
-    authenticator = AuthenticationService.createProxy(vertx, AUTH_SERVICE_ADDRESS);
 
     fileService = new LocalStorageFileServiceImpl(vertx.fileSystem(), directory);
     // check upload dir exist or not.
@@ -225,7 +224,11 @@ public class FileServerVerticle extends AbstractVerticle {
     if (!isValidFileContentType(files)) {
       // BadRequestException ex = new BadRequestException("Invalid file type",);
       // ex.setParameterName("content-type");
-      routingContext.fail(400);
+      String message = new RestResponse.Builder()
+          .type(400)
+          .title("Bad Request")
+          .details("upsupported file type.").build().toJsonString();
+      processResponse(response, message);
       return;
     }
     if (isSample) {
@@ -236,8 +239,11 @@ public class FileServerVerticle extends AbstractVerticle {
       if (!formParam.contains("startTime") || !formParam.contains("endTime")) {
         // ValidationException ex = new ValidationException("Mandatory fields required");
         // ex.setParameterName("startTime/endTime");
-        routingContext.fail(400);
-        return;
+        String message = new RestResponse.Builder()
+            .type(400)
+            .title("Bad Request")
+            .details("Mandatory fields required").build().toJsonString();
+        processResponse(response, message);
       }
       archiveFileUpload(response, formParam, files, uploadPath.toString(), id);
     }
@@ -322,14 +328,31 @@ public class FileServerVerticle extends AbstractVerticle {
         .put("startTime", formParams.get("startTime"))
         .put("endTime", formParams.get("endTime")));
     json.put("fileId", fileId);
-    // insert record in elastic index.
-    database.save(json, handler -> {
-      if (handler.succeeded()) {
-        LOGGER.info("Record inserted in DB");
-        promise.complete();
+
+    // remove already added default metadata fields from formParams.
+    formParams.remove("id");
+    formParams.remove("startTime");
+    formParams.remove("endTime");
+
+
+    Future<Boolean> allowedMetaDataFuture = catalogueService.isAllowedMetaDataField(formParams);
+    // add all extra metadata attributes as it is to json(document).
+    formParams.entries().stream().forEach(e -> json.put(e.getKey(), e.getValue()));
+
+    allowedMetaDataFuture.onComplete(metaDataValidationhandler -> {
+      if (metaDataValidationhandler.succeeded()) {
+        // insert record in elastic index.
+        database.save(json, handler -> {
+          if (handler.succeeded()) {
+            LOGGER.info("Record inserted in DB");
+            promise.complete(true);
+          } else {
+            LOGGER.error("failed to PUT record");
+            promise.fail(handler.cause().getMessage());
+          }
+        });
       } else {
-        LOGGER.error("failed to PUT record");
-        promise.fail(handler.cause().getMessage());
+        promise.fail(metaDataValidationhandler.cause().getMessage());
       }
     });
     return promise.future();
@@ -542,7 +565,7 @@ public class FileServerVerticle extends AbstractVerticle {
           .end(new RestResponse.Builder()
               .type(type)
               .title(json.getString("title"))
-              .details(json.getString("detail"))
+              .details(json.getString("details"))
               .build().toJson().toString());
     } catch (DecodeException ex) {
       LOGGER.error("ERROR : Expecting Json received else from backend service");
@@ -603,23 +626,6 @@ public class FileServerVerticle extends AbstractVerticle {
 
     }
     return Optional.of(queryParams);
-  }
-
-
-  public Future<Void> validateAsync(Schema schema, Object json) {
-    LOGGER.debug("schema : " + schema + " json : " + json);
-    Promise<Void> promise = Promise.promise();
-    schema.validateAsync(json).onComplete(ar -> {
-      if (ar.succeeded()) {
-        LOGGER.debug("Validation succeeded");
-        promise.complete();
-      } else {
-        LOGGER.debug("Validation failed");
-        ar.cause(); // Contains ValidationException
-        promise.fail(ar.cause());;
-      }
-    });
-    return promise.future();
   }
 
   @Override
