@@ -1,5 +1,6 @@
-package iudx.file.server.apiserver.service.impl;
+package iudx.file.server.common.service.impl;
 
+import java.util.Arrays;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,13 +13,15 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
-import iudx.file.server.apiserver.service.CatalogueService;
 import iudx.file.server.common.ServerType;
 import iudx.file.server.common.WebClientFactory;
+import iudx.file.server.common.service.CatalogueService;
 
 public class CatalogueServiceImpl implements CatalogueService {
 
   private static final Logger LOGGER = LogManager.getLogger(CatalogueServiceImpl.class);
+  private final List<String> allowedDefaultMetaFields=Arrays.asList("file","id","isSample","startTime","endTime");
+  
   private Vertx vertx;
   private WebClient webClient;
   private String host;
@@ -34,15 +37,17 @@ public class CatalogueServiceImpl implements CatalogueService {
   @Override
   public Future<Boolean> isAllowedMetaDataField(MultiMap params) {
     Promise<Boolean> promise = Promise.promise();
-
-    // to test
-    if (params.contains("invalid_metadatafield")) {
-      JsonObject json=new JsonObject();
-      json.put("type", 400).put("title", "Bad Request").put("details", "Bad query.");
-      promise.fail(json.toString());
-    } else {
-      promise.complete(true);
-    }
+    
+    params.forEach(e->{
+   // to test
+      if (params.contains("invalid_metadatafield")) {
+        JsonObject json=new JsonObject();
+        json.put("type", 400).put("title", "Bad Request").put("details", "Bad query.");
+        promise.fail(json.toString());
+      } else {
+        promise.complete(true);
+      }
+    });
 
     return promise.future();
   }

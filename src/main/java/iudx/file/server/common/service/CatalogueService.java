@@ -1,4 +1,4 @@
-package iudx.file.server.apiserver.service;
+package iudx.file.server.common.service;
 
 import java.util.List;
 import io.vertx.core.Future;

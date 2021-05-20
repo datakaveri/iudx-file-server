@@ -8,6 +8,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import iudx.file.server.common.QueryType;
 
 @VertxGen
 @ProxyGen
@@ -15,7 +16,7 @@ public interface DatabaseService {
 
 
   @Fluent
-  DatabaseService search(final JsonObject query, final Handler<AsyncResult<JsonObject>> handler);
+  DatabaseService search(final JsonObject query,final QueryType type, final Handler<AsyncResult<JsonObject>> handler);
 
 
   @Fluent

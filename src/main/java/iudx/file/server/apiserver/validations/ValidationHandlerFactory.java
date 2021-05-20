@@ -38,8 +38,11 @@ public class ValidationHandlerFactory {
       case DELETE:
         validator = getDeleteRequestValidations(parameters, headers);
         break;
-      case QUERY:
-        validator = getQueryRequestValidator(parameters, headers);
+      case TEMPORAL_QUERY:
+        validator = getTemporalQueryRequestValidator(parameters, headers);
+        break;
+      case LIST_QUERY:
+        validator = getListQueryRequestValidator(parameters, headers);
         break;
       default:
         break;
@@ -83,7 +86,7 @@ public class ValidationHandlerFactory {
   }
 
 
-  private List<Validator> getQueryRequestValidator(final MultiMap parameters,
+  private List<Validator> getTemporalQueryRequestValidator(final MultiMap parameters,
       final MultiMap headers) {
     List<Validator> validators = new ArrayList<>();
 
@@ -93,6 +96,15 @@ public class ValidationHandlerFactory {
     validators.add(new DateTypeValidator(parameters.get(PARAM_END_TIME), false));
 
     return validators;
+  }
 
+  private List<Validator> getListQueryRequestValidator(final MultiMap parameters,
+      final MultiMap headers) {
+    List<Validator> validators = new ArrayList<>();
+
+    validators.add(new IDTypeValidator(parameters.get(PARAM_ID), true));
+    validators.add(new TokenTypeValidator(headers.get(HEADER_TOKEN), true));
+
+    return validators;
   }
 }

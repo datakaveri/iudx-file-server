@@ -52,8 +52,12 @@ public class AuthHandler implements Handler<RoutingContext> {
       id = request.getFormAttribute("id");
     } else if ("GET".equalsIgnoreCase(method) || "DELETE".equalsIgnoreCase(method)) {
       String fileId = request.getParam("file-id");
-      id = fileId.substring(0, fileId.lastIndexOf("/"));
-      fileName = fileId.substring(fileId.lastIndexOf("/"));
+      if(fileId==null) {//for list API
+        id=request.getParam("id");
+      }else {
+        id = fileId.substring(0, fileId.lastIndexOf("/"));
+        fileName = fileId.substring(fileId.lastIndexOf("/"));
+      }
     }
 
     // bypass auth flow for sample file download.

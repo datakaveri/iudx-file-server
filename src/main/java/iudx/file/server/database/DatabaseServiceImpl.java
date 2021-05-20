@@ -10,7 +10,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
-import iudx.file.server.apiserver.query.QueryType;
+import iudx.file.server.common.QueryType;
 import iudx.file.server.database.elastic.ElasticClient;
 import iudx.file.server.database.elastic.ElasticQueryGenerator;
 
@@ -28,9 +28,9 @@ public class DatabaseServiceImpl implements DatabaseService {
   }
 
   @Override
-  public DatabaseService search(JsonObject query, Handler<AsyncResult<JsonObject>> handler) {
+  public DatabaseService search(JsonObject query,QueryType type, Handler<AsyncResult<JsonObject>> handler) {
     ElasticQueryGenerator queryGenerator = new ElasticQueryGenerator();
-    JsonObject boolQuery = new JsonObject(queryGenerator.getQuery(query, QueryType.TEMPORAL));
+    JsonObject boolQuery = new JsonObject(queryGenerator.getQuery(query,type));
 
     JsonObject elasticQuery = new JsonObject();
     elasticQuery.put("size", 1000);

@@ -7,7 +7,7 @@ public class Constants extends iudx.file.server.common.Constants{
   public static final String API_FILE_UPLOAD = "/iudx/v1/upload";
   public static final String API_FILE_DOWNLOAD = "/iudx/v1/download";
   public static final String API_FILE_DELETE = "/iudx/v1/delete";
-  public static final String API_TOKEN = "/token";
+  public static final String API_LIST_METADATA = "/iudx/v1/list";
 
 
   // header

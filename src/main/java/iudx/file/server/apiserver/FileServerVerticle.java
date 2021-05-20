@@ -1,6 +1,7 @@
 package iudx.file.server.apiserver;
 
 import static iudx.file.server.apiserver.utilities.Constants.*;
+import static iudx.file.server.apiserver.utilities.Utilities.*;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -36,9 +37,7 @@ import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.json.schema.Schema;
 import iudx.file.server.apiserver.handlers.AuthHandler;
 import iudx.file.server.apiserver.handlers.ValidationsHandler;
-import iudx.file.server.apiserver.service.CatalogueService;
 import iudx.file.server.apiserver.service.FileService;
-import iudx.file.server.apiserver.service.impl.CatalogueServiceImpl;
 import iudx.file.server.apiserver.service.impl.LocalStorageFileServiceImpl;
 import iudx.file.server.apiserver.utilities.RestResponse;
 import iudx.file.server.apiserver.validations.ContentTypeValidator;
@@ -47,7 +46,10 @@ import iudx.file.server.apiserver.validations.RequestType;
 import iudx.file.server.apiserver.validations.ValidationFailureHandler;
 import iudx.file.server.apiserver.validations.ValidationHandlerFactory;
 import iudx.file.server.authenticator.AuthenticationService;
+import iudx.file.server.common.QueryType;
 import iudx.file.server.common.WebClientFactory;
+import iudx.file.server.common.service.CatalogueService;
+import iudx.file.server.common.service.impl.CatalogueServiceImpl;
 import iudx.file.server.database.DatabaseService;
 
 /**
@@ -112,7 +114,7 @@ public class FileServerVerticle extends AbstractVerticle {
     directory = config().getString("upload_dir");
     temp_directory = config().getString("tmp_dir");
 
-    ValidationsHandler queryVaidationHandler = new ValidationsHandler(RequestType.QUERY);
+    ValidationsHandler queryVaidationHandler = new ValidationsHandler(RequestType.TEMPORAL_QUERY);
     router.get(API_TEMPORAL).handler(BodyHandler.create())
         .handler(queryVaidationHandler)
         .handler(this::query)
@@ -138,7 +140,11 @@ public class FileServerVerticle extends AbstractVerticle {
         .handler(AuthHandler.create(vertx))
         .handler(this::delete).failureHandler(validationsFailureHandler);
 
-
+    ValidationsHandler listQueryValidationHandler = new ValidationsHandler(RequestType.LIST_QUERY);
+    router.get(API_LIST_METADATA).handler(BodyHandler.create())
+        .handler(listQueryValidationHandler)
+        // .handler(AuthHandler.create(vertx)) TODO : enable when endpoint permission added in token
+        .handler(this::listMetadata).failureHandler(validationsFailureHandler);
 
     router.get("/apis/spec").produces("application/json").handler(routingContext -> {
       HttpServerResponse response = routingContext.response();
@@ -222,8 +228,6 @@ public class FileServerVerticle extends AbstractVerticle {
 
     Set<FileUpload> files = routingContext.fileUploads();
     if (!isValidFileContentType(files)) {
-      // BadRequestException ex = new BadRequestException("Invalid file type",);
-      // ex.setParameterName("content-type");
       String message = new RestResponse.Builder()
           .type(400)
           .title("Bad Request")
@@ -237,13 +241,12 @@ public class FileServerVerticle extends AbstractVerticle {
       sampleFileUpload(response, formParam, files, "sample", uploadPath.toString(), id);
     } else {
       if (!formParam.contains("startTime") || !formParam.contains("endTime")) {
-        // ValidationException ex = new ValidationException("Mandatory fields required");
-        // ex.setParameterName("startTime/endTime");
         String message = new RestResponse.Builder()
             .type(400)
             .title("Bad Request")
             .details("Mandatory fields required").build().toJsonString();
         processResponse(response, message);
+        return;
       }
       archiveFileUpload(response, formParam, files, uploadPath.toString(), id);
     }
@@ -288,14 +291,18 @@ public class FileServerVerticle extends AbstractVerticle {
   private void archiveFileUpload(HttpServerResponse response, MultiMap params,
       Set<FileUpload> files,
       String filePath, String id) {
-
     fileService.upload(files, filePath, handler -> {
       if (handler.succeeded()) {
         JsonObject uploadResult = handler.result();
         JsonObject responseJson = new JsonObject();
         String fileId = id + "/" + uploadResult.getString("file-id");
         responseJson.put("fileId", fileId);
-        saveFileRecord(params, fileId).onComplete(dbInsertHandler -> {
+
+        Future<Boolean> allowedMetaDataFuture = catalogueService.isAllowedMetaDataField(params);
+
+        allowedMetaDataFuture.compose(respone -> {
+          return saveFileRecord(params, fileId);
+        }).onComplete(dbInsertHandler -> {
           if (dbInsertHandler.succeeded()) {
             response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
                 .setStatusCode(HttpStatus.SC_OK)
@@ -312,7 +319,7 @@ public class FileServerVerticle extends AbstractVerticle {
             vertx.fileSystem().deleteBlocking(directory + "/" + uploadDir + "/" + fileUUID);
             processResponse(response, dbInsertHandler.cause().getMessage());
           }
-        });
+        });;
       } else {
         processResponse(response, handler.cause().getMessage());
       }
@@ -334,25 +341,16 @@ public class FileServerVerticle extends AbstractVerticle {
     formParams.remove("startTime");
     formParams.remove("endTime");
 
-
-    Future<Boolean> allowedMetaDataFuture = catalogueService.isAllowedMetaDataField(formParams);
-    // add all extra metadata attributes as it is to json(document).
     formParams.entries().stream().forEach(e -> json.put(e.getKey(), e.getValue()));
 
-    allowedMetaDataFuture.onComplete(metaDataValidationhandler -> {
-      if (metaDataValidationhandler.succeeded()) {
-        // insert record in elastic index.
-        database.save(json, handler -> {
-          if (handler.succeeded()) {
-            LOGGER.info("Record inserted in DB");
-            promise.complete(true);
-          } else {
-            LOGGER.error("failed to PUT record");
-            promise.fail(handler.cause().getMessage());
-          }
-        });
+    // insert record in elastic index.
+    database.save(json, handler -> {
+      if (handler.succeeded()) {
+        LOGGER.info("Record inserted in DB");
+        promise.complete(true);
       } else {
-        promise.fail(metaDataValidationhandler.cause().getMessage());
+        LOGGER.error("failed to PUT record");
+        promise.fail(handler.cause().getMessage());
       }
     });
     return promise.future();
@@ -401,10 +399,10 @@ public class FileServerVerticle extends AbstractVerticle {
     for (Map.Entry<String, String> entry : queryParams.entries()) {
       query.put(entry.getKey(), entry.getValue());
     }
-
+    QueryType type = getQueryType(query);
     queryParamsValidator.onComplete(validationHandler -> {
       if (validationHandler.succeeded()) {
-        database.search(query, queryHandler -> {
+        database.search(query, type, queryHandler -> {
           if (queryHandler.succeeded()) {
             response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
                 .setStatusCode(HttpStatus.SC_OK)
@@ -419,7 +417,6 @@ public class FileServerVerticle extends AbstractVerticle {
       }
     });
   }
-
 
   private void deleteFileRecord(String id) {
     database.delete(id, handler -> {
@@ -462,8 +459,23 @@ public class FileServerVerticle extends AbstractVerticle {
     } else {
       deleteSampleFile(response, id, fileUUID, uploadDir.toString());
     }
+  }
 
+  public void listMetadata(RoutingContext context) {
+    HttpServerRequest request = context.request();
+    HttpServerResponse response = context.response();
+    String id = request.getParam("id");
+    JsonObject query = new JsonObject().put("id", id);
+    database.search(query, QueryType.LIST, queryHandler -> {
+      if (queryHandler.succeeded()) {
+        response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .setStatusCode(HttpStatus.SC_OK)
+            .end(queryHandler.result().toString());
 
+      } else {
+        processResponse(response, queryHandler.cause().getMessage());
+      }
+    });
 
   }
 
