@@ -38,7 +38,7 @@ public class CatalogueServiceImpl implements CatalogueService {
   public Future<Boolean> isAllowedMetaDataField(MultiMap params) {
     Promise<Boolean> promise = Promise.promise();
     
-    params.forEach(e->{
+//    params.forEach(e->{
    // to test
       if (params.contains("invalid_metadatafield")) {
         JsonObject json=new JsonObject();
@@ -47,7 +47,7 @@ public class CatalogueServiceImpl implements CatalogueService {
       } else {
         promise.complete(true);
       }
-    });
+//    });
 
     return promise.future();
   }

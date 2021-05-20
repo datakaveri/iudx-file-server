@@ -39,8 +39,8 @@ public class LocalStorageFileServiceImpl implements FileService {
    * {@inheritDoc}
    */
   @Override
-  public void upload(Set<FileUpload> files, String filename, String filePath,
-      Handler<AsyncResult<JsonObject>> handler) {
+  public Future<JsonObject> upload(Set<FileUpload> files, String filename, String filePath) {
+    Promise<JsonObject> promise=Promise.promise();
     LOGGER.debug("uploading.. files to file system.");
     final JsonObject metadata = new JsonObject();
     final JsonObject finalResponse = new JsonObject();
@@ -65,32 +65,33 @@ public class LocalStorageFileServiceImpl implements FileService {
               metadata.put("size", fileUpload.size() + " Bytes");
               metadata.put("uploaded_path", fileUploadPath);
               metadata.put("file-id", uuid + "." + fileExtension);
-              handler.handle(Future.succeededFuture(metadata));
+//              handler.handle(Future.succeededFuture(metadata));
+              promise.complete(metadata);
             } else {
               LOGGER.debug("failed :" + fileMoveHandler.cause());
               finalResponse.put("type", HttpStatus.SC_INTERNAL_SERVER_ERROR);
               finalResponse.put("title", "failed to upload file.");
               finalResponse.put("detail", fileMoveHandler.cause());
-              handler.handle(Future.failedFuture(finalResponse.toString()));
+//              handler.handle(Future.failedFuture(finalResponse.toString()));
+              promise.fail(finalResponse.toString());
             }
           });
     }
+    return promise.future();
   }
 
   @Override
-  public void upload(Set<FileUpload> files, String filePath,
-      Handler<AsyncResult<JsonObject>> handler) {
-    upload(files, UUID.randomUUID().toString(), filePath, handler);
+  public Future<JsonObject> upload(Set<FileUpload> files, String filePath) {
+    return upload(files, UUID.randomUUID().toString(), filePath);
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public void download(String fileName, String uploadDir, HttpServerResponse response,
-      Handler<AsyncResult<JsonObject>> handler) {
+  public Future<JsonObject> download(String fileName, String uploadDir, HttpServerResponse response) {
+    Promise<JsonObject> promise=Promise.promise();
     JsonObject finalResponse = new JsonObject();
-    Promise<JsonObject> promise = Promise.promise();
     String path = directory + uploadDir + "/" + fileName;
     LOGGER.info(path);
     response.setChunked(true);
@@ -108,7 +109,8 @@ public class LocalStorageFileServiceImpl implements FileService {
             response.putHeader("Content-Disposition", "attachment; filename=" + fileName);
             asyncFile.pipeTo(response, pipeHandler -> {
               asyncFile.endHandler(avoid -> {
-                handler.handle(Future.succeededFuture());
+//                handler.handle(Future.succeededFuture());
+                promise.complete();
               });
             });
           });
@@ -117,23 +119,27 @@ public class LocalStorageFileServiceImpl implements FileService {
           finalResponse.put("title", "File does not exist");
           finalResponse.put("detail", "File does not exist");
           LOGGER.error("File does not exist");
-          handler.handle(Future.failedFuture(finalResponse.toString()));
+//          handler.handle(Future.failedFuture(finalResponse.toString()));
+          promise.fail(finalResponse.toString());
         }
       } else {
         LOGGER.error(existHandler.cause());
         finalResponse.put("type", HttpStatus.SC_INTERNAL_SERVER_ERROR);
         finalResponse.put("title", "Something went wrong while downloading file.");
         finalResponse.put("detail", existHandler.cause());
-        handler.handle(Future.failedFuture(finalResponse.toString()));
+//        handler.handle(Future.failedFuture(finalResponse.toString()));
+        promise.fail(finalResponse.toString());
       }
     });
+    return promise.future();
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public void delete(String fileName, String filePath, Handler<AsyncResult<JsonObject>> handler) {
+  public Future<JsonObject> delete(String fileName, String filePath) {
+    Promise<JsonObject> promise=Promise.promise();
     JsonObject finalResponse = new JsonObject();
     String path = directory + filePath + "/" + fileName;
     LOGGER.info("filePath : " + path);
@@ -144,13 +150,15 @@ public class LocalStorageFileServiceImpl implements FileService {
             if (readEvent.failed()) {
               finalResponse.put("type", HttpStatus.SC_INTERNAL_SERVER_ERROR);
               finalResponse.put("title", readEvent.cause().toString());
-              handler.handle(Future.failedFuture(finalResponse.toString()));
+//              handler.handle(Future.failedFuture(finalResponse.toString()));
+              promise.fail(finalResponse.toString());
             } else {
               LOGGER.info("File deleted");
               finalResponse.put("type", HttpStatus.SC_OK);
               finalResponse.put("title", "File Deleted");
               finalResponse.put("detail", "File Deleted");
-              handler.handle(Future.succeededFuture(finalResponse));
+//              handler.handle(Future.succeededFuture(finalResponse));
+              promise.complete(finalResponse);
             }
           });
         } else {
@@ -158,13 +166,16 @@ public class LocalStorageFileServiceImpl implements FileService {
           finalResponse.put("type", HttpStatus.SC_NOT_FOUND);
           finalResponse.put("title", "File does not exist");
           finalResponse.put("detail", "File does not exist");
-          handler.handle(Future.failedFuture(finalResponse.toString()));
+//          handler.handle(Future.failedFuture(finalResponse.toString()));
+          promise.fail(finalResponse.toString());
         }
       } else {
         LOGGER.error(existHandler.cause());
-        handler.handle(Future.failedFuture(existHandler.cause()));
+//        handler.handle(Future.failedFuture(existHandler.cause()));
+        promise.fail(existHandler.cause());
       }
     });
+    return promise.future();
   }
 
 }

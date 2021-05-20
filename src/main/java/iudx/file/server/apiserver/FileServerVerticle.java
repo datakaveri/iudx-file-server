@@ -264,9 +264,12 @@ public class FileServerVerticle extends AbstractVerticle {
   private void sampleFileUpload(HttpServerResponse response, MultiMap params, Set<FileUpload> files,
       String fileName,
       String filePath, String id) {
-    fileService.upload(files, fileName, filePath, handler -> {
-      if (handler.succeeded()) {
-        JsonObject uploadResult = handler.result();
+
+    Future<JsonObject> uploadFuture = fileService.upload(files, fileName, filePath);
+
+    uploadFuture.onComplete(uploadHandler -> {
+      if (uploadHandler.succeeded()) {
+        JsonObject uploadResult = uploadHandler.result();
         JsonObject responseJson = new JsonObject();
         String fileId = id + "/" + uploadResult.getString("file-id");
         responseJson.put("fileId", fileId);
@@ -275,7 +278,7 @@ public class FileServerVerticle extends AbstractVerticle {
             .setStatusCode(HttpStatus.SC_OK)
             .end(responseJson.toString());
       } else {
-        processResponse(response, handler.cause().getMessage());
+        processResponse(response, uploadHandler.cause().getMessage());
       }
     });
   }
@@ -291,40 +294,82 @@ public class FileServerVerticle extends AbstractVerticle {
   private void archiveFileUpload(HttpServerResponse response, MultiMap params,
       Set<FileUpload> files,
       String filePath, String id) {
-    fileService.upload(files, filePath, handler -> {
+
+    JsonObject uploadJson = new JsonObject();
+    JsonObject responseJson = new JsonObject();
+
+    Future<JsonObject> uploadFuture = fileService.upload(files, filePath);
+
+    uploadFuture.compose(uploadHandler -> {
+      LOGGER.debug("upload json :"+uploadHandler);
+      if (uploadHandler.containsKey("detail")) {
+        return Future.failedFuture(uploadHandler.toString());
+      }
+      String fileId = id + "/" + uploadHandler.getString("file-id");
+      uploadJson.put("fileId", fileId);
+      return catalogueService.isAllowedMetaDataField(params);
+    }).compose(metaDataValidatorHandler -> {
+      LOGGER.debug("file-id : "+uploadJson.getString("fileId"));
+      return saveFileRecord(params, uploadJson.getString("fileId"));
+    }).onComplete(handler -> {
       if (handler.succeeded()) {
-        JsonObject uploadResult = handler.result();
-        JsonObject responseJson = new JsonObject();
-        String fileId = id + "/" + uploadResult.getString("file-id");
-        responseJson.put("fileId", fileId);
-
-        Future<Boolean> allowedMetaDataFuture = catalogueService.isAllowedMetaDataField(params);
-
-        allowedMetaDataFuture.compose(respone -> {
-          return saveFileRecord(params, fileId);
-        }).onComplete(dbInsertHandler -> {
-          if (dbInsertHandler.succeeded()) {
-            response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-                .setStatusCode(HttpStatus.SC_OK)
-                .end(responseJson.toString());
-          } else {
-            LOGGER.debug(dbInsertHandler.cause());
-            // DB insert fail, run Compensating service to clean/undo upload.
-            String fileIdComponent[] = getFileIdComponents(responseJson.getString("fileId"));
-            StringBuilder uploadDir = new StringBuilder();
-            uploadDir.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
-            String fileUUID = fileIdComponent.length >= 6 ? fileIdComponent[5] : fileIdComponent[4];
-
-            LOGGER.debug("deleting file :" + fileUUID);
-            vertx.fileSystem().deleteBlocking(directory + "/" + uploadDir + "/" + fileUUID);
-            processResponse(response, dbInsertHandler.cause().getMessage());
-          }
-        });;
+        responseJson.put("fileId", uploadJson.getString("fileId"));
+        response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .setStatusCode(HttpStatus.SC_OK)
+            .end(responseJson.toString());
       } else {
+        LOGGER.debug(handler.cause());
+        // fail, run Compensating service to clean/undo upload.
+        String fileIdComponent[] = getFileIdComponents(uploadJson.getString("fileId"));
+        StringBuilder uploadDir = new StringBuilder();
+        uploadDir.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
+        String fileUUID = fileIdComponent.length >= 6 ? fileIdComponent[5] : fileIdComponent[4];
+
+        LOGGER.debug("deleting file :" + fileUUID);
+        vertx.fileSystem().deleteBlocking(directory + "/" + uploadDir + "/" + fileUUID);
         processResponse(response, handler.cause().getMessage());
       }
     });
+
   }
+
+
+  // fileService.upload(files,filePath,handler->
+  //
+  // {
+  // if (handler.succeeded()) {
+  // JsonObject uploadResult = handler.result();
+  // JsonObject responseJson = new JsonObject();
+  // String fileId = id + "/" + uploadResult.getString("file-id");
+  // responseJson.put("fileId", fileId);
+  //
+  // Future<Boolean> allowedMetaDataFuture = catalogueService.isAllowedMetaDataField(params);
+  //
+  // allowedMetaDataFuture.compose(respone -> {
+  // return saveFileRecord(params, fileId);
+  // }).onComplete(dbInsertHandler -> {
+  // if (dbInsertHandler.succeeded()) {
+  // response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
+  // .setStatusCode(HttpStatus.SC_OK)
+  // .end(responseJson.toString());
+  // } else {
+  // LOGGER.debug(dbInsertHandler.cause());
+  // // DB insert fail, run Compensating service to clean/undo upload.
+  // String fileIdComponent[] = getFileIdComponents(responseJson.getString("fileId"));
+  // StringBuilder uploadDir = new StringBuilder();
+  // uploadDir.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
+  // String fileUUID = fileIdComponent.length >= 6 ? fileIdComponent[5] : fileIdComponent[4];
+  //
+  // LOGGER.debug("deleting file :" + fileUUID);
+  // vertx.fileSystem().deleteBlocking(directory + "/" + uploadDir + "/" + fileUUID);
+  // processResponse(response, dbInsertHandler.cause().getMessage());
+  // }
+  // });;
+  // } else {
+  // processResponse(response, handler.cause().getMessage());
+  // }
+  // });
+  // }
 
 
   private Future<Boolean> saveFileRecord(MultiMap formParams, String fileId) {
@@ -378,13 +423,14 @@ public class FileServerVerticle extends AbstractVerticle {
       uploadDir.append("/" + fileIdComponent[4]);
     }
     LOGGER.info(uploadDir);
-    fileService.download(fileUUID, uploadDir.toString(), response, handler -> {
-      if (handler.succeeded()) {
-        // do nothing response is already written and file is served using content-disposition.
-      } else {
-        processResponse(response, handler.cause().getMessage());
-      }
-    });
+    fileService.download(fileUUID, uploadDir.toString(), response)
+        .onComplete(handler -> {
+          if (handler.succeeded()) {
+            // do nothing response is already written and file is served using content-disposition.
+          } else {
+            processResponse(response, handler.cause().getMessage());
+          }
+        });
   }
 
 
@@ -482,27 +528,28 @@ public class FileServerVerticle extends AbstractVerticle {
   private void deleteSampleFile(HttpServerResponse response, String id, String fileUUID,
       String uploadDir) {
     LOGGER.info("delete sample file");
-    fileService.delete(fileUUID, uploadDir.toString(), handler -> {
-      if (handler.succeeded()) {
-        JsonObject deleteResult = handler.result();
-        response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .setStatusCode(HttpStatus.SC_OK)
-            .end(new RestResponse.Builder()
-                .type(200)
-                .title(deleteResult.getString("title"))
-                .details("File with id : " + id + " deleted successfully").build().toJson()
-                .toString());
-      } else {
-        processResponse(response, handler.cause().getMessage());
-      }
-    });
+    fileService.delete(fileUUID, uploadDir.toString())
+        .onComplete(handler -> {
+          if (handler.succeeded()) {
+            JsonObject deleteResult = handler.result();
+            response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .setStatusCode(HttpStatus.SC_OK)
+                .end(new RestResponse.Builder()
+                    .type(200)
+                    .title(deleteResult.getString("title"))
+                    .details("File with id : " + id + " deleted successfully").build().toJson()
+                    .toString());
+          } else {
+            processResponse(response, handler.cause().getMessage());
+          }
+        });
   }
 
   private void deleteArchiveFile(HttpServerResponse response, String id, String fileUUID,
       String uploadDir) {
     database.delete(id, dbDeleteHandler -> {
       if (dbDeleteHandler.succeeded()) {
-        fileService.delete(fileUUID, uploadDir.toString(), handler -> {
+        fileService.delete(fileUUID, uploadDir.toString()).onComplete(handler -> {
           if (handler.succeeded()) {
             JsonObject deleteResult = handler.result();
             LOGGER.info(deleteResult);
