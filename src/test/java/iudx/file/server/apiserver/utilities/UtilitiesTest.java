@@ -8,6 +8,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import iudx.file.server.apiserver.query.QueryParams;
+import iudx.file.server.apiserver.validations.QueryParamsValidator;
 import iudx.file.server.common.QueryType;
 
 @ExtendWith(VertxExtension.class)
@@ -25,34 +27,40 @@ public class UtilitiesTest {
   public void testTemporalQuery() {
     JsonObject query = new JsonObject();
     query.put("time", "2020-09-15T00:00:00Z").put("endTime", "2020-09-15T00:00:00Z");
-    assertEquals(QueryType.TEMPORAL, utilities.getQueryType(query));
+    QueryParams queryParam = query.mapTo(QueryParams.class).build();
+    assertEquals(QueryType.TEMPORAL, utilities.getQueryType(queryParam));
   }
-  
+
   @Test
   public void testGeoTemporalQuery() {
     JsonObject query = new JsonObject();
-    query.put("time", "2020-09-15T00:00:00Z").put("endTime", "2020-09-15T00:00:00Z").put("georel", "within");
-    assertEquals(QueryType.TEMPORAL_GEO, utilities.getQueryType(query));
+    query.put("time", "2020-09-15T00:00:00Z").put("endTime", "2020-09-15T00:00:00Z").put("georel",
+        "within");
+    QueryParams queryParam = query.mapTo(QueryParams.class).build();
+    assertEquals(QueryType.TEMPORAL_GEO, utilities.getQueryType(queryParam));
   }
-  
+
   @Test
   public void testGeoQuery() {
     JsonObject query = new JsonObject();
     query.put("georel", "within").put("lat", "72").put("lon", "23");
-    assertEquals(QueryType.GEO, utilities.getQueryType(query));
+    QueryParams queryParam = query.mapTo(QueryParams.class).build();
+    assertEquals(QueryType.GEO, utilities.getQueryType(queryParam));
   }
-  
+
   @Test
   public void testListQuery() {
     JsonObject query = new JsonObject();
     query.put("id", "IUDX_ID");
-    assertEquals(QueryType.LIST, utilities.getQueryType(query));
+    QueryParams queryParam = query.mapTo(QueryParams.class).build();
+    assertEquals(QueryType.LIST, utilities.getQueryType(queryParam));
   }
-  
-  
+
+
   @Test
   public void testEmptyQuery() {
     JsonObject query = new JsonObject();
-    assertEquals(QueryType.LIST, utilities.getQueryType(query));
+    QueryParams queryParam = query.mapTo(QueryParams.class).build();
+    assertEquals(QueryType.LIST, utilities.getQueryType(queryParam));
   }
 }

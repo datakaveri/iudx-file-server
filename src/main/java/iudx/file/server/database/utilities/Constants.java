@@ -26,8 +26,9 @@ public class Constants extends iudx.file.server.common.Constants {
   public static final String SEARCH_REQ_PARAM = "/_search";
   public static final String ID = "id";
   public static final String FILE_ID="fileId";
-  public static final String TIMERANGE_START_TIME="timeRange.startTime";
-  public static final String TIMERANGE_END_TIME="timeRange.endTime";
+  public static final String TIME_RANGE="timeRange";
+  public static final String TIME_RANGE_STARTTIME="startTime";
+  public static final String TIME_RANGE_ENDTIME="endTime";
   public static final String TIME="time";
   public static final String END_TIME="endTime";
 

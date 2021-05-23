@@ -28,19 +28,24 @@ public class DatabaseServiceImpl implements DatabaseService {
   }
 
   @Override
-  public DatabaseService search(JsonObject query,QueryType type, Handler<AsyncResult<JsonObject>> handler) {
+  public DatabaseService search(JsonObject apiQuery, QueryType type,
+      Handler<AsyncResult<JsonObject>> handler) {
+    if((apiQuery==null || apiQuery.isEmpty()) || type==null) {
+      handler.handle(Future.failedFuture("invalid parameters passed to search."));
+    }
+    
     ElasticQueryGenerator queryGenerator = new ElasticQueryGenerator();
-    JsonObject boolQuery = new JsonObject(queryGenerator.getQuery(query,type));
+    JsonObject elasticQuery = new JsonObject(queryGenerator.getQuery(apiQuery, type));
 
-    JsonObject elasticQuery = new JsonObject();
-    elasticQuery.put("size", 1000);
-    elasticQuery.put("query", boolQuery);
+    JsonObject elasticSearchQuery = new JsonObject();
+    elasticSearchQuery.put("size", 1000);
+    elasticSearchQuery.put("query", elasticQuery);
 
-    LOGGER.info(elasticQuery);
-    String index = getIndex(query);
+    LOGGER.info(elasticSearchQuery);
+    String index = getIndex(apiQuery);
     LOGGER.info(index);
     index = index.concat(SEARCH_REQ_PARAM);
-    client.searchAsync(index, FILTER_PATH_VAL, elasticQuery.toString(), searchHandler -> {
+    client.searchAsync(index, FILTER_PATH_VAL, elasticSearchQuery.toString(), searchHandler -> {
       if (searchHandler.succeeded()) {
         handler.handle(Future.succeededFuture(searchHandler.result()));
       } else {

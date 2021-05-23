@@ -19,7 +19,7 @@ public class AuthHandler implements Handler<RoutingContext> {
   private static final String AUTHENTICATOR_SERVICE_ADDRESS = AUTH_SERVICE_ADDRESS;
 
   private static AuthenticationService authenticator;
-  private final List<String> noUserAuthRequired = List.of("/apis/specs", "/apis");
+  private final List<String> noUserAuthRequired = List.of(API_API_SPECS, API_APIS,API_LIST_METADATA);
 
   public static AuthHandler create(Vertx vertx) {
     authenticator = AuthenticationService.createProxy(vertx, AUTHENTICATOR_SERVICE_ADDRESS);

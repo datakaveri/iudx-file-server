@@ -1,6 +1,7 @@
 package iudx.file.server.apiserver.validations.types;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import java.util.stream.Stream;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,35 +15,39 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
 @ExtendWith(VertxExtension.class)
-public class SampleTypeValidatorTest {
+public class GeomTypeValidatorTest {
 
-  private SampleTypeValidator sampleTypeValidator;
+  private GeomTypeValidator geomTypeValidator;
 
   @BeforeEach
   public void setup(Vertx vertx, VertxTestContext testContext) {
     testContext.completeNow();
   }
-  
+
   static Stream<Arguments> allowedValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
-        Arguments.of("true", false),
-        Arguments.of("true", true),
+        Arguments.of("Point", true),
+        Arguments.of("point", true),
+        Arguments.of("Polygon", true),
+        Arguments.of("polygon", true),
+        Arguments.of("LineString", true),
+        Arguments.of("linestring", true),
         Arguments.of(null, false),
         Arguments.of(" ", false));
   }
 
   @ParameterizedTest
   @MethodSource("allowedValues")
-  @Description("isSample type parameter allowed values.")
-  public void testValidIsSampleTypeValue(String value, boolean required, Vertx vertx,
+  @Description("geom type type parameter allowed values.")
+  public void testValidGeomTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
-    sampleTypeValidator = new SampleTypeValidator(value, required);
-    assertTrue(sampleTypeValidator.isValid());
+    geomTypeValidator = new GeomTypeValidator(value, required);
+    assertTrue(geomTypeValidator.isValid());
     testContext.completeNow();
   }
-  
-  
+
+
   static Stream<Arguments> invalidValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
@@ -51,16 +56,18 @@ public class SampleTypeValidatorTest {
         Arguments.of("   ", true),
         Arguments.of(RandomStringUtils.random(6), true),
         Arguments.of("false", false),
-        Arguments.of(RandomStringUtils.random(6), false));
+        Arguments.of(RandomStringUtils.random(6), false),
+        Arguments.of("1=1", true),
+        Arguments.of("ABC=ABC", true));
   }
 
   @ParameterizedTest
   @MethodSource("invalidValues")
-  @Description("isSample type parameter invalid values.")
-  public void testInvalidIsSampleTypeValue(String value, boolean required, Vertx vertx,
+  @Description("geom type parameter invalid values.")
+  public void testInvalidGeomTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
-    sampleTypeValidator = new SampleTypeValidator(value, required);
-    assertFalse(sampleTypeValidator.isValid());
+    geomTypeValidator = new GeomTypeValidator(value, required);
+    assertFalse(geomTypeValidator.isValid());
     testContext.completeNow();
   }
 }

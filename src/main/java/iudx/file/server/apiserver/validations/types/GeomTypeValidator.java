@@ -1,20 +1,19 @@
 package iudx.file.server.apiserver.validations.types;
 
-import java.util.Arrays;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class TemporalRelTypeValidator implements Validator {
+public class GeomTypeValidator implements Validator {
+  private static final Logger LOGGER = LogManager.getLogger(GeomTypeValidator.class);
 
-  private static final Logger LOGGER = LogManager.getLogger(TemporalRelTypeValidator.class);
-
-  private final List<String> allowedTimeRel = Arrays.asList("after", "before", "during");
+  private List<Object> allowedValues =
+      List.of("Point", "point", "Polygon", "polygon", "LineString", "linestring", "bbox");
 
   private String value;
   private boolean required;
 
-  public TemporalRelTypeValidator(String value, boolean required) {
+  public GeomTypeValidator(String value, boolean required) {
     this.value = value;
     this.required = required;
   }
@@ -30,8 +29,8 @@ public class TemporalRelTypeValidator implements Validator {
         return true;
       }
     }
-    if (!allowedTimeRel.contains(value)) {
-      LOGGER.error("Validation error : Invalid temporal relation value passed [ " + value + " ]");
+    if (!allowedValues.contains(value)) {
+      LOGGER.error("Validation error : Invalid geom type value passed [ " + value + " ]");
       return false;
     }
     return true;
@@ -44,7 +43,6 @@ public class TemporalRelTypeValidator implements Validator {
 
   @Override
   public String failureMessage() {
-    return "invalid time relation value.";
+    return "Invalid geo typee value";
   }
 }
-

@@ -23,6 +23,11 @@ public class QueryParamsValidator {
     validParams.add(PARAM_START_TIME);
     validParams.add(PARAM_END_TIME);
     validParams.add(PARAM_TIME_REL);
+    validParams.add(PARAM_GEOREL);
+    validParams.add(PARAM_GEOMETRY);
+    validParams.add(PARAM_GEOPROPERTY);
+    validParams.add(PARAM_COORDINATES);
+    
   }
 
 

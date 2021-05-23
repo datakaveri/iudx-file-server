@@ -9,18 +9,25 @@ import iudx.file.server.common.QueryType;
 
 public class ElasticQueryGenerator {
 
+  private static QueryDecoder temporalQueryDecoder = new TemporalQueryDecoder();
+  private static QueryDecoder geoQueryDecoder = new GeoQueryDecoder();
+  private static QueryDecoder listQueryDecoder = new ListQueryDecoder();
+
 
   public String getQuery(JsonObject json, QueryType type) {
-    String elasticQuery = null;
-    if (QueryType.TEMPORAL.equals(type)) {
-      elasticQuery = getTemporalQuery(json);
+    BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+    if (QueryType.TEMPORAL_GEO.equals(type)) {
+      boolQuery = temporalQueryDecoder.decode(boolQuery, json);
+      boolQuery = geoQueryDecoder.decode(boolQuery, json);
+    } else if (QueryType.TEMPORAL.equals(type)) {
+      boolQuery = temporalQueryDecoder.decode(boolQuery, json);
+    } else if (QueryType.GEO.equals(type)) {
+      boolQuery = geoQueryDecoder.decode(boolQuery, json);
     } else if (QueryType.LIST.equals(type)) {
-      elasticQuery = getListQuery(json);
-    } else {
-      System.out.println("unknown query type");
+      boolQuery = listQueryDecoder.decode(boolQuery, json);
     }
 
-    return elasticQuery;
+    return boolQuery.toString();
   }
 
   // TODO : discuss if it will be better to include other filters.
@@ -32,22 +39,5 @@ public class ElasticQueryGenerator {
     json.put("match", matchJson);
 
     return json.toString();
-  }
-
-
-  private String getTemporalQuery(JsonObject json) {
-    BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
-        .filter(QueryBuilders.termsQuery(ID, json.getString(ID)))
-        .filter(QueryBuilders.rangeQuery(TIMERANGE_START_TIME).lte(json.getString(TIME)))
-        .filter(QueryBuilders.rangeQuery(TIMERANGE_END_TIME).gte(json.getString(END_TIME)));
-
-    return boolQuery.toString();
-  }
-
-  private String getListQuery(JsonObject json) {
-    BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
-        .filter(QueryBuilders.termQuery(ID , json.getString(ID)));
-
-    return boolQuery.toString();
   }
 }

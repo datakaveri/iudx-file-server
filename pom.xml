@@ -13,7 +13,7 @@
 		<hazelcast.version>4.0.2</hazelcast.version>
 		<micrometer.version>1.7.0</micrometer.version>
 		<curator.version>5.1.0</curator.version>
-		<maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version> 
+		<maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
 		<junit-jupiter-api.version>5.7.2</junit-jupiter-api.version>
 		<junit-jupiter-params.version>5.7.2</junit-jupiter-params.version>
 		<junit-jupiter-engine.version>5.7.2</junit-jupiter-engine.version>
@@ -36,7 +36,7 @@
 		<maven-pmd-plugin.version>3.14.0</maven-pmd-plugin.version>
 		<maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
 		<maven-surefire-report-plugin.version>3.0.0-M5</maven-surefire-report-plugin.version>
-		
+
 		<exec.mainClass>iudx.file.server.deploy.Deployer</exec.mainClass>
 		<exec.mainClassDev>iudx.file.server.deploy.DeployerDev</exec.mainClassDev>
 		<config-dev.file>config-dev.json</config-dev.file>

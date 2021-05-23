@@ -32,13 +32,11 @@ public class DateTypeValidator implements Validator {
 
   @Override
   public int failureCode() {
-    // TODO Auto-generated method stub
     return 400;
   }
 
   @Override
   public String failureMessage() {
-    // TODO Auto-generated method stub
     return "invalid date-time format";
   }
 

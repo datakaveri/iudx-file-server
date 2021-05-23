@@ -26,6 +26,7 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.DecodeException;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.FileUpload;
@@ -34,9 +35,11 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.validation.ValidationHandler;
 import io.vertx.json.schema.Schema;
 import iudx.file.server.apiserver.handlers.AuthHandler;
 import iudx.file.server.apiserver.handlers.ValidationsHandler;
+import iudx.file.server.apiserver.query.QueryParams;
 import iudx.file.server.apiserver.service.FileService;
 import iudx.file.server.apiserver.service.impl.LocalStorageFileServiceImpl;
 import iudx.file.server.apiserver.utilities.RestResponse;
@@ -114,9 +117,10 @@ public class FileServerVerticle extends AbstractVerticle {
     directory = config().getString("upload_dir");
     temp_directory = config().getString("tmp_dir");
 
-    ValidationsHandler queryVaidationHandler = new ValidationsHandler(RequestType.TEMPORAL_QUERY);
+    ValidationsHandler temporalQueryVaidationHandler =
+        new ValidationsHandler(RequestType.TEMPORAL_QUERY);
     router.get(API_TEMPORAL).handler(BodyHandler.create())
-        .handler(queryVaidationHandler)
+        .handler(temporalQueryVaidationHandler)
         .handler(this::query)
         .failureHandler(validationsFailureHandler);
 
@@ -143,15 +147,20 @@ public class FileServerVerticle extends AbstractVerticle {
     ValidationsHandler listQueryValidationHandler = new ValidationsHandler(RequestType.LIST_QUERY);
     router.get(API_LIST_METADATA).handler(BodyHandler.create())
         .handler(listQueryValidationHandler)
-        // .handler(AuthHandler.create(vertx)) TODO : enable when endpoint permission added in token
+        .handler(AuthHandler.create(vertx))
         .handler(this::listMetadata).failureHandler(validationsFailureHandler);
 
-    router.get("/apis/spec").produces("application/json").handler(routingContext -> {
+    ValidationsHandler geoQueryValidationHandler = new ValidationsHandler(RequestType.GEO_QUERY);
+    router.get(API_SPATIAL).handler(BodyHandler.create())
+        .handler(geoQueryValidationHandler)
+        .handler(this::query).failureHandler(validationsFailureHandler);
+
+    router.get(API_API_SPECS).produces("application/json").handler(routingContext -> {
       HttpServerResponse response = routingContext.response();
       response.sendFile("docs/openapi.yaml");
     });
     /* Get redoc */
-    router.get("/apis").produces("text/html").handler(routingContext -> {
+    router.get(API_APIS).produces("text/html").handler(routingContext -> {
       HttpServerResponse response = routingContext.response();
       response.sendFile("docs/apidoc.html");
     });
@@ -301,7 +310,7 @@ public class FileServerVerticle extends AbstractVerticle {
     Future<JsonObject> uploadFuture = fileService.upload(files, filePath);
 
     uploadFuture.compose(uploadHandler -> {
-      LOGGER.debug("upload json :"+uploadHandler);
+      LOGGER.debug("upload json :" + uploadHandler);
       if (uploadHandler.containsKey("detail")) {
         return Future.failedFuture(uploadHandler.toString());
       }
@@ -309,7 +318,7 @@ public class FileServerVerticle extends AbstractVerticle {
       uploadJson.put("fileId", fileId);
       return catalogueService.isAllowedMetaDataField(params);
     }).compose(metaDataValidatorHandler -> {
-      LOGGER.debug("file-id : "+uploadJson.getString("fileId"));
+      LOGGER.debug("file-id : " + uploadJson.getString("fileId"));
       return saveFileRecord(params, uploadJson.getString("fileId"));
     }).onComplete(handler -> {
       if (handler.succeeded()) {
@@ -333,58 +342,25 @@ public class FileServerVerticle extends AbstractVerticle {
 
   }
 
-
-  // fileService.upload(files,filePath,handler->
-  //
-  // {
-  // if (handler.succeeded()) {
-  // JsonObject uploadResult = handler.result();
-  // JsonObject responseJson = new JsonObject();
-  // String fileId = id + "/" + uploadResult.getString("file-id");
-  // responseJson.put("fileId", fileId);
-  //
-  // Future<Boolean> allowedMetaDataFuture = catalogueService.isAllowedMetaDataField(params);
-  //
-  // allowedMetaDataFuture.compose(respone -> {
-  // return saveFileRecord(params, fileId);
-  // }).onComplete(dbInsertHandler -> {
-  // if (dbInsertHandler.succeeded()) {
-  // response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-  // .setStatusCode(HttpStatus.SC_OK)
-  // .end(responseJson.toString());
-  // } else {
-  // LOGGER.debug(dbInsertHandler.cause());
-  // // DB insert fail, run Compensating service to clean/undo upload.
-  // String fileIdComponent[] = getFileIdComponents(responseJson.getString("fileId"));
-  // StringBuilder uploadDir = new StringBuilder();
-  // uploadDir.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
-  // String fileUUID = fileIdComponent.length >= 6 ? fileIdComponent[5] : fileIdComponent[4];
-  //
-  // LOGGER.debug("deleting file :" + fileUUID);
-  // vertx.fileSystem().deleteBlocking(directory + "/" + uploadDir + "/" + fileUUID);
-  // processResponse(response, dbInsertHandler.cause().getMessage());
-  // }
-  // });;
-  // } else {
-  // processResponse(response, handler.cause().getMessage());
-  // }
-  // });
-  // }
-
-
   private Future<Boolean> saveFileRecord(MultiMap formParams, String fileId) {
     Promise<Boolean> promise = Promise.promise();
     JsonObject json = new JsonObject();
     json.put("id", formParams.get("id"));
     json.put("timeRange", new JsonObject()
-        .put("startTime", formParams.get("startTime"))
-        .put("endTime", formParams.get("endTime")));
+        .put("gte", formParams.get("startTime"))
+        .put("lte", formParams.get("endTime")));
     json.put("fileId", fileId);
+
+    json.put("location", new JsonObject()
+                          .put("type", formParams.get("geometry"))
+                          .put("coordinates",new JsonArray(formParams.get("coordinates"))));
 
     // remove already added default metadata fields from formParams.
     formParams.remove("id");
     formParams.remove("startTime");
     formParams.remove("endTime");
+    formParams.remove("geometry");
+    formParams.remove("coordinates");
 
     formParams.entries().stream().forEach(e -> json.put(e.getKey(), e.getValue()));
 
@@ -445,10 +421,12 @@ public class FileServerVerticle extends AbstractVerticle {
     for (Map.Entry<String, String> entry : queryParams.entries()) {
       query.put(entry.getKey(), entry.getValue());
     }
-    QueryType type = getQueryType(query);
+    QueryParams params = query.mapTo(QueryParams.class).build();
+    QueryType type = getQueryType(params);
+    System.out.println(JsonObject.mapFrom(params));
     queryParamsValidator.onComplete(validationHandler -> {
       if (validationHandler.succeeded()) {
-        database.search(query, type, queryHandler -> {
+        database.search(JsonObject.mapFrom(params), type, queryHandler -> {
           if (queryHandler.succeeded()) {
             response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
                 .setStatusCode(HttpStatus.SC_OK)
@@ -460,17 +438,6 @@ public class FileServerVerticle extends AbstractVerticle {
         });
       } else {
         LOGGER.error(validationHandler.cause().getMessage());
-      }
-    });
-  }
-
-  private void deleteFileRecord(String id) {
-    database.delete(id, handler -> {
-      if (handler.succeeded()) {
-        LOGGER.info("Record deleted in DB");
-      } else {
-        LOGGER.error("failed to DELETE record");
-        LOGGER.error(id);
       }
     });
   }
@@ -602,18 +569,6 @@ public class FileServerVerticle extends AbstractVerticle {
     });
   }
 
-  /**
-   * retreive components from id index : 0 - Domain 1 - user SHA 2 - File Server 3 - File group 4 -
-   * Resource/ File id(for Group level file, index 4 represent file Id(optional)) 5 - File id
-   * (optional)
-   * 
-   * @param fileId
-   * @return
-   */
-  private String[] getFileIdComponents(String fileId) {
-    return fileId.split("/");
-  }
-
   private void processResponse(HttpServerResponse response, String message) {
     LOGGER.debug("Info : " + message);
     try {
@@ -639,16 +594,6 @@ public class FileServerVerticle extends AbstractVerticle {
 
   }
 
-
-  private WebClient getWebClient(Vertx vertx, JsonObject config) {
-    WebClientOptions options =
-        new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true)
-            .setKeyStoreOptions(
-                new JksOptions()
-                    .setPath(config.getString("keystore"))
-                    .setPassword(config.getString("keystorePassword")));
-    return WebClient.create(vertx, options);
-  }
 
   private boolean isValidFileContentType(Set<FileUpload> files) {
     for (FileUpload file : files) {

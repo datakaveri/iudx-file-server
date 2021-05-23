@@ -37,63 +37,21 @@ public class ValidationsHandler implements Handler<RoutingContext> {
     switch (requestType) {
       case TEMPORAL_QUERY:
         validations=validationFactory.create(RequestType.TEMPORAL_QUERY, parameters, headers);
-//        List<Validator> queryValidations =
-//            validationFactory.create(RequestType.TEMPORAL_QUERY, parameters, headers);
-//        for (Validator validator : queryValidations) {
-//          LOGGER.debug("validator :" + validator.getClass().getName());
-//          if (!validator.isValid()) {
-//            error(context, validator);
-//            return;
-//          }
-//        }
         break;
       case UPLOAD:
         validations=validationFactory.create(RequestType.UPLOAD, parameters, headers);
-//        List<Validator> uploadValidations =
-//            validationFactory.create(RequestType.UPLOAD, parameters, headers);
-//        for (Validator validator : uploadValidations) {
-//          LOGGER.debug("validator :" + validator.getClass().getName());
-//          if (!validator.isValid()) {
-//            error(context, validator);
-//            return;
-//          }
-//        }
         break;
       case DOWNLOAD:
         validations=validationFactory.create(RequestType.DOWNLOAD, parameters, headers);
-//        List<Validator> downloadValidations =
-//            validationFactory.create(RequestType.DOWNLOAD, parameters, headers);
-//        for (Validator validator : downloadValidations) {
-//          LOGGER.debug("validator :" + validator.getClass().getName());
-//          if (!validator.isValid()) {
-//            error(context, validator);
-//            return;
-//          }
-//        }
         break;
       case DELETE:
         validations=validationFactory.create(RequestType.DELETE, parameters, headers);
-//        List<Validator> deleteValidations =
-//            validationFactory.create(RequestType.DELETE, parameters, headers);
-//        for (Validator validator : deleteValidations) {
-//          LOGGER.debug("validator :" + validator.getClass().getName());
-//          if (!validator.isValid()) {
-//            error(context, validator);
-//            return;
-//          }
-//        }
         break;
       case LIST_QUERY:
         validations=validationFactory.create(RequestType.LIST_QUERY, parameters, headers);
-//        List<Validator> listQueryValidations =
-//            validationFactory.create(RequestType.LIST_QUERY, parameters, headers);
-//        for (Validator validator : listQueryValidations) {
-//          LOGGER.debug("validator :" + validator.getClass().getName());
-//          if (!validator.isValid()) {
-//            error(context, validator);
-//            return;
-//          }
-//        }
+        break;
+      case GEO_QUERY:
+        validations=validationFactory.create(RequestType.GEO_QUERY, parameters, headers);
         break;
       default:
         break;
