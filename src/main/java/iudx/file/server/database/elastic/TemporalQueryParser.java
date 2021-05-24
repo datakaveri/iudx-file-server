@@ -5,11 +5,11 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import io.vertx.core.json.JsonObject;
 
-public class TemporalQueryDecoder implements QueryDecoder {
+public class TemporalQueryParser implements QueryParser {
 
 
   @Override
-  public BoolQueryBuilder decode(BoolQueryBuilder builder, JsonObject json) {
+  public BoolQueryBuilder parse(BoolQueryBuilder builder, JsonObject json) {
     builder
         .filter(QueryBuilders.termsQuery(ID, json.getString(ID)))
         .filter(QueryBuilders.rangeQuery(TIME_RANGE)

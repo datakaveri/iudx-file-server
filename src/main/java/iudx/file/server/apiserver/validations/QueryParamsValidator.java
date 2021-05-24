@@ -12,7 +12,7 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 
 public class QueryParamsValidator {
-  
+
   private static final Logger LOGGER = LogManager.getLogger(QueryParamsValidator.class);
 
   private static Set<String> validParams = new HashSet<String>();
@@ -27,7 +27,7 @@ public class QueryParamsValidator {
     validParams.add(PARAM_GEOMETRY);
     validParams.add(PARAM_GEOPROPERTY);
     validParams.add(PARAM_COORDINATES);
-    
+
   }
 
 
@@ -51,6 +51,21 @@ public class QueryParamsValidator {
       }
     }
     return true;
+  }
+
+
+  private Future<Boolean> isValidGeoQuery(MultiMap map) {
+    Promise<Boolean> promsie = Promise.promise();
+    if (map.contains(PARAM_GEOREL) && map.contains(PARAM_COORDINATES)
+        && map.contains(PARAM_GEOMETRY)) {
+      promsie.complete(true);
+    }else {
+      promsie.fail("Invalid geo query");
+    }
+
+
+    return promsie.future();
+
   }
 
 }

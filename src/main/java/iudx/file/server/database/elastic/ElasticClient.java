@@ -76,10 +76,12 @@ public class ElasticClient {
           } else if (responseJson.containsKey(DOCS_KEY)) {
             responseHits = responseJson.getJsonArray(DOCS_KEY);
           }
-          for (Object json : responseHits) {
-            jsonTemp = (JsonObject) json;
-            dbResponse.add(jsonTemp.getJsonObject(SOURCE_FILTER_KEY));
-          }
+          
+          responseHits.stream()
+              .map(e -> (JsonObject) e)
+              .filter(e -> e.isEmpty())
+              .forEach(e -> dbResponse.add(e.getJsonObject(SOURCE_FILTER_KEY)));
+
           responseBuilder.setMessage(dbResponse);
           searchHandler.handle(Future.succeededFuture(responseBuilder.getResponse()));
         } catch (IOException e) {

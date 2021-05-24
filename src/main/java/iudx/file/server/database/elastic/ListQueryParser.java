@@ -5,10 +5,10 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import io.vertx.core.json.JsonObject;
 
-public class ListQueryDecoder implements QueryDecoder{
+public class ListQueryParser implements QueryParser{
 
   @Override
-  public BoolQueryBuilder decode(BoolQueryBuilder builder, JsonObject json) {
+  public BoolQueryBuilder parse(BoolQueryBuilder builder, JsonObject json) {
     builder
         .filter(QueryBuilders.termQuery(ID, json.getString(ID)));
     return builder;

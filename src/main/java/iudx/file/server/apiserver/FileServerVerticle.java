@@ -117,8 +117,7 @@ public class FileServerVerticle extends AbstractVerticle {
     directory = config().getString("upload_dir");
     temp_directory = config().getString("tmp_dir");
 
-    ValidationsHandler temporalQueryVaidationHandler =
-        new ValidationsHandler(RequestType.TEMPORAL_QUERY);
+    ValidationsHandler temporalQueryVaidationHandler =new ValidationsHandler(RequestType.TEMPORAL_QUERY);
     router.get(API_TEMPORAL).handler(BodyHandler.create())
         .handler(temporalQueryVaidationHandler)
         .handler(this::query)
@@ -352,8 +351,8 @@ public class FileServerVerticle extends AbstractVerticle {
     json.put("fileId", fileId);
 
     json.put("location", new JsonObject()
-                          .put("type", formParams.get("geometry"))
-                          .put("coordinates",new JsonArray(formParams.get("coordinates"))));
+        .put("type", formParams.get("geometry"))
+        .put("coordinates", new JsonArray(formParams.get("coordinates"))));
 
     // remove already added default metadata fields from formParams.
     formParams.remove("id");
@@ -413,9 +412,9 @@ public class FileServerVerticle extends AbstractVerticle {
   public void query(RoutingContext context) {
     HttpServerResponse response = context.response();
     MultiMap queryParams = getQueryParams(context, response).get();
-    LOGGER.info("query params: " + queryParams);
     Future<Boolean> queryParamsValidator = queryParamValidator.isValid(queryParams);
-
+    Future<List<String>> allowedFilters =
+        catalogueService.getAllowedFilters4Queries(queryParams.get(PARAM_ID));
 
     JsonObject query = new JsonObject();
     for (Map.Entry<String, String> entry : queryParams.entries()) {
@@ -423,21 +422,56 @@ public class FileServerVerticle extends AbstractVerticle {
     }
     QueryParams params = query.mapTo(QueryParams.class).build();
     QueryType type = getQueryType(params);
-    System.out.println(JsonObject.mapFrom(params));
-    queryParamsValidator.onComplete(validationHandler -> {
-      if (validationHandler.succeeded()) {
-        database.search(JsonObject.mapFrom(params), type, queryHandler -> {
-          if (queryHandler.succeeded()) {
-            response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-                .setStatusCode(HttpStatus.SC_OK)
-                .end(queryHandler.result().toString());
 
-          } else {
-            processResponse(response, queryHandler.cause().getMessage());
-          }
-        });
+    queryParamsValidator.compose(paramsValidator -> {
+      return allowedFilters;
+    }).onComplete(handler -> {
+      if (handler.succeeded()) {
+        boolean isValidFilters = true; //TODO :change to false once filters available in cat for file
+        List<String> applicableFilters = handler.result();
+        if (QueryType.TEMPORAL_GEO.equals(type)
+            && (applicableFilters.contains("SPATIAL") && applicableFilters.contains("TEMPORAL"))) {
+          isValidFilters = true;
+        } else if (QueryType.GEO.equals(type) && applicableFilters.contains("SPATIAL")) {
+          isValidFilters = true;
+        } else if (QueryType.TEMPORAL.equals(type) && applicableFilters.contains("TEMPORAL")) {
+          isValidFilters = true;
+        }
+        if (isValidFilters) {
+          executeSearch(JsonObject.mapFrom(params), type, response);
+        } else {
+          response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
+              .setStatusCode(HttpStatus.SC_OK)
+              .end(new RestResponse.Builder()
+                  .type(400)
+                  .title("Bad query")
+                  .details("Either geo or temporal parameter is not allowed for resource").build()
+                  .toJson()
+                  .toString());
+        }
       } else {
-        LOGGER.error(validationHandler.cause().getMessage());
+        LOGGER.error(handler.cause().getMessage());
+        response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
+        .setStatusCode(HttpStatus.SC_OK)
+        .end(new RestResponse.Builder()
+            .type(400)
+            .title("Bad query")
+            .details("Bad query").build()
+            .toJson()
+            .toString());
+      }
+    });
+  }
+
+  private void executeSearch(JsonObject json, QueryType type, HttpServerResponse response) {
+    database.search(json, type, queryHandler -> {
+      if (queryHandler.succeeded()) {
+        response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .setStatusCode(HttpStatus.SC_OK)
+            .end(queryHandler.result().toString());
+
+      } else {
+        processResponse(response, queryHandler.cause().getMessage());
       }
     });
   }

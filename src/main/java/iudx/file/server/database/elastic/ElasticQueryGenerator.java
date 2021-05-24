@@ -9,22 +9,22 @@ import iudx.file.server.common.QueryType;
 
 public class ElasticQueryGenerator {
 
-  private static QueryDecoder temporalQueryDecoder = new TemporalQueryDecoder();
-  private static QueryDecoder geoQueryDecoder = new GeoQueryDecoder();
-  private static QueryDecoder listQueryDecoder = new ListQueryDecoder();
+  private static QueryParser temporalQueryParser = new TemporalQueryParser();
+  private static QueryParser geoQueryParser = new GeoQueryParser();
+  private static QueryParser listQueryParser = new ListQueryParser();
 
 
   public String getQuery(JsonObject json, QueryType type) {
     BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
     if (QueryType.TEMPORAL_GEO.equals(type)) {
-      boolQuery = temporalQueryDecoder.decode(boolQuery, json);
-      boolQuery = geoQueryDecoder.decode(boolQuery, json);
+      boolQuery = temporalQueryParser.parse(boolQuery, json);
+      boolQuery = geoQueryParser.parse(boolQuery, json);
     } else if (QueryType.TEMPORAL.equals(type)) {
-      boolQuery = temporalQueryDecoder.decode(boolQuery, json);
+      boolQuery = temporalQueryParser.parse(boolQuery, json);
     } else if (QueryType.GEO.equals(type)) {
-      boolQuery = geoQueryDecoder.decode(boolQuery, json);
+      boolQuery = geoQueryParser.parse(boolQuery, json);
     } else if (QueryType.LIST.equals(type)) {
-      boolQuery = listQueryDecoder.decode(boolQuery, json);
+      boolQuery = listQueryParser.parse(boolQuery, json);
     }
 
     return boolQuery.toString();

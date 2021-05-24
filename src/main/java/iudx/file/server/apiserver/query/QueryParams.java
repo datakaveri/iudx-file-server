@@ -125,20 +125,18 @@ public class QueryParams {
   @JsonIgnore
   public boolean isGeoParamsPresent() {
     return this.geoRel != null
-        || this.coordinates != null
-        || this.geometry != null
-        || this.geoProperty != null;
+        && this.coordinates != null
+        && this.geometry != null;
   }
 
 
   @JsonIgnore
   public boolean isTemporalParamsPresent() {
     return this.temporalRelation != null
-        || this.startTime != null;
+        && this.startTime != null;
   }
 
   public QueryParams build() {
-    System.out.println(this);
     if (isGeoParamsPresent()) {
       if (this.geoRel != null && this.coordinates != null && this.geometry != null) {
         if (this.geometry.equalsIgnoreCase(GEOM_POINT) && this.geoRel.equals(JSON_NEAR)) {
@@ -147,8 +145,6 @@ public class QueryParams {
           this.lon = Double.parseDouble(coords[1]);
           this.radius = Double.parseDouble(this.maxDistance);
         }
-      } else {
-        // not correct GEO QUERY.
       }
     }
     return this;

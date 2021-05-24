@@ -9,34 +9,35 @@ import org.elasticsearch.index.query.QueryBuilders;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-public class GeoQueryDecoder implements QueryDecoder {
+public class GeoQueryParser implements QueryParser {
 
-  private static final Logger LOGGER = LogManager.getLogger(GeoQueryDecoder.class);
+  private static final Logger LOGGER = LogManager.getLogger(GeoQueryParser.class);
 
   @Override
-  public BoolQueryBuilder decode(BoolQueryBuilder builder, JsonObject json) {
-    LOGGER.debug("builder : " + builder + " json : " + json);
+  public BoolQueryBuilder parse(BoolQueryBuilder builder, JsonObject json) {
+    LOGGER.debug("parsing geo query  paramaters");
     String shapeRelation =
-        "near".equalsIgnoreCase(json.getString("georel")) ? "within" : json.getString("georel");
+        NEAR.equalsIgnoreCase(json.getString(GEO_REL)) ? WITHIN : json.getString(GEO_REL);
+    builder.filter(QueryBuilders.termsQuery(ID, json.getString(ID)));
     builder.filter(QueryBuilders.wrapperQuery(String
         .format("{ \"geo_shape\": { \"%s\": { \"shape\": %s, \"relation\": \"%s\" } } }",
-            "location",
+            LOCATION,
             getGeoJson(json),
             ShapeRelation.getRelationByName(shapeRelation).getRelationName())));
-    LOGGER.debug("geo shape builder : "+builder);
     return builder;
   }
 
   private JsonObject getGeoJson(JsonObject json) {
     JsonObject geoJson = new JsonObject();
-    String geom = GEOM_POINT.equalsIgnoreCase(json.getString("geometry")) ? "Circle"
-        : json.getString("geometry");
-    if (GEOM_POINT.equalsIgnoreCase(json.getString("geometry"))) {
-      geoJson.put("radius", json.getString("radius") + "m");
+    String geom;
+    if (GEOM_POINT.equalsIgnoreCase(json.getString(GEOMETRY))) {
+      geom = CIRCLE;
+      geoJson.put(RADIUS, json.getString(RADIUS) + UNIT_METERS);
+    } else {
+      geom = json.getString(GEOMETRY);
     }
-    geoJson.put("type", geom)
-        .put("coordinates", new JsonArray(json.getString("coordinates")));
-    LOGGER.debug("geo-json  :"+geoJson);
+    geoJson.put(TYPE_KEY, geom)
+        .put(COORDINATES, new JsonArray(json.getString(COORDINATES)));
     return geoJson;
   }
 
