@@ -229,11 +229,12 @@ public class FileServerVerticle extends AbstractVerticle {
     uploadPath.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
 
     Set<FileUpload> files = routingContext.fileUploads();
-    if (!isValidFileContentType(files)) {
+    if (files.size()==0 || !isValidFileContentType(files)) {
       String message = new RestResponse.Builder()
           .type(400)
           .title("Bad Request")
-          .details("upsupported file type.").build().toJsonString();
+          .details("bad request").build().toJsonString();
+      LOGGER.error("Invalid File type or no file attached");
       processResponse(response, message);
       return;
     }

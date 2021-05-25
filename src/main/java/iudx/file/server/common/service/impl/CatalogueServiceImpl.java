@@ -28,8 +28,6 @@ import iudx.file.server.common.service.CatalogueService;
 public class CatalogueServiceImpl implements CatalogueService {
 
   private static final Logger LOGGER = LogManager.getLogger(CatalogueServiceImpl.class);
-  private final List<String> allowedDefaultMetaFields =
-      Arrays.asList("file", "id", "isSample", "startTime", "endTime");
 
   private Vertx vertx;
   private WebClient webClient;

@@ -101,7 +101,6 @@ public class DatabaseServiceTest {
     }
   }
 
-
   @Test
   @Order(1)
   @Description("Ensure elastic container is created and runnning")
@@ -110,18 +109,6 @@ public class DatabaseServiceTest {
     assertTrue(elasticContainer.isRunning());
     testContext.completeNow();
   }
-
-  // @Test
-  // @Order(2)
-  // public void testSetup(Vertx vertx, VertxTestContext testContext) throws IOException {
-  // // Do whatever you want with the rest client ...
-  // Response response = client.performRequest(new Request("GET", "/_cluster/health"));
-  // LOGGER.info("container health :" + response.toString());
-  // assertTrue(elasticContainer.isCreated());
-  // testContext.completeNow();
-  // }
-
-
 
   static Stream<Arguments> docsList() {
     return Stream.of(
@@ -309,6 +296,45 @@ public class DatabaseServiceTest {
         testContext.completeNow();
       } else {
         testContext.failNow(handler.cause().getMessage());
+      }
+    });
+  }
+
+  @Test
+  public void testSearchWithInvalidParam(Vertx vertx, VertxTestContext testContext) {
+    dbService.search(null, QueryType.GEO, handler -> {
+      if (handler.failed()) {
+        JsonObject response = new JsonObject(handler.cause().getMessage());
+        assertTrue(response.containsKey("type"));
+        testContext.completeNow();
+      } else {
+        testContext.failNow("failed");;
+      }
+    });
+  }
+
+  @Test
+  public void testSaveWithInvalidDocument(Vertx vertx, VertxTestContext testContext) {
+    dbService.save(null, handler -> {
+      if (handler.failed()) {
+        JsonObject response = new JsonObject(handler.cause().getMessage());
+        assertTrue(response.containsKey("type"));
+        testContext.completeNow();
+      } else {
+        testContext.failNow("failed");;
+      }
+    });
+  }
+
+  @Test
+  public void testDeleteWithInvalidId(Vertx vertx, VertxTestContext testContext) {
+    dbService.delete(null, handler -> {
+      if (handler.failed()) {
+        JsonObject response = new JsonObject(handler.cause().getMessage());
+        assertTrue(response.containsKey("type"));
+        testContext.completeNow();
+      } else {
+        testContext.failNow("failed");;
       }
     });
   }

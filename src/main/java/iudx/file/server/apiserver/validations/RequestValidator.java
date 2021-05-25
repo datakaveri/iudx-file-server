@@ -18,8 +18,7 @@ public class RequestValidator {
 
   private static Set<String> validParams = new HashSet<String>();
   static {
-    validParams.add("id");
-    validParams.add("time");
+    validParams.add(PARAM_TIME);
     validParams.add(PARAM_ID);
     validParams.add(PARAM_START_TIME);
     validParams.add(PARAM_END_TIME);
@@ -38,6 +37,7 @@ public class RequestValidator {
       LOGGER.debug("valid params");
       promise.complete(true);
     } else {
+      LOGGER.error("Invalid query param found in request");
       promise.fail("Invalid query param.");
     }
     return promise.future();
@@ -61,6 +61,7 @@ public class RequestValidator {
         && map.contains(PARAM_GEOMETRY)) {
       promsie.complete(true);
     } else {
+      LOGGER.error("Invalid geo query");
       promsie.fail("Invalid geo query");
     }
     return promsie.future();
@@ -68,7 +69,6 @@ public class RequestValidator {
 
   public Future<Boolean> isValidArchiveRequest(MultiMap params) {
     Promise<Boolean> promise = Promise.promise();
-
     if (params.contains(PARAM_GEOMETRY) && params.contains(PARAM_COORDINATES)
         && params.contains(PARAM_START_TIME) && params.contains(PARAM_END_TIME)) {
       promise.complete(true);
@@ -78,6 +78,7 @@ public class RequestValidator {
           .title("Bad query")
           .details("Bad request").build()
           .toJsonString());
+      LOGGER.error("Invalid archieve request, All mandatory fields are required");
     }
 
     return promise.future();

@@ -8,6 +8,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.validation.BadRequestException;
 
+//TODO : make usable after looking for Exception propogation in vertx
 public class ValidationFailureHandler implements Handler<RoutingContext>{
 
   private static final Logger LOGGER = LogManager.getLogger(ValidationFailureHandler.class);

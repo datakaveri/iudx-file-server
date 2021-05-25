@@ -37,13 +37,11 @@ public class GeoRelationTypeValidator implements Validator {
 
   @Override
   public int failureCode() {
-    // TODO Auto-generated method stub
-    return 0;
+    return 400;
   }
 
   @Override
   public String failureMessage() {
-    // TODO Auto-generated method stub
-    return null;
+    return "Invalid geo rel";
   }
 }

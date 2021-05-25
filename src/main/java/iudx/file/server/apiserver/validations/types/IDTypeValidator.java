@@ -34,13 +34,11 @@ public class IDTypeValidator implements Validator {
 
   @Override
   public int failureCode() {
-    // TODO Auto-generated method stub
     return 400;
   }
 
   @Override
   public String failureMessage() {
-    // TODO Auto-generated method stub
     return "Invalid id";
   }
 

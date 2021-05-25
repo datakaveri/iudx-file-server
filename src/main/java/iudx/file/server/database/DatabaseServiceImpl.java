@@ -13,6 +13,7 @@ import io.vertx.core.json.JsonObject;
 import iudx.file.server.common.QueryType;
 import iudx.file.server.database.elastic.ElasticClient;
 import iudx.file.server.database.elastic.ElasticQueryGenerator;
+import iudx.file.server.database.utilities.ResponseBuilder;
 
 public class DatabaseServiceImpl implements DatabaseService {
 
@@ -30,10 +31,13 @@ public class DatabaseServiceImpl implements DatabaseService {
   @Override
   public DatabaseService search(JsonObject apiQuery, QueryType type,
       Handler<AsyncResult<JsonObject>> handler) {
-    if((apiQuery==null || apiQuery.isEmpty()) || type==null) {
-      handler.handle(Future.failedFuture("invalid parameters passed to search."));
+    if ((apiQuery == null || apiQuery.isEmpty()) || type == null) {
+      ResponseBuilder responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
+          .setMessage("invalid parameters passed to search.");
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+      return this;
     }
-    
+
     ElasticQueryGenerator queryGenerator = new ElasticQueryGenerator();
     JsonObject elasticQuery = new JsonObject(queryGenerator.getQuery(apiQuery, type));
 
@@ -57,6 +61,12 @@ public class DatabaseServiceImpl implements DatabaseService {
 
   @Override
   public DatabaseService save(JsonObject document, Handler<AsyncResult<JsonObject>> handler) {
+    if (document == null || document.isEmpty()) {
+      ResponseBuilder responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
+          .setMessage("empty document passed to save.");
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+      return this;
+    }
     String index = getIndex(document);
     LOGGER.info(index);
     client.insertAsync(index, document, insertHandler -> {
@@ -72,6 +82,12 @@ public class DatabaseServiceImpl implements DatabaseService {
 
   @Override
   public DatabaseService delete(String id, Handler<AsyncResult<JsonObject>> handler) {
+    if (id == null || id.isBlank()) {
+      ResponseBuilder responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
+          .setMessage("empty id passed to delete.");
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+      return this;
+    }
     ElasticQueryGenerator queryGenerator = new ElasticQueryGenerator();
     JsonObject deleteQuery = new JsonObject(queryGenerator.deleteQuery(id));
 
