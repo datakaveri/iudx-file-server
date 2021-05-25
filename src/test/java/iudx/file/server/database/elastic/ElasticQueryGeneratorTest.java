@@ -46,8 +46,9 @@ public class ElasticQueryGeneratorTest {
         "  }\n" +
         "}";
 
-    assertTrue(elasticQuery.contains("bool"));
-    assertTrue(elasticQuery.contains("IUDX_ID"));
-    assertEquals(elasticQuery, elasticQueryGenerator.getQuery(query, QueryType.LIST));
+    String generatedQuery = elasticQueryGenerator.getQuery(query, QueryType.LIST);
+    assertEquals(elasticQuery, generatedQuery);
+    assertTrue(generatedQuery.contains("bool"));
+    assertTrue(generatedQuery.contains("IUDX_ID"));
   }
 }

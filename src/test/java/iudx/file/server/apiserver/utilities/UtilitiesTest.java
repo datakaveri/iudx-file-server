@@ -26,7 +26,9 @@ public class UtilitiesTest {
   @Test
   public void testTemporalQuery() {
     JsonObject query = new JsonObject();
-    query.put("time", "2020-09-15T00:00:00Z").put("endTime", "2020-09-15T00:00:00Z");
+    query.put("timerel", "during")
+        .put("time", "2020-09-15T00:00:00Z")
+        .put("endTime", "2020-09-15T00:00:00Z");
     QueryParams queryParam = query.mapTo(QueryParams.class).build();
     assertEquals(QueryType.TEMPORAL, utilities.getQueryType(queryParam));
   }
@@ -34,8 +36,12 @@ public class UtilitiesTest {
   @Test
   public void testGeoTemporalQuery() {
     JsonObject query = new JsonObject();
-    query.put("time", "2020-09-15T00:00:00Z").put("endTime", "2020-09-15T00:00:00Z").put("georel",
-        "within");
+    query.put("timerel", "during")
+        .put("time", "2020-09-15T00:00:00Z")
+        .put("endTime", "2020-09-15T00:00:00Z")
+        .put("georel", "near;maxDistance=10")
+        .put("coordinates", "[72.23,23.14]")
+        .put("geometry", "point");
     QueryParams queryParam = query.mapTo(QueryParams.class).build();
     assertEquals(QueryType.TEMPORAL_GEO, utilities.getQueryType(queryParam));
   }
@@ -43,7 +49,8 @@ public class UtilitiesTest {
   @Test
   public void testGeoQuery() {
     JsonObject query = new JsonObject();
-    query.put("georel", "within").put("lat", "72").put("lon", "23");
+    query.put("georel", "near;maxDistance=10").put("coordinates", "[72.23,23.14]").put("geometry",
+        "point");
     QueryParams queryParam = query.mapTo(QueryParams.class).build();
     assertEquals(QueryType.GEO, utilities.getQueryType(queryParam));
   }

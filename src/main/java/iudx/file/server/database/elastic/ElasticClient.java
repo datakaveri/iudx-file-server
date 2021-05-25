@@ -21,6 +21,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import iudx.file.server.database.utilities.ResponseBuilder;
 
 public class ElasticClient {
 
@@ -79,7 +80,7 @@ public class ElasticClient {
           
           responseHits.stream()
               .map(e -> (JsonObject) e)
-              .filter(e -> e.isEmpty())
+              .filter(e -> !e.isEmpty())
               .forEach(e -> dbResponse.add(e.getJsonObject(SOURCE_FILTER_KEY)));
 
           responseBuilder.setMessage(dbResponse);

@@ -1,0 +1,66 @@
+[
+	{
+		"id": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
+		"timeRange": {
+			"gte": "2020-09-05T00:00:00Z",
+			"lte": "2020-09-15T00:00:00Z"
+		},
+		"fileId": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/37dabd89-6df2-48a4-82ad-13c811ec9f31.txt",
+		"location": {
+			"type": "point",
+			"coordinates": [
+				72.8060,
+				23.1833
+			]
+		},
+		"area": "surat"
+	},
+	{
+		"id": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
+		"timeRange": {
+			"gte": "2020-09-08T00:00:00Z",
+			"lte": "2020-09-25T00:00:00Z"
+		},
+		"fileId": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/60c7c38e-82cd-48c9-892b-a1917e2f6511.txt",
+		"location": {
+			"type": "point",
+			"coordinates": [
+				72.8057,
+				21.1831
+			]
+		},
+		"area": "surat"
+	},
+	{
+		"id": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
+		"timeRange": {
+			"gte": "2020-09-08T00:00:00Z",
+			"lte": "2020-09-25T00:00:00Z"
+		},
+		"fileId": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/7b39bec2-365a-4efe-b543-7a8c9b25be14.txt",
+		"location": {
+			"type": "point",
+			"coordinates": [
+				72.8055,
+				21.1833
+			]
+		},
+		"area": "surat"
+	},
+	{
+		"id": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
+		"timeRange": {
+			"gte": "2020-09-01T00:00:00Z",
+			"lte": "2020-09-10T00:00:00Z"
+		},
+		"fileId": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/2a553c97-e873-4983-86b6-070774e4e671.txt",
+		"location": {
+			"type": "point",
+			"coordinates": [
+				72.8058,
+				21.1835
+			]
+		},
+		"area": "surat"
+	}
+]

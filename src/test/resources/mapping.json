@@ -1,0 +1,31 @@
+{
+	"mappings": {
+		"properties": {
+			"fileId": {
+				"type": "keyword",
+				"fields": {
+					"keyword": {
+						"type": "keyword",
+						"ignore_above": 256
+					}
+				}
+			},
+			"id": {
+				"type": "keyword",
+				"fields": {
+					"keyword": {
+						"type": "keyword",
+						"ignore_above": 256
+					}
+				}
+			},
+			"timeRange": {
+				"type": "date_range"
+			},
+			"location": {
+				"type": "geo_shape",
+				"strategy": "recursive"
+			}
+		}
+	}
+}
