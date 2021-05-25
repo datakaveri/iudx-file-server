@@ -62,6 +62,10 @@ public class ValidationHandlerFactory {
     validators.add(new SampleTypeValidator(parameters.get(PARAM_SAMPLE), false));
     validators.add(new TokenTypeValidator(headers.get(HEADER_TOKEN), false));
 
+    ////geo (mandatory for upload)
+    validators.add(new GeomTypeValidator(parameters.get(PARAM_GEOMETRY),false));
+    validators.add(new CoordinatesTypeValidator(parameters.get(PARAM_COORDINATES), false));
+    
     return validators;
   }
 

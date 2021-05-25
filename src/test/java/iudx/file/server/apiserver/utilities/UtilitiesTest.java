@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.file.server.apiserver.query.QueryParams;
-import iudx.file.server.apiserver.validations.QueryParamsValidator;
+import iudx.file.server.apiserver.validations.RequestValidator;
 import iudx.file.server.common.QueryType;
 
 @ExtendWith(VertxExtension.class)

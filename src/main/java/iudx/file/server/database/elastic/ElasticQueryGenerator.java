@@ -16,6 +16,7 @@ public class ElasticQueryGenerator {
 
   public String getQuery(JsonObject json, QueryType type) {
     BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+    boolQuery.filter(QueryBuilders.termsQuery(ID, json.getString(ID)));
     if (QueryType.TEMPORAL_GEO.equals(type)) {
       boolQuery = temporalQueryParser.parse(boolQuery, json);
       boolQuery = geoQueryParser.parse(boolQuery, json);
@@ -24,7 +25,8 @@ public class ElasticQueryGenerator {
     } else if (QueryType.GEO.equals(type)) {
       boolQuery = geoQueryParser.parse(boolQuery, json);
     } else if (QueryType.LIST.equals(type)) {
-      boolQuery = listQueryParser.parse(boolQuery, json);
+      // boolQuery = listQueryParser.parse(boolQuery, json);
+      // since id is already added so don't add iof based filter again
     }
 
     return boolQuery.toString();

@@ -10,10 +10,11 @@ import java.util.Set;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
+import iudx.file.server.apiserver.utilities.RestResponse;
 
-public class QueryParamsValidator {
+public class RequestValidator {
 
-  private static final Logger LOGGER = LogManager.getLogger(QueryParamsValidator.class);
+  private static final Logger LOGGER = LogManager.getLogger(RequestValidator.class);
 
   private static Set<String> validParams = new HashSet<String>();
   static {
@@ -59,13 +60,27 @@ public class QueryParamsValidator {
     if (map.contains(PARAM_GEOREL) && map.contains(PARAM_COORDINATES)
         && map.contains(PARAM_GEOMETRY)) {
       promsie.complete(true);
-    }else {
+    } else {
       promsie.fail("Invalid geo query");
     }
-
-
     return promsie.future();
+  }
 
+  public Future<Boolean> isValidArchiveRequest(MultiMap params) {
+    Promise<Boolean> promise = Promise.promise();
+
+    if (params.contains(PARAM_GEOMETRY) && params.contains(PARAM_COORDINATES)
+        && params.contains(PARAM_START_TIME) && params.contains(PARAM_END_TIME)) {
+      promise.complete(true);
+    } else {
+      promise.fail(new RestResponse.Builder()
+          .type(400)
+          .title("Bad query")
+          .details("Bad request").build()
+          .toJsonString());
+    }
+
+    return promise.future();
   }
 
 }

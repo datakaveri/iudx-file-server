@@ -11,7 +11,6 @@ public class TemporalQueryParser implements QueryParser {
   @Override
   public BoolQueryBuilder parse(BoolQueryBuilder builder, JsonObject json) {
     builder
-        .filter(QueryBuilders.termsQuery(ID, json.getString(ID)))
         .filter(QueryBuilders.rangeQuery(TIME_RANGE)
             .lte(json.getString(END_TIME))
             .gte(json.getString(TIME)));

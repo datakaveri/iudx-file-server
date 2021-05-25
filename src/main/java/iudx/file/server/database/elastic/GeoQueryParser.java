@@ -18,7 +18,6 @@ public class GeoQueryParser implements QueryParser {
     LOGGER.debug("parsing geo query  paramaters");
     String shapeRelation =
         NEAR.equalsIgnoreCase(json.getString(GEO_REL)) ? WITHIN : json.getString(GEO_REL);
-    builder.filter(QueryBuilders.termsQuery(ID, json.getString(ID)));
     builder.filter(QueryBuilders.wrapperQuery(String
         .format("{ \"geo_shape\": { \"%s\": { \"shape\": %s, \"relation\": \"%s\" } } }",
             LOCATION,

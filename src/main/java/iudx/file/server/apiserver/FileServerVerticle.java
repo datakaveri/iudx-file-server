@@ -2,7 +2,6 @@ package iudx.file.server.apiserver;
 
 import static iudx.file.server.apiserver.utilities.Constants.*;
 import static iudx.file.server.apiserver.utilities.Utilities.*;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -18,7 +17,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.ClientAuth;
 import io.vertx.core.http.HttpServer;
@@ -32,11 +30,7 @@ import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.client.WebClient;
-import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.ext.web.validation.ValidationHandler;
-import io.vertx.json.schema.Schema;
 import iudx.file.server.apiserver.handlers.AuthHandler;
 import iudx.file.server.apiserver.handlers.ValidationsHandler;
 import iudx.file.server.apiserver.query.QueryParams;
@@ -44,11 +38,10 @@ import iudx.file.server.apiserver.service.FileService;
 import iudx.file.server.apiserver.service.impl.LocalStorageFileServiceImpl;
 import iudx.file.server.apiserver.utilities.RestResponse;
 import iudx.file.server.apiserver.validations.ContentTypeValidator;
-import iudx.file.server.apiserver.validations.QueryParamsValidator;
 import iudx.file.server.apiserver.validations.RequestType;
+import iudx.file.server.apiserver.validations.RequestValidator;
 import iudx.file.server.apiserver.validations.ValidationFailureHandler;
 import iudx.file.server.apiserver.validations.ValidationHandlerFactory;
-import iudx.file.server.authenticator.AuthenticationService;
 import iudx.file.server.common.QueryType;
 import iudx.file.server.common.WebClientFactory;
 import iudx.file.server.common.service.CatalogueService;
@@ -91,7 +84,7 @@ public class FileServerVerticle extends AbstractVerticle {
   private String directory;
   private String temp_directory;
 
-  private QueryParamsValidator queryParamValidator;
+  private RequestValidator requestValidator;
   private ContentTypeValidator contentTypeValidator;
   private WebClientFactory webClientFactory;
   private CatalogueService catalogueService;
@@ -106,7 +99,7 @@ public class FileServerVerticle extends AbstractVerticle {
     router = Router.router(vertx);
 
     validations = new ValidationHandlerFactory();;
-    queryParamValidator = new QueryParamsValidator();
+    requestValidator = new RequestValidator();
     contentTypeValidator = new ContentTypeValidator(config().getJsonObject("allowedContentType"));
 
     webClientFactory = new WebClientFactory(vertx, config());
@@ -117,7 +110,8 @@ public class FileServerVerticle extends AbstractVerticle {
     directory = config().getString("upload_dir");
     temp_directory = config().getString("tmp_dir");
 
-    ValidationsHandler temporalQueryVaidationHandler =new ValidationsHandler(RequestType.TEMPORAL_QUERY);
+    ValidationsHandler temporalQueryVaidationHandler =
+        new ValidationsHandler(RequestType.TEMPORAL_QUERY);
     router.get(API_TEMPORAL).handler(BodyHandler.create())
         .handler(temporalQueryVaidationHandler)
         .handler(this::query)
@@ -248,14 +242,6 @@ public class FileServerVerticle extends AbstractVerticle {
         uploadPath.append("/" + fileIdComponent[4]);
       sampleFileUpload(response, formParam, files, "sample", uploadPath.toString(), id);
     } else {
-      if (!formParam.contains("startTime") || !formParam.contains("endTime")) {
-        String message = new RestResponse.Builder()
-            .type(400)
-            .title("Bad Request")
-            .details("Mandatory fields required").build().toJsonString();
-        processResponse(response, message);
-        return;
-      }
       archiveFileUpload(response, formParam, files, uploadPath.toString(), id);
     }
   }
@@ -302,18 +288,20 @@ public class FileServerVerticle extends AbstractVerticle {
   private void archiveFileUpload(HttpServerResponse response, MultiMap params,
       Set<FileUpload> files,
       String filePath, String id) {
-
     JsonObject uploadJson = new JsonObject();
     JsonObject responseJson = new JsonObject();
 
-    Future<JsonObject> uploadFuture = fileService.upload(files, filePath);
+    Future<Boolean> requestValidatorFuture = requestValidator.isValidArchiveRequest(params);
 
-    uploadFuture.compose(uploadHandler -> {
+    requestValidatorFuture.compose(requestValidatorhandler -> {
+      return fileService.upload(files, filePath);
+    }).compose(uploadHandler -> {
       LOGGER.debug("upload json :" + uploadHandler);
       if (uploadHandler.containsKey("detail")) {
         return Future.failedFuture(uploadHandler.toString());
       }
       String fileId = id + "/" + uploadHandler.getString("file-id");
+      uploadJson.put("upload", true);
       uploadJson.put("fileId", fileId);
       return catalogueService.isAllowedMetaDataField(params);
     }).compose(metaDataValidatorHandler -> {
@@ -327,15 +315,19 @@ public class FileServerVerticle extends AbstractVerticle {
             .end(responseJson.toString());
       } else {
         LOGGER.debug(handler.cause());
-        // fail, run Compensating service to clean/undo upload.
-        String fileIdComponent[] = getFileIdComponents(uploadJson.getString("fileId"));
-        StringBuilder uploadDir = new StringBuilder();
-        uploadDir.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
-        String fileUUID = fileIdComponent.length >= 6 ? fileIdComponent[5] : fileIdComponent[4];
+        if (uploadJson.containsKey("upload") && uploadJson.getBoolean("upload")) {
+          // fail, run Compensating service to clean/undo upload.
+          String fileIdComponent[] = getFileIdComponents(uploadJson.getString("fileId"));
+          StringBuilder uploadDir = new StringBuilder();
+          uploadDir.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
+          String fileUUID = fileIdComponent.length >= 6 ? fileIdComponent[5] : fileIdComponent[4];
 
-        LOGGER.debug("deleting file :" + fileUUID);
-        vertx.fileSystem().deleteBlocking(directory + "/" + uploadDir + "/" + fileUUID);
+          LOGGER.debug("deleting file :" + fileUUID);
+          vertx.fileSystem().deleteBlocking(directory + "/" + uploadDir + "/" + fileUUID);
+
+        }
         processResponse(response, handler.cause().getMessage());
+
       }
     });
 
@@ -412,7 +404,7 @@ public class FileServerVerticle extends AbstractVerticle {
   public void query(RoutingContext context) {
     HttpServerResponse response = context.response();
     MultiMap queryParams = getQueryParams(context, response).get();
-    Future<Boolean> queryParamsValidator = queryParamValidator.isValid(queryParams);
+    Future<Boolean> queryParamsValidator = requestValidator.isValid(queryParams);
     Future<List<String>> allowedFilters =
         catalogueService.getAllowedFilters4Queries(queryParams.get(PARAM_ID));
 
@@ -427,7 +419,8 @@ public class FileServerVerticle extends AbstractVerticle {
       return allowedFilters;
     }).onComplete(handler -> {
       if (handler.succeeded()) {
-        boolean isValidFilters = true; //TODO :change to false once filters available in cat for file
+        boolean isValidFilters = true; // TODO :change to false once filters available in cat for
+                                       // file
         List<String> applicableFilters = handler.result();
         if (QueryType.TEMPORAL_GEO.equals(type)
             && (applicableFilters.contains("SPATIAL") && applicableFilters.contains("TEMPORAL"))) {
@@ -452,13 +445,13 @@ public class FileServerVerticle extends AbstractVerticle {
       } else {
         LOGGER.error(handler.cause().getMessage());
         response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-        .setStatusCode(HttpStatus.SC_OK)
-        .end(new RestResponse.Builder()
-            .type(400)
-            .title("Bad query")
-            .details("Bad query").build()
-            .toJson()
-            .toString());
+            .setStatusCode(HttpStatus.SC_OK)
+            .end(new RestResponse.Builder()
+                .type(400)
+                .title("Bad query")
+                .details("Bad query").build()
+                .toJson()
+                .toString());
       }
     });
   }
