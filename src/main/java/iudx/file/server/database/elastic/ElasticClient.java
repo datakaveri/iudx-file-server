@@ -25,7 +25,7 @@ import iudx.file.server.database.utilities.ResponseBuilder;
 
 public class ElasticClient {
 
-  private final RestClient client;
+  private RestClient client;
   private ResponseBuilder responseBuilder;
   private static final Logger LOGGER = LogManager.getLogger(ElasticClient.class);
 
@@ -36,11 +36,18 @@ public class ElasticClient {
    * @param databasePort Port of the ElasticDB
    */
 
+  private String ip;
+  private int port;
+  private String user;
+  private String password;
+
+
   public ElasticClient(String databaseIP, int databasePort, String user, String password) {
-    CredentialsProvider credentials = new BasicCredentialsProvider();
-    credentials.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(user, password));
-    client = RestClient.builder(new HttpHost(databaseIP, databasePort)).setHttpClientConfigCallback(
-        httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentials)).build();
+    this.ip = databaseIP;
+    this.port = databasePort;
+    this.user = user;
+    this.password = password;
+    client = connect(databaseIP, databasePort, user, password);
   }
 
   /**
@@ -52,7 +59,8 @@ public class ElasticClient {
    */
   public ElasticClient searchAsync(String index, String filterPathValue, String query,
       Handler<AsyncResult<JsonObject>> searchHandler) {
-
+    if (!client.isRunning())
+      client = reConnect();
     Request queryRequest = new Request("GET", index);
     queryRequest.addParameter(FILTER_PATH, filterPathValue);
     queryRequest.setJsonEntity(query);
@@ -96,6 +104,7 @@ public class ElasticClient {
       @Override
       public void onFailure(Exception e) {
         LOGGER.error(e.getLocalizedMessage());
+        LOGGER.error(e.getMessage());
         try {
           String error = e.getMessage().substring(e.getMessage().indexOf("{"),
               e.getMessage().lastIndexOf("}") + 1);
@@ -116,7 +125,8 @@ public class ElasticClient {
 
   public ElasticClient insertAsync(String index, JsonObject document,
       Handler<AsyncResult<JsonObject>> insertHandler) {
-
+    if (!client.isRunning())
+      client = reConnect();
     StringBuilder putRequestIndex = new StringBuilder(index);
     putRequestIndex.append("/_doc/");
     putRequestIndex.append(UUID.randomUUID().toString());
@@ -179,6 +189,9 @@ public class ElasticClient {
 
   public ElasticClient deleteAsync(String index, String id, String query,
       Handler<AsyncResult<JsonObject>> deletetHandler) {
+    if (!client.isRunning())
+      client = reConnect();
+    
     StringBuilder deleteURI = new StringBuilder(index);
     deleteURI.append("/_delete_by_query");
 
@@ -224,6 +237,23 @@ public class ElasticClient {
       }
     });
     return this;
+  }
+
+  private RestClient connect(String databaseIP, int databasePort, String user, String password) {
+    LOGGER.info("Creating elastic rest client.");
+    CredentialsProvider credentials = new BasicCredentialsProvider();
+    credentials.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(user, password));
+    return RestClient.builder(new HttpHost(databaseIP, databasePort))
+        .setHttpClientConfigCallback(
+            httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentials))
+        .build();
+
+  }
+
+  private RestClient reConnect() {
+    LOGGER.info("Reconnection elastic rest client.");
+    return connect(this.ip, this.port, this.user, this.password);
+
   }
 
 }
