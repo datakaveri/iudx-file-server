@@ -39,17 +39,18 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     ElasticQueryGenerator queryGenerator = new ElasticQueryGenerator();
-    JsonObject elasticQuery = new JsonObject(queryGenerator.getQuery(apiQuery, type));
+    JsonObject boolQuery = new JsonObject(queryGenerator.getQuery(apiQuery, type));
 
-    JsonObject elasticSearchQuery = new JsonObject();
-    elasticSearchQuery.put("size", 1000);
-    elasticSearchQuery.put("query", elasticQuery);
+    JsonObject elasticQuery = new JsonObject();
+    elasticQuery.put("size", getOrDefault(apiQuery, "size", DEFAULT_SIZE_VALUE));
+    elasticQuery.put("from", getOrDefault(apiQuery, "from", DEFAULT_FROM_VALUE));
+    elasticQuery.put("query", boolQuery);
 
-    LOGGER.info(elasticSearchQuery);
+    LOGGER.info(boolQuery);
     String index = getIndex(apiQuery);
     LOGGER.info(index);
     index = index.concat(SEARCH_REQ_PARAM);
-    client.searchAsync(index, FILTER_PATH_VAL, elasticSearchQuery.toString(), searchHandler -> {
+    client.searchAsync(index, FILTER_PATH_VAL, boolQuery.toString(), searchHandler -> {
       if (searchHandler.succeeded()) {
         handler.handle(Future.succeededFuture(searchHandler.result()));
       } else {
@@ -145,6 +146,13 @@ public class DatabaseServiceImpl implements DatabaseService {
 
   public boolean isResourceLevelFileId(List<String> id) {
     return id.size() >= 6;
+  }
+
+  public int getOrDefault(JsonObject json, String key, int def) {
+    if (json.containsKey(key)) {
+      return json.getInteger(key);
+    }
+    return def;
   }
 
 }

@@ -41,6 +41,10 @@ public class Constants extends iudx.file.server.common.Constants {
   public static final String GEOMETRY="geometry";
   public static final String UNIT_METERS="m";
   
+  
+  //pagination default values
+  public static final int DEFAULT_SIZE_VALUE=10000;
+  public static final int DEFAULT_FROM_VALUE=0;
 
   // SQL
   public static final String SQL_DELETE = "DELETE FROM file_server_token s where file_token = $1";

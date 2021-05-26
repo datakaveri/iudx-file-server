@@ -41,6 +41,12 @@ public class Constants extends iudx.file.server.common.Constants{
   public static final String PARAM_COORDINATES="coordinates";
   public static final String PARAM_GEOPROPERTY="geoproperty";
 
+  
+  // pagination parameters
+  public static final String PARAM_FROM = "from";
+  public static final String PARAM_SIZE = "size";
+
+
   public static final String API_ENDPOINT = "apiEndpoint";
   public static final String API_METHOD = "method";
   
