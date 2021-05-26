@@ -20,4 +20,7 @@ public class Constants {
   public static final String CAT_ITEM_PATH = "/iudx/cat/v1/item";
 
 
+  // pagination parameters
+  public static final String PARAM_FROM = "from";
+  public static final String PARAM_SIZE = "size";
 }

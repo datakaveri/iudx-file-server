@@ -14,6 +14,8 @@ import iudx.file.server.apiserver.validations.types.FileIdTypeValidator;
 import iudx.file.server.apiserver.validations.types.GeoRelationTypeValidator;
 import iudx.file.server.apiserver.validations.types.GeomTypeValidator;
 import iudx.file.server.apiserver.validations.types.IDTypeValidator;
+import iudx.file.server.apiserver.validations.types.PaginationFromTypeValidator;
+import iudx.file.server.apiserver.validations.types.PaginationSizeTypeValidator;
 import iudx.file.server.apiserver.validations.types.SampleTypeValidator;
 import iudx.file.server.apiserver.validations.types.TemporalRelTypeValidator;
 import iudx.file.server.apiserver.validations.types.TokenTypeValidator;
@@ -97,14 +99,12 @@ public class ValidationHandlerFactory {
     //temporal fields(mandatory)
     validators.add(new IDTypeValidator(parameters.get(PARAM_ID), true));
     validators.add(new TemporalRelTypeValidator(parameters.get(PARAM_TIME_REL), true));
-    validators.add(new DateTypeValidator(parameters.get(PARAM_TIME), true));
+    validators.add(new DateTypeValidator(parameters.get("time"), true));
     validators.add(new DateTypeValidator(parameters.get(PARAM_END_TIME), false));
     
-    //geo (optional for geo)
-    validators.add(new GeoRelationTypeValidator(parameters.get(PARAM_GEOREL), false));
-    validators.add(new GeomTypeValidator(parameters.get(PARAM_GEOMETRY),false));
-    validators.add(new CoordinatesTypeValidator(parameters.get(PARAM_COORDINATES), false));
-    
+    //pagination optional fields
+    validators.add(new PaginationSizeTypeValidator(parameters.get(PARAM_SIZE), false));
+    validators.add(new PaginationFromTypeValidator(parameters.get(PARAM_FROM), false));
 
     return validators;
   }

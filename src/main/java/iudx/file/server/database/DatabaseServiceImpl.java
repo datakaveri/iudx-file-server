@@ -150,7 +150,8 @@ public class DatabaseServiceImpl implements DatabaseService {
 
   public int getOrDefault(JsonObject json, String key, int def) {
     if (json.containsKey(key)) {
-      return json.getInteger(key);
+      int value=Integer.parseInt(json.getString(key));
+      return value;
     }
     return def;
   }
