@@ -69,7 +69,6 @@ public class ElasticClient {
       @Override
       public void onSuccess(Response response) {
         JsonArray dbResponse = new JsonArray();
-        JsonObject jsonTemp;
         try {
           JsonObject responseJson = new JsonObject(EntityUtils.toString(response.getEntity()));
           if (!responseJson.containsKey(HITS) && !responseJson.containsKey(DOCS_KEY)) {
@@ -140,8 +139,6 @@ public class ElasticClient {
 
       @Override
       public void onSuccess(Response response) {
-        JsonArray dbResponse = new JsonArray();
-        JsonObject jsonTemp;
         try {
           JsonObject responseJson = new JsonObject(EntityUtils.toString(response.getEntity()));
           LOGGER.info("response :" + responseJson);

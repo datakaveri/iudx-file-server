@@ -9,7 +9,7 @@ public enum ServerType {
     return this.serverName;
   }
 
-  private ServerType(String serverName) {
+  ServerType(String serverName) {
     this.serverName = serverName;
   }
 }

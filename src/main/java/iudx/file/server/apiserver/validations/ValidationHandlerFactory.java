@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import com.hazelcast.security.Parameters;
 import io.vertx.core.MultiMap;
 import iudx.file.server.apiserver.validations.types.CoordinatesTypeValidator;
 import iudx.file.server.apiserver.validations.types.DateTypeValidator;
@@ -26,7 +25,7 @@ public class ValidationHandlerFactory {
   private static final Logger LOGGER = LogManager.getLogger(ValidationHandlerFactory.class);
 
   public List<Validator> create(RequestType requestType, MultiMap parameters, MultiMap headers) {
-
+    LOGGER.debug("type :" + requestType);
     List<Validator> validator = null;
     switch (requestType) {
       case UPLOAD:
@@ -45,7 +44,7 @@ public class ValidationHandlerFactory {
         validator = getListQueryRequestValidator(parameters, headers);
         break;
       case GEO_QUERY:
-        validator=getGeoQueryRequestValidator(parameters, headers);
+        validator = getGeoQueryRequestValidator(parameters, headers);
         break;
       default:
         break;
@@ -64,10 +63,10 @@ public class ValidationHandlerFactory {
     validators.add(new SampleTypeValidator(parameters.get(PARAM_SAMPLE), false));
     validators.add(new TokenTypeValidator(headers.get(HEADER_TOKEN), false));
 
-    ////geo (mandatory for upload)
-    validators.add(new GeomTypeValidator(parameters.get(PARAM_GEOMETRY),false));
+    //// geo (mandatory for upload)
+    validators.add(new GeomTypeValidator(parameters.get(PARAM_GEOMETRY), false));
     validators.add(new CoordinatesTypeValidator(parameters.get(PARAM_COORDINATES), false));
-    
+
     return validators;
   }
 
@@ -96,13 +95,13 @@ public class ValidationHandlerFactory {
   private List<Validator> getTemporalQueryRequestValidator(final MultiMap parameters,
       final MultiMap headers) {
     List<Validator> validators = new ArrayList<>();
-    //temporal fields(mandatory)
+    // temporal fields(mandatory)
     validators.add(new IDTypeValidator(parameters.get(PARAM_ID), true));
     validators.add(new TemporalRelTypeValidator(parameters.get(PARAM_TIME_REL), true));
     validators.add(new DateTypeValidator(parameters.get("time"), true));
     validators.add(new DateTypeValidator(parameters.get(PARAM_END_TIME), false));
-    
-    //pagination optional fields
+
+    // pagination optional fields
     validators.add(new PaginationSizeTypeValidator(parameters.get(PARAM_SIZE), false));
     validators.add(new PaginationFromTypeValidator(parameters.get(PARAM_FROM), false));
 
@@ -117,16 +116,16 @@ public class ValidationHandlerFactory {
 
     return validators;
   }
-  
+
   private List<Validator> getGeoQueryRequestValidator(final MultiMap parameters,
-      final MultiMap headers){
+      final MultiMap headers) {
     List<Validator> validators = new ArrayList<>();
 
     validators.add(new IDTypeValidator(parameters.get(PARAM_ID), true));
     validators.add(new GeoRelationTypeValidator(parameters.get(PARAM_GEOREL), true));
-    validators.add(new GeomTypeValidator(parameters.get(PARAM_GEOMETRY),true));
+    validators.add(new GeomTypeValidator(parameters.get(PARAM_GEOMETRY), true));
     validators.add(new CoordinatesTypeValidator(parameters.get(PARAM_COORDINATES), true));
-    
+
     return validators;
   }
 }

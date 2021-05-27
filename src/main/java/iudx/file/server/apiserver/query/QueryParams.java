@@ -1,7 +1,6 @@
 package iudx.file.server.apiserver.query;
 
-import static iudx.file.server.apiserver.utilities.Constants.*;
-import java.util.List;
+import static iudx.file.server.common.Constants.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -14,9 +13,6 @@ public class QueryParams {
 
   @JsonProperty("id")
   private String id;
-  private List<String> type;
-  private List<String> attrs;
-  private List<String> idPattern;
   @JsonProperty("q")
   private String textQuery;
   @JsonProperty("georel")
@@ -35,7 +31,6 @@ public class QueryParams {
   private String startTime;
   @JsonProperty("endTime")
   private String endTime;
-  private String options;
   @JsonProperty("lat")
   private Double lat;
   @JsonProperty("lon")
@@ -63,18 +58,6 @@ public class QueryParams {
 
   public void setId(String id) {
     this.id = id;
-  }
-
-  public void setType(List<String> type) {
-    this.type = type;
-  }
-
-  public void setAttrs(List<String> attrs) {
-    this.attrs = attrs;
-  }
-
-  public void setIdPattern(List<String> idPattern) {
-    this.idPattern = idPattern;
   }
 
   public void setTextQuery(String textQuery) {
@@ -128,10 +111,6 @@ public class QueryParams {
 
   public void setTemporalRelation(String temporalRelation) {
     this.temporalRelation = temporalRelation;
-  }
-
-  public void setOptions(String options) {
-    this.options = options;
   }
 
   @JsonIgnore

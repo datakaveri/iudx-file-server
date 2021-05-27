@@ -2,7 +2,6 @@ package iudx.file.server.common.service.impl;
 
 import static iudx.file.server.common.Constants.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
@@ -29,7 +28,6 @@ public class CatalogueServiceImpl implements CatalogueService {
 
   private static final Logger LOGGER = LogManager.getLogger(CatalogueServiceImpl.class);
 
-  private Vertx vertx;
   private WebClient webClient;
   private String host;
   private int port;
@@ -40,7 +38,6 @@ public class CatalogueServiceImpl implements CatalogueService {
           .expireAfterAccess(CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
 
   public CatalogueServiceImpl(Vertx vertx, WebClientFactory webClientFactory, JsonObject config) {
-    this.vertx = vertx;
     this.webClient = webClientFactory.getWebClientFor(ServerType.FILE_SERVER);
     this.host = config.getString("catalogueHost");
     this.port = config.getInteger("cataloguePort");
@@ -102,7 +99,7 @@ public class CatalogueServiceImpl implements CatalogueService {
           promise.complete(filters4Item);
         }
       } else {
-
+        promise.fail(itemHandler.cause());
       }
     });
     return promise.future();

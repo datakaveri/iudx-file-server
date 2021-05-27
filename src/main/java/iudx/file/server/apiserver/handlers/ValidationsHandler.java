@@ -36,22 +36,22 @@ public class ValidationsHandler implements Handler<RoutingContext> {
     List<Validator> validations = null;
     switch (requestType) {
       case TEMPORAL_QUERY:
-        validations=validationFactory.create(RequestType.TEMPORAL_QUERY, parameters, headers);
+        validations = validationFactory.create(RequestType.TEMPORAL_QUERY, parameters, headers);
         break;
       case UPLOAD:
-        validations=validationFactory.create(RequestType.UPLOAD, parameters, headers);
+        validations = validationFactory.create(RequestType.UPLOAD, parameters, headers);
         break;
       case DOWNLOAD:
-        validations=validationFactory.create(RequestType.DOWNLOAD, parameters, headers);
+        validations = validationFactory.create(RequestType.DOWNLOAD, parameters, headers);
         break;
       case DELETE:
-        validations=validationFactory.create(RequestType.DELETE, parameters, headers);
+        validations = validationFactory.create(RequestType.DELETE, parameters, headers);
         break;
       case LIST_QUERY:
-        validations=validationFactory.create(RequestType.LIST_QUERY, parameters, headers);
+        validations = validationFactory.create(RequestType.LIST_QUERY, parameters, headers);
         break;
       case GEO_QUERY:
-        validations=validationFactory.create(RequestType.GEO_QUERY, parameters, headers);
+        validations = validationFactory.create(RequestType.GEO_QUERY, parameters, headers);
         break;
       default:
         break;
@@ -59,7 +59,7 @@ public class ValidationsHandler implements Handler<RoutingContext> {
     for (Validator validator : Optional.ofNullable(validations).orElse(Collections.emptyList())) {
       LOGGER.debug("validator :" + validator.getClass().getName());
       if (!validator.isValid()) {
-        error(context, validator);
+        error(context);
         return;
       }
     }
@@ -67,13 +67,13 @@ public class ValidationsHandler implements Handler<RoutingContext> {
     return;
   }
 
-  private void error(RoutingContext context, Validator validator) {
+  private void error(RoutingContext context) {
     context.response().putHeader(CONTENT_TYPE, APPLICATION_JSON)
         .setStatusCode(HttpStatus.SC_BAD_REQUEST)
-        .end(getBadRequestMessage(validator.failureMessage()).toString());
+        .end(getBadRequestMessage().toString());
   }
 
-  private JsonObject getBadRequestMessage(String message) {
+  private JsonObject getBadRequestMessage() {
     return new JsonObject()
         .put("type", 400)
         .put("title", "Bad Request")

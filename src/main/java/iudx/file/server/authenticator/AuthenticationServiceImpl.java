@@ -34,10 +34,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
   private static final Logger LOGGER = LogManager.getLogger(AuthenticationServiceImpl.class);
   private final WebClientFactory webClientFactory;
-  private final Vertx vertx;
   private final String authHost;
   private final int authPort;
-  private final JsonObject config;
   private final CatalogueService catalogueService;
 
 
@@ -54,9 +52,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
   public AuthenticationServiceImpl(Vertx vertx,CatalogueService catalogueService, WebClientFactory webClientFactory,
       JsonObject config) {
-    this.vertx = vertx;
     this.webClientFactory = webClientFactory;
-    this.config = config;
     this.catalogueService=catalogueService;
     this.authHost = config.getString("authHost");
     this.authPort = config.getInteger("authPort");
@@ -188,7 +184,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     List<String> allowedGroupIDs = allowedIds.stream()
         .map(id -> id.substring(0, id.lastIndexOf("/")))
-        .collect(Collectors.toList());;
+        .collect(Collectors.toList());
 
     LOGGER.debug("allowed ids : " + allowedIds);
     LOGGER.debug("allowed group id : " + allowedGroupIDs);
