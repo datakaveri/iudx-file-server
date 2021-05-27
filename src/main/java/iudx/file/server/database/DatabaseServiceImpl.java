@@ -37,6 +37,8 @@ public class DatabaseServiceImpl implements DatabaseService {
       handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
       return this;
     }
+    
+    LOGGER.debug("query : "+apiQuery);
 
     ElasticQueryGenerator queryGenerator = new ElasticQueryGenerator();
     JsonObject boolQuery = new JsonObject(queryGenerator.getQuery(apiQuery, type));
@@ -50,9 +52,12 @@ public class DatabaseServiceImpl implements DatabaseService {
     String index = getIndex(apiQuery);
     LOGGER.info(index);
     index = index.concat(SEARCH_REQ_PARAM);
-    client.searchAsync(index, FILTER_PATH_VAL, boolQuery.toString(), searchHandler -> {
+    client.searchAsync(index, FILTER_PATH_VAL, elasticQuery.toString(), searchHandler -> {
       if (searchHandler.succeeded()) {
-        handler.handle(Future.succeededFuture(searchHandler.result()));
+        handler.handle(Future.succeededFuture(
+            searchHandler.result()
+                .put("size", elasticQuery.getInteger("size"))
+                .put("from", elasticQuery.getInteger("from"))));
       } else {
         handler.handle(Future.failedFuture(searchHandler.cause().getMessage()));
       }
@@ -150,7 +155,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
   public int getOrDefault(JsonObject json, String key, int def) {
     if (json.containsKey(key)) {
-      int value=Integer.parseInt(json.getString(key));
+      int value = Integer.parseInt(json.getString(key));
       return value;
     }
     return def;

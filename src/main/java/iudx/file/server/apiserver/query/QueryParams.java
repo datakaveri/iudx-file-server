@@ -42,8 +42,20 @@ public class QueryParams {
   private Double lon;
   @JsonProperty("radius")
   private Double radius;
+  @JsonProperty("from")
+  private int size;
+  @JsonProperty("size")
+  private int from;
 
 
+
+  public void setSize(int size) {
+    this.size = size;
+  }
+
+  public void setFrom(int from) {
+    this.from = from;
+  }
 
   private QueryParams() {
     super();
@@ -149,17 +161,4 @@ public class QueryParams {
     }
     return this;
   }
-
-  @Override
-  public String toString() {
-    return "QueryParams [id=" + id + ", type=" + type + ", attrs=" + attrs + ", idPattern="
-        + idPattern + ", textQuery=" + textQuery + ", geoRel=" + geoRel + ", maxDistance="
-        + maxDistance + ", geometry=" + geometry + ", coordinates=" + coordinates + ", geoProperty="
-        + geoProperty + ", temporalRelation=" + temporalRelation + ", startTime=" + startTime
-        + ", endTime=" + endTime + ", options=" + options + ", lat=" + lat + ", lon=" + lon
-        + ", radius=" + radius + "]";
-  }
-
-
-
 }

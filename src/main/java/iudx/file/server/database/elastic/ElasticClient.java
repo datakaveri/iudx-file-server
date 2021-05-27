@@ -85,13 +85,16 @@ public class ElasticClient {
           } else if (responseJson.containsKey(DOCS_KEY)) {
             responseHits = responseJson.getJsonArray(DOCS_KEY);
           }
-          
+
           responseHits.stream()
               .map(e -> (JsonObject) e)
               .filter(e -> !e.isEmpty())
               .forEach(e -> dbResponse.add(e.getJsonObject(SOURCE_FILTER_KEY)));
 
+
           responseBuilder.setMessage(dbResponse);
+          responseBuilder.setTotalDocsCount(
+              responseJson.getJsonObject("hits").getJsonObject("total").getInteger("value"));
           searchHandler.handle(Future.succeededFuture(responseBuilder.getResponse()));
         } catch (IOException e) {
           LOGGER.error("IO Execption from Database: " + e.getMessage());
@@ -191,7 +194,7 @@ public class ElasticClient {
       Handler<AsyncResult<JsonObject>> deletetHandler) {
     if (!client.isRunning())
       client = reConnect();
-    
+
     StringBuilder deleteURI = new StringBuilder(index);
     deleteURI.append("/_delete_by_query");
 

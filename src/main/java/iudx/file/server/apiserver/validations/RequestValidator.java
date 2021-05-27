@@ -27,6 +27,8 @@ public class RequestValidator {
     validParams.add(PARAM_GEOMETRY);
     validParams.add(PARAM_GEOPROPERTY);
     validParams.add(PARAM_COORDINATES);
+    validParams.add(PARAM_FROM);
+    validParams.add(PARAM_SIZE);
 
   }
 

@@ -35,10 +35,13 @@ public class PaginationFromTypeValidator implements Validator {
   private boolean isValidValue(String value) {
     try {
       int from = Integer.parseInt(value);
-      if (from > 10000) {
-        LOGGER.error("Validation error : invalid pagination from Value > 10000 [ " + value + " ]");
-        return false;
-      }
+      // TODO : currently we cannot control 'from' param value, but in future need to control this
+      // since elastic performance will degrade after a certain threshold
+      
+      // if (from > 10000) {
+      // LOGGER.error("Validation error : invalid pagination from Value > 10000 [ " + value + " ]");
+      // return false;
+      // }
       return true;
     } catch (Exception ex) {
       LOGGER.error("Validation error : invalid pagination from Value [ " + value

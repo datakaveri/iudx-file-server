@@ -22,7 +22,7 @@ public class Constants extends iudx.file.server.common.Constants {
   public static final String BAD_PARAMETERS = "Bad parameters";
   public static final String SOURCE_FILTER_KEY = "_source";
   public static final String FILTER_PATH = "filter_path";
-  public static final String FILTER_PATH_VAL = "took,hits.hits._source";
+  public static final String FILTER_PATH_VAL = "took,hits.hits._source,hits.total.value";
   public static final String SEARCH_REQ_PARAM = "/_search";
   public static final String ID = "id";
   public static final String FILE_ID="fileId";
@@ -43,7 +43,7 @@ public class Constants extends iudx.file.server.common.Constants {
   
   
   //pagination default values
-  public static final int DEFAULT_SIZE_VALUE=10000;
+  public static final int DEFAULT_SIZE_VALUE=5000;
   public static final int DEFAULT_FROM_VALUE=0;
 
   // SQL
