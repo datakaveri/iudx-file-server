@@ -25,8 +25,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
-import iudx.file.server.apiserver.service.ServerType;
-import iudx.file.server.authenticator.utilities.WebClientFactory;
+import iudx.file.server.common.ServerType;
+import iudx.file.server.common.WebClientFactory;
+import iudx.file.server.common.service.CatalogueService;
 
 public class AuthenticationServiceImpl implements AuthenticationService {
 
@@ -34,11 +35,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   private static final Logger LOGGER = LogManager.getLogger(AuthenticationServiceImpl.class);
   private final WebClientFactory webClientFactory;
   private final Vertx vertx;
-  private final int catPort;
-  private final String catHost;
   private final String authHost;
   private final int authPort;
   private final JsonObject config;
+  private final CatalogueService catalogueService;
 
 
   private final Cache<String, JsonObject> tipCache = CacheBuilder.newBuilder()
@@ -52,13 +52,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       .build();
 
 
-  public AuthenticationServiceImpl(Vertx vertx, WebClientFactory webClientFactory,
+  public AuthenticationServiceImpl(Vertx vertx,CatalogueService catalogueService, WebClientFactory webClientFactory,
       JsonObject config) {
     this.vertx = vertx;
     this.webClientFactory = webClientFactory;
     this.config = config;
-    this.catPort = config.getInteger("cataloguePort");
-    this.catHost = config.getString("catalogueHost");
+    this.catalogueService=catalogueService;
     this.authHost = config.getString("authHost");
     this.authPort = config.getInteger("authPort");
   }
@@ -85,7 +84,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       responseContainer.tipResponse = tipResponse;
       LOGGER.debug("Info: TIP Response is : " + tipResponse);
       String id = request.getJsonArray("ids").getString(0);
-      return isItemExist(id, webClient);
+      return catalogueService.isItemExist(id);
     }).onFailure(failure -> {
       handler.handle(Future.failedFuture("Invalid token"));
     }).onSuccess(success -> {
@@ -146,30 +145,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
     return promise.future();
   }
-
-  private Future<Boolean> isItemExist(String id, WebClient webClient) {
-    LOGGER.debug("isItemExist() started");
-    Promise<Boolean> promise = Promise.promise();
-    // String id = itemId.replace("/*", "");
-    LOGGER.info("id : " + id);
-    webClient.get(catPort, catHost, "/iudx/cat/v1/item").addQueryParam("id", id)
-        .expect(ResponsePredicate.JSON).send(responseHandler -> {
-          if (responseHandler.succeeded()) {
-            HttpResponse<Buffer> response = responseHandler.result();
-            JsonObject responseBody = response.bodyAsJsonObject();
-            if (responseBody.getString("status").equalsIgnoreCase("success")
-                && responseBody.getInteger("totalHits") > 0) {
-              promise.complete(true);
-            } else {
-              promise.fail(responseHandler.cause());
-            }
-          } else {
-            promise.fail(responseHandler.cause());
-          }
-        });
-    return promise.future();
-  }
-
 
   private Future<JsonObject> validateAccess(JsonObject tipResponse, boolean isExist,
       JsonObject authenticationInfo, JsonObject userRequest) {

@@ -1,6 +1,7 @@
 package iudx.file.server.apiserver.validations.types;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import java.util.stream.Stream;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,10 +15,10 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
 @ExtendWith(VertxExtension.class)
-public class SampleTypeValidatorTest {
-
-  private SampleTypeValidator sampleTypeValidator;
-
+public class GeoRelationTypeValidatorTest {
+  
+  private GeoRelationTypeValidator geoRelationValidator;
+  
   @BeforeEach
   public void setup(Vertx vertx, VertxTestContext testContext) {
     testContext.completeNow();
@@ -26,19 +27,20 @@ public class SampleTypeValidatorTest {
   static Stream<Arguments> allowedValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
-        Arguments.of("true", false),
-        Arguments.of("true", true),
+        Arguments.of("near", true),
+        Arguments.of("within", true),
+        Arguments.of("intersects", true),
         Arguments.of(null, false),
         Arguments.of(" ", false));
   }
-
+  
   @ParameterizedTest
   @MethodSource("allowedValues")
-  @Description("isSample type parameter allowed values.")
-  public void testValidIsSampleTypeValue(String value, boolean required, Vertx vertx,
+  @Description("georel type parameter allowed values.")
+  public void testValidGeoRelTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
-    sampleTypeValidator = new SampleTypeValidator(value, required);
-    assertTrue(sampleTypeValidator.isValid());
+    geoRelationValidator = new GeoRelationTypeValidator(value, required);
+    assertTrue(geoRelationValidator.isValid());
     testContext.completeNow();
   }
   
@@ -46,21 +48,23 @@ public class SampleTypeValidatorTest {
   static Stream<Arguments> invalidValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
-        Arguments.of("false", true),
         Arguments.of(null, true),
         Arguments.of("   ", true),
         Arguments.of(RandomStringUtils.random(6), true),
-        Arguments.of("false", false),
-        Arguments.of(RandomStringUtils.random(6), false));
+        Arguments.of("ABC", false),
+        Arguments.of(RandomStringUtils.random(6), false),
+        Arguments.of("1=1", true),
+        Arguments.of("ABC=ABC", true));
   }
-
+  
   @ParameterizedTest
   @MethodSource("invalidValues")
-  @Description("isSample type parameter invalid values.")
-  public void testInvalidIsSampleTypeValue(String value, boolean required, Vertx vertx,
+  @Description("geom type parameter invalid values.")
+  public void testInvalidGeoRelValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
-    sampleTypeValidator = new SampleTypeValidator(value, required);
-    assertFalse(sampleTypeValidator.isValid());
+    geoRelationValidator = new GeoRelationTypeValidator(value, required);
+    assertFalse(geoRelationValidator.isValid());
     testContext.completeNow();
   }
+
 }

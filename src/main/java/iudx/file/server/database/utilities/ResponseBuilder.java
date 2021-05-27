@@ -1,4 +1,4 @@
-package iudx.file.server.database.elastic;
+package iudx.file.server.database.utilities;
 
 
 import static iudx.file.server.database.utilities.Constants.*;

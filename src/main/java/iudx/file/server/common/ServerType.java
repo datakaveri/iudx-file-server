@@ -1,4 +1,4 @@
-package iudx.file.server.apiserver.service;
+package iudx.file.server.common;
 
 public enum ServerType {
   FILE_SERVER("file-server"), RESOURCE_SERVER("rs-server");

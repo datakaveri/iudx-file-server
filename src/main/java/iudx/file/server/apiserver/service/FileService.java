@@ -2,6 +2,7 @@ package iudx.file.server.apiserver.service;
 
 import java.util.Set;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
@@ -15,8 +16,7 @@ public interface FileService {
    * @param file set of file (although there will always be a single file to upload)
    * @param handler
    */
-  public void upload(final Set<FileUpload> file, String filePath,
-      final Handler<AsyncResult<JsonObject>> handler);
+  public Future<JsonObject> upload(final Set<FileUpload> file, String filePath);
 
   /**
    * upload file to server
@@ -26,8 +26,7 @@ public interface FileService {
    * @param filePath path for uploaded file
    * @param handler
    */
-  public void upload(final Set<FileUpload> file, String fileName, String filePath,
-      final Handler<AsyncResult<JsonObject>> handler);
+  public Future<JsonObject> upload(final Set<FileUpload> file, String fileName, String filePath);
 
   /**
    * download file from server
@@ -36,8 +35,7 @@ public interface FileService {
    * @param response response object to send file as Content-Disposition header
    * @param handler Async handler
    */
-  public void download(final String fileName, String filePath, final HttpServerResponse response,
-      final Handler<AsyncResult<JsonObject>> handler);
+  public Future<JsonObject> download(final String fileName, String filePath, final HttpServerResponse response);
 
   /**
    * delete file from server
@@ -45,6 +43,5 @@ public interface FileService {
    * @param fileName name of file to be deleted
    * @param handler Async handler
    */
-  public void delete(final String fileName, String filePath,
-      final Handler<AsyncResult<JsonObject>> handler);
+  public Future<JsonObject> delete(final String fileName, String filePath);
 }

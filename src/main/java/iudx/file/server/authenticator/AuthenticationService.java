@@ -8,6 +8,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import iudx.file.server.common.service.CatalogueService;
 
 @VertxGen
 @ProxyGen
@@ -39,6 +40,7 @@ public interface AuthenticationService {
    */
 
   @Fluent
-  AuthenticationService tokenInterospect(JsonObject request, JsonObject authenticationInfo,
+  AuthenticationService tokenInterospect(JsonObject request,
+      JsonObject authenticationInfo,
       Handler<AsyncResult<JsonObject>> handler);
 }

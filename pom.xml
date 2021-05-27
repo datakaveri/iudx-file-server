@@ -13,13 +13,14 @@
 		<hazelcast.version>4.0.2</hazelcast.version>
 		<micrometer.version>1.7.0</micrometer.version>
 		<curator.version>5.1.0</curator.version>
-		<maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version> 
+		<maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
 		<junit-jupiter-api.version>5.7.2</junit-jupiter-api.version>
 		<junit-jupiter-params.version>5.7.2</junit-jupiter-params.version>
 		<junit-jupiter-engine.version>5.7.2</junit-jupiter-engine.version>
 		<slf4j-api.version>1.7.30</slf4j-api.version>
 		<slf4j-log4j12.version>1.7.30</slf4j-log4j12.version>
 		<testcontainers.version>1.15.3</testcontainers.version>
+		<testcontainer-elastic.version>1.15.3</testcontainer-elastic.version>
 		<log4j-core.version>2.14.1</log4j-core.version>
 		<disruptor.version>3.4.4</disruptor.version>
 		<junit-jupiter.version>1.15.3</junit-jupiter.version>
@@ -36,7 +37,7 @@
 		<maven-pmd-plugin.version>3.14.0</maven-pmd-plugin.version>
 		<maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
 		<maven-surefire-report-plugin.version>3.0.0-M5</maven-surefire-report-plugin.version>
-		
+
 		<exec.mainClass>iudx.file.server.deploy.Deployer</exec.mainClass>
 		<exec.mainClassDev>iudx.file.server.deploy.DeployerDev</exec.mainClassDev>
 		<config-dev.file>config-dev.json</config-dev.file>
@@ -159,6 +160,12 @@
 			<groupId>org.testcontainers</groupId>
 			<artifactId>testcontainers</artifactId>
 			<version>${testcontainers.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>elasticsearch</artifactId>
+			<version>${testcontainer-elastic.version}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>

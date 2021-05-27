@@ -1,19 +1,22 @@
 package iudx.file.server.apiserver.validations.types;
 
+import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class IDTypeValidator implements Validator {
+public class GeoRelationTypeValidator implements Validator {
 
-  private static final Logger LOGGER = LogManager.getLogger(IDTypeValidator.class);
-
+  private static final Logger LOGGER = LogManager.getLogger(GeoRelationTypeValidator.class);
+  
+  private List<String> allowedValues = List.of("within", "intersects", "near");
   private final String value;
   private final boolean required;
 
-  public IDTypeValidator(String value, boolean required) {
+  public GeoRelationTypeValidator(String value, boolean required) {
     this.value = value;
     this.required = required;
   }
+
 
   @Override
   public boolean isValid() {
@@ -21,12 +24,12 @@ public class IDTypeValidator implements Validator {
       LOGGER.error("Validation error : null or blank value for required mandatory field");
       return false;
     } else {
-      if (value == null) {
+      if (value == null || value.isBlank()) {
         return true;
       }
     }
-    if (!isValidLength(value) || !isValidId(value)) {
-      LOGGER.error("Validation error : Invalid id [ "+value+" ]");
+    if (!allowedValues.contains(value)) {
+      LOGGER.error("Validation error : Invalid geo relation value passed [ " + value + " ]");
       return false;
     }
     return true;
@@ -39,16 +42,6 @@ public class IDTypeValidator implements Validator {
 
   @Override
   public String failureMessage() {
-    return "Invalid id";
-  }
-
-
-  private boolean isValidId(String id) {
-    String[] idcomponents = id.split("/");
-    return idcomponents.length >= 4;
-  }
-
-  private boolean isValidLength(String id) {
-    return id.length() <= 512;
+    return "Invalid geo rel";
   }
 }

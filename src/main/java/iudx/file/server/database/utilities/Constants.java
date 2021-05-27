@@ -4,7 +4,7 @@ public class Constants extends iudx.file.server.common.Constants {
 
   public static final String ERROR = "Error";
   public static final String COUNT = "count";
-  public static final String DETAIL = "detail";
+  public static final String DETAIL = "details";
   public static final String ERROR_TYPE = "type";
   public static final String FAILED = "Failed";
   public static final String INDEX_NOT_FOUND = "index_not_found_exception";
@@ -25,6 +25,22 @@ public class Constants extends iudx.file.server.common.Constants {
   public static final String FILTER_PATH_VAL = "took,hits.hits._source";
   public static final String SEARCH_REQ_PARAM = "/_search";
   public static final String ID = "id";
+  public static final String FILE_ID="fileId";
+  public static final String TIME_RANGE="timeRange";
+  public static final String TIME_RANGE_STARTTIME="startTime";
+  public static final String TIME_RANGE_ENDTIME="endTime";
+  public static final String TIME="time";
+  public static final String END_TIME="endTime";
+  public static final String LOCATION="location";
+  public static final String RADIUS="radius";
+  public static final String COORDINATES="coordinates";
+  public static final String GEO_REL="georel";
+  public static final String NEAR="near";
+  public static final String WITHIN="within";
+  public static final String CIRCLE="Circle";
+  public static final String GEOMETRY="geometry";
+  public static final String UNIT_METERS="m";
+  
 
   // SQL
   public static final String SQL_DELETE = "DELETE FROM file_server_token s where file_token = $1";

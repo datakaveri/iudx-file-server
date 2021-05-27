@@ -10,9 +10,10 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
-import iudx.file.server.apiserver.query.QueryType;
+import iudx.file.server.common.QueryType;
 import iudx.file.server.database.elastic.ElasticClient;
 import iudx.file.server.database.elastic.ElasticQueryGenerator;
+import iudx.file.server.database.utilities.ResponseBuilder;
 
 public class DatabaseServiceImpl implements DatabaseService {
 
@@ -28,19 +29,27 @@ public class DatabaseServiceImpl implements DatabaseService {
   }
 
   @Override
-  public DatabaseService search(JsonObject query, Handler<AsyncResult<JsonObject>> handler) {
+  public DatabaseService search(JsonObject apiQuery, QueryType type,
+      Handler<AsyncResult<JsonObject>> handler) {
+    if ((apiQuery == null || apiQuery.isEmpty()) || type == null) {
+      ResponseBuilder responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
+          .setMessage("invalid parameters passed to search.");
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+      return this;
+    }
+
     ElasticQueryGenerator queryGenerator = new ElasticQueryGenerator();
-    JsonObject boolQuery = new JsonObject(queryGenerator.getQuery(query, QueryType.TEMPORAL));
+    JsonObject elasticQuery = new JsonObject(queryGenerator.getQuery(apiQuery, type));
 
-    JsonObject elasticQuery = new JsonObject();
-    elasticQuery.put("size", 1000);
-    elasticQuery.put("query", boolQuery);
+    JsonObject elasticSearchQuery = new JsonObject();
+    elasticSearchQuery.put("size", 1000);
+    elasticSearchQuery.put("query", elasticQuery);
 
-    LOGGER.info(elasticQuery);
-    String index = getIndex(query);
+    LOGGER.info(elasticSearchQuery);
+    String index = getIndex(apiQuery);
     LOGGER.info(index);
     index = index.concat(SEARCH_REQ_PARAM);
-    client.searchAsync(index, FILTER_PATH_VAL, elasticQuery.toString(), searchHandler -> {
+    client.searchAsync(index, FILTER_PATH_VAL, elasticSearchQuery.toString(), searchHandler -> {
       if (searchHandler.succeeded()) {
         handler.handle(Future.succeededFuture(searchHandler.result()));
       } else {
@@ -52,6 +61,12 @@ public class DatabaseServiceImpl implements DatabaseService {
 
   @Override
   public DatabaseService save(JsonObject document, Handler<AsyncResult<JsonObject>> handler) {
+    if (document == null || document.isEmpty()) {
+      ResponseBuilder responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
+          .setMessage("empty document passed to save.");
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+      return this;
+    }
     String index = getIndex(document);
     LOGGER.info(index);
     client.insertAsync(index, document, insertHandler -> {
@@ -67,6 +82,12 @@ public class DatabaseServiceImpl implements DatabaseService {
 
   @Override
   public DatabaseService delete(String id, Handler<AsyncResult<JsonObject>> handler) {
+    if (id == null || id.isBlank()) {
+      ResponseBuilder responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
+          .setMessage("empty id passed to delete.");
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+      return this;
+    }
     ElasticQueryGenerator queryGenerator = new ElasticQueryGenerator();
     JsonObject deleteQuery = new JsonObject(queryGenerator.deleteQuery(id));
 
