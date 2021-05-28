@@ -253,7 +253,6 @@ public class DatabaseServiceTest {
         "}");
     dbService.search(temporalQuery, QueryType.GEO, handler -> {
       if (handler.succeeded()) {
-        LOGGER.info("result 2 (1) : " + handler.result());
         assertEquals(2, handler.result().getJsonArray("results").size());
         testContext.completeNow();
       } else {
@@ -276,7 +275,6 @@ public class DatabaseServiceTest {
         "}");
     dbService.search(temporalQuery, QueryType.GEO, handler -> {
       if (handler.succeeded()) {
-        LOGGER.info("result 2 (1) : " + handler.result());
         assertEquals(3, handler.result().getJsonArray("results").size());
         testContext.completeNow();
       } else {
@@ -292,7 +290,100 @@ public class DatabaseServiceTest {
         "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/2a553c97-e873-4983-86b6-070774e4e671.txt";
     dbService.delete(id, handler -> {
       if (handler.succeeded()) {
-        LOGGER.debug("result : " + handler.result());
+        testContext.completeNow();
+      } else {
+        testContext.failNow(handler.cause().getMessage());
+      }
+    });
+  }
+
+  @Test
+  @Order(8)
+  public void testDefaultPaginationParams(Vertx vertx, VertxTestContext testContext) {
+    assertTrue(elasticContainer.isRunning());
+    JsonObject temporalQuery = new JsonObject("{\n" +
+        "    \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\",\n"
+        +
+        "    \"timerel\": \"during\",\n" +
+        "    \"time\": \"2020-09-10T00:00:00Z\",\n" +
+        "    \"endTime\": \"2020-09-15T00:00:00Z\"\n" +
+        "}");
+
+    dbService.search(temporalQuery, QueryType.TEMPORAL, handler -> {
+      if (handler.succeeded()) {
+        JsonObject result = handler.result();
+        System.out.println(result);
+        assertTrue(result.containsKey("totalHits"));
+        assertTrue(result.containsKey("from"));
+        assertTrue(result.containsKey("size"));
+        assertEquals(4, result.getJsonArray("results").size());
+        assertEquals(4, result.getInteger("totalHits"));
+        assertEquals(0, result.getInteger("from"));
+        assertEquals(5000, result.getInteger("size"));
+        testContext.completeNow();
+      } else {
+        testContext.failNow(handler.cause().getMessage());
+      }
+    });
+  }
+  
+  
+  @Test
+  @Order(8)
+  public void testPaginationParams(Vertx vertx, VertxTestContext testContext) {
+    assertTrue(elasticContainer.isRunning());
+    JsonObject temporalQuery = new JsonObject("{\n" + 
+        "    \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\",\n" + 
+        "    \"timerel\": \"during\",\n" + 
+        "    \"time\": \"2020-09-10T00:00:00Z\",\n" + 
+        "    \"endTime\": \"2020-09-15T00:00:00Z\",\n" + 
+        "    \"size\":2,\n" + 
+        "    \"from\":0\n" + 
+        "}");
+
+    dbService.search(temporalQuery, QueryType.TEMPORAL, handler -> {
+      if (handler.succeeded()) {
+        JsonObject result = handler.result();
+        System.out.println(result);
+        assertTrue(result.containsKey("totalHits"));
+        assertTrue(result.containsKey("from"));
+        assertTrue(result.containsKey("size"));
+        assertEquals(2, result.getJsonArray("results").size());
+        assertEquals(4, result.getInteger("totalHits"));
+        assertEquals(0, result.getInteger("from"));
+        assertEquals(2, result.getInteger("size"));
+        testContext.completeNow();
+      } else {
+        testContext.failNow(handler.cause().getMessage());
+      }
+    });
+  }
+  
+  
+  @Test
+  @Order(8)
+  public void testPaginationParams2(Vertx vertx, VertxTestContext testContext) {
+    assertTrue(elasticContainer.isRunning());
+    JsonObject temporalQuery = new JsonObject("{\n" + 
+        "    \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\",\n" + 
+        "    \"timerel\": \"during\",\n" + 
+        "    \"time\": \"2020-09-10T00:00:00Z\",\n" + 
+        "    \"endTime\": \"2020-09-15T00:00:00Z\",\n" + 
+        "    \"size\":2,\n" + 
+        "    \"from\":2\n" + 
+        "}");
+
+    dbService.search(temporalQuery, QueryType.TEMPORAL, handler -> {
+      if (handler.succeeded()) {
+        JsonObject result = handler.result();
+        System.out.println(result);
+        assertTrue(result.containsKey("totalHits"));
+        assertTrue(result.containsKey("from"));
+        assertTrue(result.containsKey("size"));
+        assertEquals(2, result.getJsonArray("results").size());
+        assertEquals(4, result.getInteger("totalHits"));
+        assertEquals(2, result.getInteger("from"));
+        assertEquals(2, result.getInteger("size"));
         testContext.completeNow();
       } else {
         testContext.failNow(handler.cause().getMessage());
