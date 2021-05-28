@@ -38,17 +38,17 @@ public class QueryParams {
   @JsonProperty("radius")
   private Double radius;
   @JsonProperty("from")
-  private int size;
+  private Integer size;
   @JsonProperty("size")
-  private int from;
+  private Integer from;
 
 
 
-  public void setSize(int size) {
+  public void setSize(Integer size) {
     this.size = size;
   }
 
-  public void setFrom(int from) {
+  public void setFrom(Integer from) {
     this.from = from;
   }
 
