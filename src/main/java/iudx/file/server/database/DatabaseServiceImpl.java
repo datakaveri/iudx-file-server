@@ -37,29 +37,43 @@ public class DatabaseServiceImpl implements DatabaseService {
       handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
       return this;
     }
-    
-    LOGGER.debug("query : "+apiQuery);
+
+    LOGGER.debug("query : " + apiQuery);
 
     ElasticQueryGenerator queryGenerator = new ElasticQueryGenerator();
     JsonObject boolQuery = new JsonObject(queryGenerator.getQuery(apiQuery, type));
 
     JsonObject elasticQuery = new JsonObject();
-    elasticQuery.put("size", getOrDefault(apiQuery, "size", DEFAULT_SIZE_VALUE));
-    elasticQuery.put("from", getOrDefault(apiQuery, "from", DEFAULT_FROM_VALUE));
+
     elasticQuery.put("query", boolQuery);
 
     LOGGER.info(boolQuery);
     String index = getIndex(apiQuery);
     LOGGER.info(index);
-    index = index.concat(SEARCH_REQ_PARAM);
-    client.searchAsync(index, FILTER_PATH_VAL, elasticQuery.toString(), searchHandler -> {
-      if (searchHandler.succeeded()) {
-        handler.handle(Future.succeededFuture(
-            searchHandler.result()
-                .put("size", elasticQuery.getInteger("size"))
-                .put("from", elasticQuery.getInteger("from"))));
+    final String searchIndexUrl = index.concat(SEARCH_REQ_PARAM);
+    final String countIndexUrl = index.concat(COUNT_REQ_PARAM);
+
+    client.countAsync(countIndexUrl, elasticQuery.toString(), countHandler -> {
+      if (countHandler.succeeded()) {
+        elasticQuery.put("size", getOrDefault(apiQuery, "size", DEFAULT_SIZE_VALUE));
+        elasticQuery.put("from", getOrDefault(apiQuery, "from", DEFAULT_FROM_VALUE));
+        JsonObject countJson=countHandler.result();
+        LOGGER.debug("count json : "+countJson);
+        int count=countJson.getJsonArray("results").getJsonObject(0).getInteger("count");
+        client.searchAsync(searchIndexUrl, FILTER_PATH_VAL, elasticQuery.toString(),
+            searchHandler -> {
+              if (searchHandler.succeeded()) {
+                handler.handle(Future.succeededFuture(
+                    searchHandler.result()
+                        .put("size", elasticQuery.getInteger("size"))
+                        .put("from", elasticQuery.getInteger("from"))
+                        .put("totalHits", count)));
+              } else {
+                handler.handle(Future.failedFuture(searchHandler.cause().getMessage()));
+              }
+            });
       } else {
-        handler.handle(Future.failedFuture(searchHandler.cause().getMessage()));
+        handler.handle(Future.failedFuture(countHandler.cause().getMessage()));
       }
     });
     return this;

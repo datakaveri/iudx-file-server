@@ -5,7 +5,6 @@ import static iudx.file.server.apiserver.utilities.Constants.CONTENT_TYPE;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import org.apache.commons.collections.ListUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

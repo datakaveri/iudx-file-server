@@ -239,6 +239,66 @@ public class ElasticClient {
     return this;
   }
 
+  public ElasticClient countAsync(String index, String query,
+      Handler<AsyncResult<JsonObject>> countHandler) {
+    if (!client.isRunning())
+      client = reConnect();
+    Request queryRequest = new Request("GET", index);
+    queryRequest.setJsonEntity(query);
+
+    client.performRequestAsync(queryRequest, new ResponseListener() {
+      @Override
+      public void onSuccess(Response response) {
+
+        try {
+          int statusCode = response.getStatusLine().getStatusCode();
+          if (statusCode != 200 && statusCode != 204) {
+            countHandler.handle(Future.failedFuture(DB_ERROR_2XX));
+            responseBuilder =
+                new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(DB_ERROR_2XX);
+            countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+            return;
+          }
+
+          JsonObject responseJson = new JsonObject(EntityUtils.toString(response.getEntity()));
+          if (responseJson.getInteger(COUNT) == 0) {
+            responseBuilder =
+                new ResponseBuilder(FAILED).setTypeAndTitle(204).setMessage(EMPTY_RESPONSE);
+            countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+            return;
+          }
+          responseBuilder =
+              new ResponseBuilder(SUCCESS).setTypeAndTitle(200)
+                  .setCount(responseJson.getInteger(COUNT));
+          countHandler.handle(Future.succeededFuture(responseBuilder.getResponse()));
+        } catch (IOException e) {
+          LOGGER.error("IO Execption from Database: " + e.getMessage());
+          JsonObject ioError = new JsonObject(e.getMessage());
+          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(ioError);
+          countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+        }
+      }
+
+      @Override
+      public void onFailure(Exception e) {
+        LOGGER.error(e.getLocalizedMessage());
+        try {
+          String error = e.getMessage().substring(e.getMessage().indexOf("{"),
+              e.getMessage().lastIndexOf("}") + 1);
+          JsonObject dbError = new JsonObject(error);
+          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(dbError);
+          countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+        } catch (DecodeException jsonError) {
+          LOGGER.error("Json parsing exception: " + jsonError);
+          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
+              .setMessage(BAD_PARAMETERS);
+          countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+        }
+      }
+    });
+    return this;
+  }
+
   private RestClient connect(String databaseIP, int databasePort, String user, String password) {
     LOGGER.info("Creating elastic rest client.");
     CredentialsProvider credentials = new BasicCredentialsProvider();

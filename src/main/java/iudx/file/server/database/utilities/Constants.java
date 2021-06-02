@@ -24,6 +24,7 @@ public class Constants extends iudx.file.server.common.Constants {
   public static final String FILTER_PATH = "filter_path";
   public static final String FILTER_PATH_VAL = "took,hits.hits._source,hits.total.value";
   public static final String SEARCH_REQ_PARAM = "/_search";
+  public static final String COUNT_REQ_PARAM = "/_count";
   public static final String ID = "id";
   public static final String FILE_ID="fileId";
   public static final String TIME_RANGE="timeRange";
@@ -45,6 +46,8 @@ public class Constants extends iudx.file.server.common.Constants {
   //pagination default values
   public static final int DEFAULT_SIZE_VALUE=5000;
   public static final int DEFAULT_FROM_VALUE=0;
+  
+  public static final String DB_ERROR_2XX = "Status code is not 2xx";
 
   // SQL
   public static final String SQL_DELETE = "DELETE FROM file_server_token s where file_token = $1";

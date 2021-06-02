@@ -70,10 +70,10 @@ public class DatabaseServiceTest {
     // LOGGER.debug("data :" + data);
     dbService = new DatabaseServiceImpl(dbConfig);
 
-    elasticContainer = new ElasticsearchContainer(CONTAINER)
-        .withPassword(dbConfig.getString("databasePassword"))
-        .withExposedPorts(dbConfig.getInteger("databasePort"))
-        .withEnv("discovery.type", "single-node");
+    elasticContainer = new ElasticsearchContainer(CONTAINER);
+    elasticContainer.withPassword(dbConfig.getString("databasePassword"));
+    elasticContainer.withExposedPorts(dbConfig.getInteger("databasePort"));
+    elasticContainer.withEnv("discovery.type", "single-node");
 
     elasticContainer.start();
     if (elasticContainer.isRunning()) {
