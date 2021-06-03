@@ -21,8 +21,12 @@ public class PaginationFromTypeValidator implements Validator {
       LOGGER.error("Validation error : null or blank value for required mandatory field");
       return false;
     } else {
-      if (value == null || value.isBlank()) {
+      if (value == null) {
         return true;
+      }
+      if (value.isBlank()) {
+        LOGGER.error("Validation error :  blank value passed");
+        return false;
       }
     }
     if (!isValidValue(value)) {
@@ -34,12 +38,14 @@ public class PaginationFromTypeValidator implements Validator {
 
   private boolean isValidValue(String value) {
     try {
-      int from=Integer.parseInt(value);
-      // TODO : currently we cannot control 'from' param value, but in future need to control this
-      // since elastic performance will degrade after a certain threshold
+      int from = Integer.parseInt(value);
+      // TODO : Need to fix this after carefully considering different values which will not effect
+      // the elastic performance
 
-      if (from > 50000) {
-        LOGGER.error("Validation error : invalid pagination from Value > 50000 [ " + value + " ]");
+      if (from > 50000 || from < 0) {
+        LOGGER.error(
+            "Validation error : invalid pagination from Value > 50000 or negative value passed [ "
+                + value + " ]");
         return false;
       }
       return true;

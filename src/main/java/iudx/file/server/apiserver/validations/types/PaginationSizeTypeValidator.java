@@ -21,8 +21,12 @@ public class PaginationSizeTypeValidator implements Validator {
       LOGGER.error("Validation error : null or blank value for required mandatory field");
       return false;
     } else {
-      if (value == null || value.isBlank()) {
+      if (value == null) {
         return true;
+      }
+      if (value.isBlank()) {
+        LOGGER.error("Validation error :  blank value passed");
+        return false;
       }
     }
     if (!isValidValue(value)) {
@@ -34,9 +38,11 @@ public class PaginationSizeTypeValidator implements Validator {
 
   private boolean isValidValue(String value) {
     try {
-      int from = Integer.parseInt(value);
-      if (from > 10000) {
-        LOGGER.error("Validation error : invalid pagination size Value > 10000 [ " + value + " ]");
+      int size = Integer.parseInt(value);
+      if (size > 10000 || size < 0) {
+        LOGGER.error(
+            "Validation error : invalid pagination size Value > 10000 or negative value passed [ "
+                + value + " ]");
         return false;
       }
       return true;
