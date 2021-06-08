@@ -55,19 +55,19 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     client.countAsync(countIndexUrl, elasticQuery.toString(), countHandler -> {
       if (countHandler.succeeded()) {
-        elasticQuery.put("size", getOrDefault(apiQuery, "size", DEFAULT_SIZE_VALUE));
-        elasticQuery.put("from", getOrDefault(apiQuery, "from", DEFAULT_FROM_VALUE));
-        JsonObject countJson=countHandler.result();
-        LOGGER.debug("count json : "+countJson);
-        int count=countJson.getJsonArray("results").getJsonObject(0).getInteger("count");
+        elasticQuery.put(SIZE_KEY, getOrDefault(apiQuery, PARAM_LIMIT, DEFAULT_SIZE_VALUE));
+        elasticQuery.put(FROM_KEY, getOrDefault(apiQuery, PARAM_OFFSET, DEFAULT_FROM_VALUE));
+        JsonObject countJson = countHandler.result();
+        LOGGER.debug("count json : " + countJson);
+        int count = countJson.getJsonArray("results").getJsonObject(0).getInteger("count");
         client.searchAsync(searchIndexUrl, FILTER_PATH_VAL, elasticQuery.toString(),
             searchHandler -> {
               if (searchHandler.succeeded()) {
                 handler.handle(Future.succeededFuture(
                     searchHandler.result()
-                        .put("size", elasticQuery.getInteger("size"))
-                        .put("from", elasticQuery.getInteger("from"))
-                        .put("totalHits", count)));
+                        .put(PARAM_LIMIT, elasticQuery.getInteger(SIZE_KEY))
+                        .put(PARAM_OFFSET, elasticQuery.getInteger(FROM_KEY))
+                        .put(TOTAL_HITS_KEY, count)));
               } else {
                 handler.handle(Future.failedFuture(searchHandler.cause().getMessage()));
               }

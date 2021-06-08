@@ -37,9 +37,9 @@ public class QueryParams {
   private Double lon;
   @JsonProperty("radius")
   private Double radius;
-  @JsonProperty("from")
+  @JsonProperty("offset")
   private Integer size;
-  @JsonProperty("size")
+  @JsonProperty("limit")
   private Integer from;
 
 

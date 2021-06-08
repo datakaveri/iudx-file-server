@@ -44,8 +44,11 @@ public class Constants extends iudx.file.server.common.Constants {
   
   
   //pagination default values
+  public static final String FROM_KEY="from";
+  public static final String SIZE_KEY="size";
   public static final int DEFAULT_SIZE_VALUE=5000;
   public static final int DEFAULT_FROM_VALUE=0;
+  public static final String TOTAL_HITS_KEY="totalHits";
   
   public static final String DB_ERROR_2XX = "Status code is not 2xx";
 

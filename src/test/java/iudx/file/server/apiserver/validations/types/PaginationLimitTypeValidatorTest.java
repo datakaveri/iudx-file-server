@@ -14,15 +14,15 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
 @ExtendWith(VertxExtension.class)
-public class PaginationSizeTypeValidatorTest {
+public class PaginationLimitTypeValidatorTest {
 
-private PaginationSizeTypeValidator paginationSizeTypeValidator;
-  
+  private PaginationLimitTypeValidator paginationLimitTypeValidator;
+
   @BeforeEach
   public void setup(Vertx vertx, VertxTestContext testContext) {
     testContext.completeNow();
   }
-  
+
   static Stream<Arguments> allowedValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
@@ -33,18 +33,18 @@ private PaginationSizeTypeValidator paginationSizeTypeValidator;
         Arguments.of("10000", false),
         Arguments.of("0", false));
   }
-  
+
   @ParameterizedTest
   @MethodSource("allowedValues")
-  @Description("pagination from type parameter allowed values.")
-  public void testValidFromTypeValue(String value, boolean required, Vertx vertx,
+  @Description("pagination limit type parameter allowed values.")
+  public void testValidLimitTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
-    paginationSizeTypeValidator = new PaginationSizeTypeValidator(value, required);
-    assertTrue(paginationSizeTypeValidator.isValid());
+    paginationLimitTypeValidator = new PaginationLimitTypeValidator(value, required);
+    assertTrue(paginationLimitTypeValidator.isValid());
     testContext.completeNow();
   }
-  
-  
+
+
   static Stream<Arguments> invalidValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
@@ -55,14 +55,14 @@ private PaginationSizeTypeValidator paginationSizeTypeValidator;
         Arguments.of("false", false),
         Arguments.of("kajlksdjloasknfdlkanslodnmalsdasd", false));
   }
-  
+
   @ParameterizedTest
   @MethodSource("invalidValues")
-  @Description("pagination from type parameter invalid values.")
-  public void testInvalidFromTypeValue(String value, boolean required, Vertx vertx,
+  @Description("pagination limit type parameter invalid values.")
+  public void testInvalidLimitTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
-    paginationSizeTypeValidator = new PaginationSizeTypeValidator(value, required);
-    assertFalse(paginationSizeTypeValidator.isValid());
+    paginationLimitTypeValidator = new PaginationLimitTypeValidator(value, required);
+    assertFalse(paginationLimitTypeValidator.isValid());
     testContext.completeNow();
   }
 }

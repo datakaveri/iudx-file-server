@@ -13,8 +13,8 @@ import iudx.file.server.apiserver.validations.types.FileIdTypeValidator;
 import iudx.file.server.apiserver.validations.types.GeoRelationTypeValidator;
 import iudx.file.server.apiserver.validations.types.GeomTypeValidator;
 import iudx.file.server.apiserver.validations.types.IDTypeValidator;
-import iudx.file.server.apiserver.validations.types.PaginationFromTypeValidator;
-import iudx.file.server.apiserver.validations.types.PaginationSizeTypeValidator;
+import iudx.file.server.apiserver.validations.types.PaginationOffsetTypeValidator;
+import iudx.file.server.apiserver.validations.types.PaginationLimitTypeValidator;
 import iudx.file.server.apiserver.validations.types.SampleTypeValidator;
 import iudx.file.server.apiserver.validations.types.TemporalRelTypeValidator;
 import iudx.file.server.apiserver.validations.types.TokenTypeValidator;
@@ -102,8 +102,8 @@ public class ValidationHandlerFactory {
     validators.add(new DateTypeValidator(parameters.get(PARAM_END_TIME), false));
 
     // pagination optional fields
-    validators.add(new PaginationSizeTypeValidator(parameters.get(PARAM_SIZE), false));
-    validators.add(new PaginationFromTypeValidator(parameters.get(PARAM_FROM), false));
+    validators.add(new PaginationLimitTypeValidator(parameters.get(PARAM_LIMIT), false));
+    validators.add(new PaginationOffsetTypeValidator(parameters.get(PARAM_OFFSET), false));
 
     return validators;
   }

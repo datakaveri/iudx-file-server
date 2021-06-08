@@ -296,14 +296,13 @@ public class DatabaseServiceTest {
     dbService.search(temporalQuery, QueryType.TEMPORAL, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
-        System.out.println(result);
         assertTrue(result.containsKey("totalHits"));
-        assertTrue(result.containsKey("from"));
-        assertTrue(result.containsKey("size"));
+        assertTrue(result.containsKey("offset"));
+        assertTrue(result.containsKey("limit"));
         assertEquals(4, result.getJsonArray("results").size());
         assertEquals(4, result.getInteger("totalHits"));
-        assertEquals(0, result.getInteger("from"));
-        assertEquals(5000, result.getInteger("size"));
+        assertEquals(0, result.getInteger("offset"));
+        assertEquals(5000, result.getInteger("limit"));
         testContext.completeNow();
       } else {
         testContext.failNow(handler.cause().getMessage());
@@ -322,21 +321,20 @@ public class DatabaseServiceTest {
         "    \"timerel\": \"during\",\n" +
         "    \"time\": \"2020-09-10T00:00:00Z\",\n" +
         "    \"endTime\": \"2020-09-15T00:00:00Z\",\n" +
-        "    \"size\":2,\n" +
-        "    \"from\":0\n" +
+        "    \"limit\":2,\n" +
+        "    \"offset\":0\n" +
         "}");
 
     dbService.search(temporalQuery, QueryType.TEMPORAL, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
-        System.out.println(result);
         assertTrue(result.containsKey("totalHits"));
-        assertTrue(result.containsKey("from"));
-        assertTrue(result.containsKey("size"));
+        assertTrue(result.containsKey("offset"));
+        assertTrue(result.containsKey("limit"));
         assertEquals(2, result.getJsonArray("results").size());
         assertEquals(4, result.getInteger("totalHits"));
-        assertEquals(0, result.getInteger("from"));
-        assertEquals(2, result.getInteger("size"));
+        assertEquals(0, result.getInteger("offset"));
+        assertEquals(2, result.getInteger("limit"));
         testContext.completeNow();
       } else {
         testContext.failNow(handler.cause().getMessage());
@@ -355,21 +353,20 @@ public class DatabaseServiceTest {
         "    \"timerel\": \"during\",\n" +
         "    \"time\": \"2020-09-10T00:00:00Z\",\n" +
         "    \"endTime\": \"2020-09-15T00:00:00Z\",\n" +
-        "    \"size\":2,\n" +
-        "    \"from\":2\n" +
+        "    \"limit\":2,\n" +
+        "    \"offset\":2\n" +
         "}");
 
     dbService.search(temporalQuery, QueryType.TEMPORAL, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
-        System.out.println(result);
         assertTrue(result.containsKey("totalHits"));
-        assertTrue(result.containsKey("from"));
-        assertTrue(result.containsKey("size"));
+        assertTrue(result.containsKey("offset"));
+        assertTrue(result.containsKey("limit"));
         assertEquals(2, result.getJsonArray("results").size());
         assertEquals(4, result.getInteger("totalHits"));
-        assertEquals(2, result.getInteger("from"));
-        assertEquals(2, result.getInteger("size"));
+        assertEquals(2, result.getInteger("offset"));
+        assertEquals(2, result.getInteger("limit"));
         testContext.completeNow();
       } else {
         testContext.failNow(handler.cause().getMessage());

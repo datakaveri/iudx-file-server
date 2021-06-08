@@ -60,12 +60,12 @@ public class ResponseBuilder {
   }
   
   public ResponseBuilder setFromParam(int from) {
-    response.put(PARAM_FROM, from);
+    response.put(PARAM_OFFSET, from);
     return this;
   }
   
   public ResponseBuilder setSizeParam(int size) {
-    response.put(PARAM_SIZE, size);
+    response.put(PARAM_LIMIT, size);
     return this;
   }
   

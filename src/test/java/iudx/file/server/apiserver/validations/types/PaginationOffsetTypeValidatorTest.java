@@ -14,9 +14,9 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
 @ExtendWith(VertxExtension.class)
-public class PaginationFromTypeValidatorTest {
+public class PaginationOffsetTypeValidatorTest {
 
-  private PaginationFromTypeValidator paginationFromTypeValidator;
+  private PaginationOffsetTypeValidator paginationOffsetTypeValidator;
   
   @BeforeEach
   public void setup(Vertx vertx, VertxTestContext testContext) {
@@ -35,11 +35,11 @@ public class PaginationFromTypeValidatorTest {
   
   @ParameterizedTest
   @MethodSource("allowedValues")
-  @Description("pagination from type parameter allowed values.")
-  public void testValidFromTypeValue(String value, boolean required, Vertx vertx,
+  @Description("pagination offset type parameter allowed values.")
+  public void testValidOffsetTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
-    paginationFromTypeValidator = new PaginationFromTypeValidator(value, required);
-    assertTrue(paginationFromTypeValidator.isValid());
+    paginationOffsetTypeValidator = new PaginationOffsetTypeValidator(value, required);
+    assertTrue(paginationOffsetTypeValidator.isValid());
     testContext.completeNow();
   }
   
@@ -57,11 +57,11 @@ public class PaginationFromTypeValidatorTest {
   
   @ParameterizedTest
   @MethodSource("invalidValues")
-  @Description("pagination from type parameter invalid values.")
-  public void testInvalidFromTypeValue(String value, boolean required, Vertx vertx,
+  @Description("pagination offset type parameter invalid values.")
+  public void testInvalidOffsetTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
-    paginationFromTypeValidator = new PaginationFromTypeValidator(value, required);
-    assertFalse(paginationFromTypeValidator.isValid());
+    paginationOffsetTypeValidator = new PaginationOffsetTypeValidator(value, required);
+    assertFalse(paginationOffsetTypeValidator.isValid());
     testContext.completeNow();
   }
 }

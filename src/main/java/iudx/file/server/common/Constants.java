@@ -21,6 +21,6 @@ public class Constants {
 
 
   // pagination parameters
-  public static final String PARAM_FROM = "from";
-  public static final String PARAM_SIZE = "size";
+  public static final String PARAM_OFFSET = "offset";
+  public static final String PARAM_LIMIT = "limit";
 }

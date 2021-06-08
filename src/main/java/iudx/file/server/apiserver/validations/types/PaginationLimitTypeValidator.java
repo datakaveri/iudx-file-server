@@ -3,14 +3,14 @@ package iudx.file.server.apiserver.validations.types;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class PaginationFromTypeValidator implements Validator {
+public class PaginationLimitTypeValidator implements Validator {
 
-  private static final Logger LOGGER = LogManager.getLogger(PaginationFromTypeValidator.class);
+  private static final Logger LOGGER = LogManager.getLogger(PaginationLimitTypeValidator.class);
 
   private final String value;
   private final boolean required;
 
-  public PaginationFromTypeValidator(String value, boolean required) {
+  public PaginationLimitTypeValidator(String value, boolean required) {
     this.value = value;
     this.required = required;
   }
@@ -30,7 +30,7 @@ public class PaginationFromTypeValidator implements Validator {
       }
     }
     if (!isValidValue(value)) {
-      LOGGER.error("Validation error : invalid pagination from Value [ " + value + " ]");
+      LOGGER.error("Validation error : invalid pagination limit Value [ " + value + " ]");
       return false;
     }
     return true;
@@ -38,19 +38,16 @@ public class PaginationFromTypeValidator implements Validator {
 
   private boolean isValidValue(String value) {
     try {
-      int from = Integer.parseInt(value);
-      // TODO : Need to fix this after carefully considering different values which will not effect
-      // the elastic performance
-
-      if (from > 50000 || from < 0) {
+      int size = Integer.parseInt(value);
+      if (size > 10000 || size < 0) {
         LOGGER.error(
-            "Validation error : invalid pagination from Value > 50000 or negative value passed [ "
+            "Validation error : invalid pagination limit Value > 10000 or negative value passed [ "
                 + value + " ]");
         return false;
       }
       return true;
     } catch (Exception ex) {
-      LOGGER.error("Validation error : invalid pagination from Value [ " + value
+      LOGGER.error("Validation error : invalid pagination limit Value [ " + value
           + " ] only integer expected");
       return false;
     }
