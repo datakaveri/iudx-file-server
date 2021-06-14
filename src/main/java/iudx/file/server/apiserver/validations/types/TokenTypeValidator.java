@@ -5,7 +5,6 @@ import org.apache.logging.log4j.Logger;
 
 public class TokenTypeValidator implements Validator {
 
-  private static final Logger LOGGER = LogManager.getLogger(TokenTypeValidator.class);
 
   private final String value;
   private final boolean required;

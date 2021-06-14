@@ -63,7 +63,7 @@ public class CoordinatesTypeValidator implements Validator {
 
       if (checkLongitudeFlag && !isValidLatitude(coordinate)) {
         return false;
-      } else if (!isValidLatitude(coordinate)) {
+      } else if (!isValidLongitude(coordinate)) {
         return false;
       }
       checkLongitudeFlag = !checkLongitudeFlag;

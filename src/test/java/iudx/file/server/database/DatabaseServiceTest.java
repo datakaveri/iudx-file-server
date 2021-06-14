@@ -70,10 +70,10 @@ public class DatabaseServiceTest {
     // LOGGER.debug("data :" + data);
     dbService = new DatabaseServiceImpl(dbConfig);
 
-    elasticContainer = new ElasticsearchContainer(CONTAINER)
-        .withPassword(dbConfig.getString("databasePassword"))
-        .withExposedPorts(dbConfig.getInteger("databasePort"))
-        .withEnv("discovery.type", "single-node");
+    elasticContainer = new ElasticsearchContainer(CONTAINER);
+    elasticContainer.withPassword(dbConfig.getString("databasePassword"));
+    elasticContainer.withExposedPorts(dbConfig.getInteger("databasePort"));
+    elasticContainer.withEnv("discovery.type", "single-node");
 
     elasticContainer.start();
     if (elasticContainer.isRunning()) {
@@ -206,7 +206,6 @@ public class DatabaseServiceTest {
 
     dbService.search(temporalQuery, QueryType.TEMPORAL, handler -> {
       if (handler.succeeded()) {
-        LOGGER.info("result 1 : (4) " + handler.result());
         assertEquals(4, handler.result().getJsonArray("results").size());
         testContext.completeNow();
       } else {
@@ -230,7 +229,6 @@ public class DatabaseServiceTest {
 
     dbService.search(temporalQuery, QueryType.TEMPORAL, handler -> {
       if (handler.succeeded()) {
-        LOGGER.info("result 2 (1) : " + handler.result());
         assertEquals(1, handler.result().getJsonArray("results").size());
         testContext.completeNow();
       } else {
@@ -253,7 +251,6 @@ public class DatabaseServiceTest {
         "}");
     dbService.search(temporalQuery, QueryType.GEO, handler -> {
       if (handler.succeeded()) {
-        LOGGER.info("result 2 (1) : " + handler.result());
         assertEquals(2, handler.result().getJsonArray("results").size());
         testContext.completeNow();
       } else {
@@ -276,7 +273,6 @@ public class DatabaseServiceTest {
         "}");
     dbService.search(temporalQuery, QueryType.GEO, handler -> {
       if (handler.succeeded()) {
-        LOGGER.info("result 2 (1) : " + handler.result());
         assertEquals(3, handler.result().getJsonArray("results").size());
         testContext.completeNow();
       } else {
@@ -286,13 +282,105 @@ public class DatabaseServiceTest {
   }
 
   @Test
-  @Order(7)
-  public void testDelateDocument(Vertx vertx, VertxTestContext testContext) {
+  @Order(8)
+  public void testDefaultPaginationParams(Vertx vertx, VertxTestContext testContext) {
+    assertTrue(elasticContainer.isRunning());
+    JsonObject temporalQuery = new JsonObject("{\n" +
+        "    \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\",\n"
+        +
+        "    \"timerel\": \"during\",\n" +
+        "    \"time\": \"2020-09-10T00:00:00Z\",\n" +
+        "    \"endTime\": \"2020-09-15T00:00:00Z\"\n" +
+        "}");
+
+    dbService.search(temporalQuery, QueryType.TEMPORAL, handler -> {
+      if (handler.succeeded()) {
+        JsonObject result = handler.result();
+        assertTrue(result.containsKey("totalHits"));
+        assertTrue(result.containsKey("offset"));
+        assertTrue(result.containsKey("limit"));
+        assertEquals(4, result.getJsonArray("results").size());
+        assertEquals(4, result.getInteger("totalHits"));
+        assertEquals(0, result.getInteger("offset"));
+        assertEquals(5000, result.getInteger("limit"));
+        testContext.completeNow();
+      } else {
+        testContext.failNow(handler.cause().getMessage());
+      }
+    });
+  }
+
+
+  @Test
+  @Order(8)
+  public void testPaginationParams(Vertx vertx, VertxTestContext testContext) {
+    assertTrue(elasticContainer.isRunning());
+    JsonObject temporalQuery = new JsonObject("{\n" +
+        "    \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\",\n"
+        +
+        "    \"timerel\": \"during\",\n" +
+        "    \"time\": \"2020-09-10T00:00:00Z\",\n" +
+        "    \"endTime\": \"2020-09-15T00:00:00Z\",\n" +
+        "    \"limit\":2,\n" +
+        "    \"offset\":0\n" +
+        "}");
+
+    dbService.search(temporalQuery, QueryType.TEMPORAL, handler -> {
+      if (handler.succeeded()) {
+        JsonObject result = handler.result();
+        assertTrue(result.containsKey("totalHits"));
+        assertTrue(result.containsKey("offset"));
+        assertTrue(result.containsKey("limit"));
+        assertEquals(2, result.getJsonArray("results").size());
+        assertEquals(4, result.getInteger("totalHits"));
+        assertEquals(0, result.getInteger("offset"));
+        assertEquals(2, result.getInteger("limit"));
+        testContext.completeNow();
+      } else {
+        testContext.failNow(handler.cause().getMessage());
+      }
+    });
+  }
+
+
+  @Test
+  @Order(8)
+  public void testPaginationParams2(Vertx vertx, VertxTestContext testContext) {
+    assertTrue(elasticContainer.isRunning());
+    JsonObject temporalQuery = new JsonObject("{\n" +
+        "    \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\",\n"
+        +
+        "    \"timerel\": \"during\",\n" +
+        "    \"time\": \"2020-09-10T00:00:00Z\",\n" +
+        "    \"endTime\": \"2020-09-15T00:00:00Z\",\n" +
+        "    \"limit\":2,\n" +
+        "    \"offset\":2\n" +
+        "}");
+
+    dbService.search(temporalQuery, QueryType.TEMPORAL, handler -> {
+      if (handler.succeeded()) {
+        JsonObject result = handler.result();
+        assertTrue(result.containsKey("totalHits"));
+        assertTrue(result.containsKey("offset"));
+        assertTrue(result.containsKey("limit"));
+        assertEquals(2, result.getJsonArray("results").size());
+        assertEquals(4, result.getInteger("totalHits"));
+        assertEquals(2, result.getInteger("offset"));
+        assertEquals(2, result.getInteger("limit"));
+        testContext.completeNow();
+      } else {
+        testContext.failNow(handler.cause().getMessage());
+      }
+    });
+  }
+
+  @Test
+  @Order(9)
+  public void testDeleteDocument(Vertx vertx, VertxTestContext testContext) {
     String id =
         "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/2a553c97-e873-4983-86b6-070774e4e671.txt";
     dbService.delete(id, handler -> {
       if (handler.succeeded()) {
-        LOGGER.debug("result : " + handler.result());
         testContext.completeNow();
       } else {
         testContext.failNow(handler.cause().getMessage());

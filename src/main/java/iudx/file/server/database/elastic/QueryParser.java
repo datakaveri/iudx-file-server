@@ -5,5 +5,5 @@ import io.vertx.core.json.JsonObject;
 
 public interface QueryParser {
 
-  public BoolQueryBuilder parse(BoolQueryBuilder  builder,JsonObject json);
+  BoolQueryBuilder parse(BoolQueryBuilder builder, JsonObject json);
 }

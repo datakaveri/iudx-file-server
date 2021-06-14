@@ -1,6 +1,5 @@
 package iudx.file.server.apiserver.service.impl;
 
-import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
@@ -8,9 +7,7 @@ import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.CopyOptions;
@@ -26,7 +23,6 @@ public class LocalStorageFileServiceImpl implements FileService {
 
   private static final Logger LOGGER = LogManager.getLogger(LocalStorageFileServiceImpl.class);
 
-  private final SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSS");
   private FileSystem fileSystem;
   private final String directory;
 

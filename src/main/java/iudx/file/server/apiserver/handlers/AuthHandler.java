@@ -19,7 +19,8 @@ public class AuthHandler implements Handler<RoutingContext> {
   private static final String AUTHENTICATOR_SERVICE_ADDRESS = AUTH_SERVICE_ADDRESS;
 
   private static AuthenticationService authenticator;
-  private final List<String> noUserAuthRequired = List.of(API_API_SPECS, API_APIS,API_LIST_METADATA);
+  private final List<String> noUserAuthRequired =
+      List.of(API_API_SPECS, API_APIS, API_LIST_METADATA);
 
   public static AuthHandler create(Vertx vertx) {
     authenticator = AuthenticationService.createProxy(vertx, AUTHENTICATOR_SERVICE_ADDRESS);
@@ -52,9 +53,9 @@ public class AuthHandler implements Handler<RoutingContext> {
       id = request.getFormAttribute("id");
     } else if ("GET".equalsIgnoreCase(method) || "DELETE".equalsIgnoreCase(method)) {
       String fileId = request.getParam("file-id");
-      if(fileId==null) {//for list API
-        id=request.getParam("id");
-      }else {
+      if (fileId == null) {// for list API
+        id = request.getParam("id");
+      } else {
         id = fileId.substring(0, fileId.lastIndexOf("/"));
         fileName = fileId.substring(fileId.lastIndexOf("/"));
       }
@@ -73,7 +74,8 @@ public class AuthHandler implements Handler<RoutingContext> {
     idArray.add(id);
     JsonObject requestJson = new JsonObject().put("ids", idArray);
     if (token == null) {
-      processUnauthorized(context, "no token");
+      LOGGER.error("Authentication failed [ no token]");
+      processUnauthorized(context);
       return;
     }
 
@@ -82,8 +84,7 @@ public class AuthHandler implements Handler<RoutingContext> {
         LOGGER.info("auth success.");
       } else {
         LOGGER.error("Authentication failed [" + handler.cause().getMessage() + "]");
-        processUnauthorized(context,
-            "Authentication failed [" + handler.cause().getMessage() + "]");
+        processUnauthorized(context);
         return;
       }
       context.next();
@@ -91,14 +92,17 @@ public class AuthHandler implements Handler<RoutingContext> {
     });
   }
 
-  private void processUnauthorized(RoutingContext ctx, String result) {
+  private void processUnauthorized(RoutingContext ctx) {
     ctx.response().putHeader(CONTENT_TYPE, APPLICATION_JSON)
-        .setStatusCode(HttpStatus.SC_UNAUTHORIZED).end(responseUnauthorizedJson().toString());
+        .setStatusCode(HttpStatus.SC_UNAUTHORIZED)
+        .end(responseUnauthorizedJson().toString());
   }
 
   private JsonObject responseUnauthorizedJson() {
-    return new JsonObject().put(JSON_TYPE, HttpStatus.SC_UNAUTHORIZED)
-        .put(JSON_TITLE, "Not authorized").put(JSON_DETAIL, "Not authorized.");
+    return new JsonObject()
+        .put(JSON_TYPE, HttpStatus.SC_UNAUTHORIZED)
+        .put(JSON_TITLE, "Not authorized")
+        .put(JSON_DETAIL, "Not authorized");
   }
 
 }

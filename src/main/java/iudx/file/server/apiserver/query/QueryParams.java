@@ -1,7 +1,6 @@
 package iudx.file.server.apiserver.query;
 
-import static iudx.file.server.apiserver.utilities.Constants.*;
-import java.util.List;
+import static iudx.file.server.common.Constants.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -14,9 +13,6 @@ public class QueryParams {
 
   @JsonProperty("id")
   private String id;
-  private List<String> type;
-  private List<String> attrs;
-  private List<String> idPattern;
   @JsonProperty("q")
   private String textQuery;
   @JsonProperty("georel")
@@ -35,15 +31,26 @@ public class QueryParams {
   private String startTime;
   @JsonProperty("endTime")
   private String endTime;
-  private String options;
   @JsonProperty("lat")
   private Double lat;
   @JsonProperty("lon")
   private Double lon;
   @JsonProperty("radius")
   private Double radius;
+  @JsonProperty("offset")
+  private Integer size;
+  @JsonProperty("limit")
+  private Integer from;
 
 
+
+  public void setSize(Integer size) {
+    this.size = size;
+  }
+
+  public void setFrom(Integer from) {
+    this.from = from;
+  }
 
   private QueryParams() {
     super();
@@ -51,18 +58,6 @@ public class QueryParams {
 
   public void setId(String id) {
     this.id = id;
-  }
-
-  public void setType(List<String> type) {
-    this.type = type;
-  }
-
-  public void setAttrs(List<String> attrs) {
-    this.attrs = attrs;
-  }
-
-  public void setIdPattern(List<String> idPattern) {
-    this.idPattern = idPattern;
   }
 
   public void setTextQuery(String textQuery) {
@@ -118,10 +113,6 @@ public class QueryParams {
     this.temporalRelation = temporalRelation;
   }
 
-  public void setOptions(String options) {
-    this.options = options;
-  }
-
   @JsonIgnore
   public boolean isGeoParamsPresent() {
     return this.geoRel != null
@@ -149,17 +140,4 @@ public class QueryParams {
     }
     return this;
   }
-
-  @Override
-  public String toString() {
-    return "QueryParams [id=" + id + ", type=" + type + ", attrs=" + attrs + ", idPattern="
-        + idPattern + ", textQuery=" + textQuery + ", geoRel=" + geoRel + ", maxDistance="
-        + maxDistance + ", geometry=" + geometry + ", coordinates=" + coordinates + ", geoProperty="
-        + geoProperty + ", temporalRelation=" + temporalRelation + ", startTime=" + startTime
-        + ", endTime=" + endTime + ", options=" + options + ", lat=" + lat + ", lon=" + lon
-        + ", radius=" + radius + "]";
-  }
-
-
-
 }

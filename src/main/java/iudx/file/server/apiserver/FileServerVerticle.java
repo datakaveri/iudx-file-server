@@ -2,6 +2,7 @@ package iudx.file.server.apiserver;
 
 import static iudx.file.server.apiserver.utilities.Constants.*;
 import static iudx.file.server.apiserver.utilities.Utilities.*;
+import static iudx.file.server.common.Constants.DB_SERVICE_ADDRESS;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -18,7 +19,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.file.FileSystem;
-import io.vertx.core.http.ClientAuth;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
@@ -41,7 +41,6 @@ import iudx.file.server.apiserver.validations.ContentTypeValidator;
 import iudx.file.server.apiserver.validations.RequestType;
 import iudx.file.server.apiserver.validations.RequestValidator;
 import iudx.file.server.apiserver.validations.ValidationFailureHandler;
-import iudx.file.server.apiserver.validations.ValidationHandlerFactory;
 import iudx.file.server.common.QueryType;
 import iudx.file.server.common.WebClientFactory;
 import iudx.file.server.common.service.CatalogueService;
@@ -89,7 +88,6 @@ public class FileServerVerticle extends AbstractVerticle {
   private WebClientFactory webClientFactory;
   private CatalogueService catalogueService;
 
-  private ValidationHandlerFactory validations;
   private final ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
 
   @Override
@@ -98,7 +96,6 @@ public class FileServerVerticle extends AbstractVerticle {
     boolean isSSL;
     router = Router.router(vertx);
 
-    validations = new ValidationHandlerFactory();;
     requestValidator = new RequestValidator();
     contentTypeValidator = new ContentTypeValidator(config().getJsonObject("allowedContentType"));
 
@@ -161,7 +158,6 @@ public class FileServerVerticle extends AbstractVerticle {
 
 
     /* Read the configuration and set the HTTPs server properties. */
-    ClientAuth clientAuth = ClientAuth.REQUEST;
     truststore = config().getString("file-keystore");
     truststorePassword = config().getString("file-keystorePassword");
 
@@ -229,7 +225,7 @@ public class FileServerVerticle extends AbstractVerticle {
     uploadPath.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
 
     Set<FileUpload> files = routingContext.fileUploads();
-    if (files.size()==0 || !isValidFileContentType(files)) {
+    if (files.size() == 0 || !isValidFileContentType(files)) {
       String message = new RestResponse.Builder()
           .type(400)
           .title("Bad Request")
@@ -241,7 +237,7 @@ public class FileServerVerticle extends AbstractVerticle {
     if (isSample) {
       if (fileIdComponent.length >= 5)
         uploadPath.append("/" + fileIdComponent[4]);
-      sampleFileUpload(response, formParam, files, "sample", uploadPath.toString(), id);
+      sampleFileUpload(response, files, "sample", uploadPath.toString(), id);
     } else {
       archiveFileUpload(response, formParam, files, uploadPath.toString(), id);
     }
@@ -256,7 +252,7 @@ public class FileServerVerticle extends AbstractVerticle {
    * @param filePath
    * @param id
    */
-  private void sampleFileUpload(HttpServerResponse response, MultiMap params, Set<FileUpload> files,
+  private void sampleFileUpload(HttpServerResponse response, Set<FileUpload> files,
       String fileName,
       String filePath, String id) {
 
@@ -393,11 +389,10 @@ public class FileServerVerticle extends AbstractVerticle {
     LOGGER.info(uploadDir);
     fileService.download(fileUUID, uploadDir.toString(), response)
         .onComplete(handler -> {
-          if (handler.succeeded()) {
-            // do nothing response is already written and file is served using content-disposition.
-          } else {
+          if (handler.failed()) {
             processResponse(response, handler.cause().getMessage());
           }
+          // do nothing response is already written and file is served using content-disposition.
         });
   }
 

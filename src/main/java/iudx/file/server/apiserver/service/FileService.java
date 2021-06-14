@@ -16,7 +16,7 @@ public interface FileService {
    * @param file set of file (although there will always be a single file to upload)
    * @param handler
    */
-  public Future<JsonObject> upload(final Set<FileUpload> file, String filePath);
+  Future<JsonObject> upload(final Set<FileUpload> file, String filePath);
 
   /**
    * upload file to server
@@ -26,7 +26,7 @@ public interface FileService {
    * @param filePath path for uploaded file
    * @param handler
    */
-  public Future<JsonObject> upload(final Set<FileUpload> file, String fileName, String filePath);
+  Future<JsonObject> upload(final Set<FileUpload> file, String fileName, String filePath);
 
   /**
    * download file from server
@@ -35,7 +35,8 @@ public interface FileService {
    * @param response response object to send file as Content-Disposition header
    * @param handler Async handler
    */
-  public Future<JsonObject> download(final String fileName, String filePath, final HttpServerResponse response);
+  Future<JsonObject> download(final String fileName, String filePath,
+      final HttpServerResponse response);
 
   /**
    * delete file from server
@@ -43,5 +44,5 @@ public interface FileService {
    * @param fileName name of file to be deleted
    * @param handler Async handler
    */
-  public Future<JsonObject> delete(final String fileName, String filePath);
+  Future<JsonObject> delete(final String fileName, String filePath);
 }

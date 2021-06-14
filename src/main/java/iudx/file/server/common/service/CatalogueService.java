@@ -7,10 +7,10 @@ import io.vertx.core.MultiMap;
 public interface CatalogueService {
 
 
-  public Future<Boolean> isAllowedMetaDataField(MultiMap params);
+  Future<Boolean> isAllowedMetaDataField(MultiMap params);
 
-  public Future<List<String>> getAllowedFilters4Queries(String id);
+  Future<List<String>> getAllowedFilters4Queries(String id);
 
-  public Future<Boolean> isItemExist(String id);
+  Future<Boolean> isItemExist(String id);
 
 }

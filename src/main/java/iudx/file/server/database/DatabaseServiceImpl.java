@@ -38,22 +38,42 @@ public class DatabaseServiceImpl implements DatabaseService {
       return this;
     }
 
+    LOGGER.debug("query : " + apiQuery);
+
     ElasticQueryGenerator queryGenerator = new ElasticQueryGenerator();
-    JsonObject elasticQuery = new JsonObject(queryGenerator.getQuery(apiQuery, type));
+    JsonObject boolQuery = new JsonObject(queryGenerator.getQuery(apiQuery, type));
 
-    JsonObject elasticSearchQuery = new JsonObject();
-    elasticSearchQuery.put("size", 1000);
-    elasticSearchQuery.put("query", elasticQuery);
+    JsonObject elasticQuery = new JsonObject();
 
-    LOGGER.info(elasticSearchQuery);
+    elasticQuery.put("query", boolQuery);
+
+    LOGGER.info(boolQuery);
     String index = getIndex(apiQuery);
     LOGGER.info(index);
-    index = index.concat(SEARCH_REQ_PARAM);
-    client.searchAsync(index, FILTER_PATH_VAL, elasticSearchQuery.toString(), searchHandler -> {
-      if (searchHandler.succeeded()) {
-        handler.handle(Future.succeededFuture(searchHandler.result()));
+    final String searchIndexUrl = index.concat(SEARCH_REQ_PARAM);
+    final String countIndexUrl = index.concat(COUNT_REQ_PARAM);
+
+    client.countAsync(countIndexUrl, elasticQuery.toString(), countHandler -> {
+      if (countHandler.succeeded()) {
+        elasticQuery.put(SIZE_KEY, getOrDefault(apiQuery, PARAM_LIMIT, DEFAULT_SIZE_VALUE));
+        elasticQuery.put(FROM_KEY, getOrDefault(apiQuery, PARAM_OFFSET, DEFAULT_FROM_VALUE));
+        JsonObject countJson = countHandler.result();
+        LOGGER.debug("count json : " + countJson);
+        int count = countJson.getJsonArray("results").getJsonObject(0).getInteger("count");
+        client.searchAsync(searchIndexUrl, FILTER_PATH_VAL, elasticQuery.toString(),
+            searchHandler -> {
+              if (searchHandler.succeeded()) {
+                handler.handle(Future.succeededFuture(
+                    searchHandler.result()
+                        .put(PARAM_LIMIT, elasticQuery.getInteger(SIZE_KEY))
+                        .put(PARAM_OFFSET, elasticQuery.getInteger(FROM_KEY))
+                        .put(TOTAL_HITS_KEY, count)));
+              } else {
+                handler.handle(Future.failedFuture(searchHandler.cause().getMessage()));
+              }
+            });
       } else {
-        handler.handle(Future.failedFuture(searchHandler.cause().getMessage()));
+        handler.handle(Future.failedFuture(countHandler.cause().getMessage()));
       }
     });
     return this;
@@ -145,6 +165,14 @@ public class DatabaseServiceImpl implements DatabaseService {
 
   public boolean isResourceLevelFileId(List<String> id) {
     return id.size() >= 6;
+  }
+
+  public int getOrDefault(JsonObject json, String key, int def) {
+    if (json.containsKey(key)) {
+      int value = Integer.parseInt(json.getString(key));
+      return value;
+    }
+    return def;
   }
 
 }
