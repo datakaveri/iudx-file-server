@@ -4,9 +4,21 @@ info:
   title: "IUDX File Server APIs"
   version: '1.0'
   description: |
-    The The File Server is IUDX File store which allows upload, download and discovery of Files.
-    For Upload it allows uploading Files with group id or resourcer item id.
-    For Discovery it allows temporal queries to search files data within time ranges.
+  
+    # Introduction
+    The File Server is IUDX File store which allows upload, download and discovery of Files.
+    For Upload it allows uploading Files with group id or resource item id, it also allow user to attach additional metadata fields to the uploaded file.
+    For Discovery it allows temporal queries to search files data within time ranges, geo parameters. It also allows user to list file metadata using resource group id or resourfce item id. 
+    
+    # API HTTP Responses
+    Apart from the response codes specified in each API, the API server may respond with certain 4xx and 5xx error codes which are related to common API Gateway behaviours. The application should address them accordingly.
+    
+    # Pagination
+    File server also offers way to paginate the result for queries. If a query returns large number of records then user can use additional parameters in query parameters to limit numbers of records to be returned.
+    
+    additional parameters to be used:
+      - offset : The from parameter defines the offset from the first result you want to fetch,  ( <i>default : 0</i> )
+      - limit : The size parameter allows you to configure the maximum results to be returned  ( <i>default: 5000</i> ) 
   x-logo:
     url: "https://iudx.s3.ap-south-1.amazonaws.com/iudx_logo.png"
     backgroundColor: "#FFFFFF"
@@ -19,7 +31,7 @@ tags:
 
 -  name: Discovery
    x-displayName: Discovery
-   description: A temporal search to discover files available for provoded time range
+   description: Search APIs to discover files or metadata. 
      
 paths:
   /iudx/v1/upload:
@@ -28,6 +40,7 @@ paths:
       - Files
       summary: Upload a File
       operationId: upload-document
+      description: Allows user to upload documents to IUDX system, it also allows user to attach additional metadata fields using form-parameters.
       parameters:
       - name: token
         in: header
@@ -58,6 +71,17 @@ paths:
                 endTime:
                   type: string
                   description: Specifies the end time for the data within the document (`ISO8601`) `*not required for sample file upload`
+                geometry: 
+                  type: string
+                  enum : [Point (or) point, Polygon (or) polygon, LineString (or) linestring, bbox]
+                  description: The geometry type, this should be one from the available options in the Enum list.
+                coordinates: 
+                  type: array
+                  minItems: 2
+                  maxItems: 10
+                  Items: 
+                    type: number
+                  description: 'The coordinates for a specific geometry. <br/> This parameter accepts both <b> one dimentional array and multi dimentional arrays </b> based on the <b> geometry</b> type. <br/> For e.g, [longitude-1,latitude-1] should be used for geometry <b>point</b>.  <br/>[[[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]]] should be used for geometry <b>polygon</b>. <br/> [[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]] should be used for geometry <b>bbox and linestring </b>. <br/> Maximum of 10 latitude, longitude pairs can be used for geometry <b>polygon, bbox and linestring </b>. <br/> Note: The data-type of this field is a string, therefore the coordinates are a string encoded multidimensional array. <br/> Maximum precision allowed is upto 6 decimal places.'
       responses:
         '200':
           description: 'Successfully uploaded a file'
@@ -210,9 +234,71 @@ paths:
         schema:
           type: string
           enum: [during]
+      - name: geoproperty
+        in: query
+        description: 'Name of the <b> geospatial </b> property in the <b> IUDX data descriptor </b>. <br /> The current version of the API <b> mandates </b> it to be equal to `location`'
+        schema:
+          type: string
+          enum: [location]
+      - name: georel
+        in: query
+        description: 'The relation type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> The relation <b> near </b> should be always accomodated with a <b> maxdistance </b> property. <br/> Apart from <b> maxdistance</b> , all other fields in the Enum list are <b> case sensitive </b> fields. <br/> The relation <b> near;maxdistance </b> is applicable only for a <b> point </b>.  <br/> The relation <b> within </b> and  <b> intersects </b> are applicable only for <b> bbox, polygon and linestring</b>.'
+        schema:
+          type: string
+          enum: [near;maxdistance=<distance_in_meters>, within, intersects]
+      - name: geometry
+        in: query
+        description: 'The geometry type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/>The list is <b>case sensitive</b> '
+        schema:
+          type: string
+          enum: [Point (or) point, Polygon (or) polygon, LineString (or) linestring, bbox]
+      - name: coordinates
+        in: query
+        description: 'The coordinates for a specific geometry query type. <br/> This parameter accepts both <b> one dimentional array and multi dimentional arrays </b> based on the <b> geometry</b> type. <br/> For e.g, [longitude-1,latitude-1] should be used for geometry <b>point</b>.  <br/>[[[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]]] should be used for geometry <b>polygon</b>. <br/> [[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]] should be used for geometry <b>bbox and linestring </b>. <br/> Maximum of 10 latitude, longitude pairs can be used for geometry <b>polygon, bbox and linestring </b>. <br/> Note: The data-type of this field is a string, therefore the coordinates are a string encoded multidimensional array.<br/> Maximum precision allowed is upto 6 decimal places.'
+        schema:
+          type: array
+          minItems: 2
+          maxItems: 10
+          items:
+            type: number
+          format: double
       responses:  
         '200':
-          description: 'Successfully deleted a file'
+          description: 'Query result'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/standardQueryResponse'
+        '400':
+          description: 'Bad query'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/standardBadRequestErrorResponse'
+        '401':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+          
+  /ngsi-ld/v1/list:
+    get:
+      tags:
+      - Discovery
+      summary: list metadata
+      operationId: list-metadata
+      parameters:
+      - name: id
+        in: query
+        description: valid IUDX group or resource id
+        required: true
+        schema:
+          type: string
+          maxLength: 512
+      responses:  
+        '200':
+          description: 'Query result'
           content:
             application/json:
               schema:
