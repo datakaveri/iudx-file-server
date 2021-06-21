@@ -16,6 +16,8 @@ info:
     # Pagination
     File server also offers way to paginate the result for queries. If a query returns large number of records then user can use additional parameters in query parameters to limit numbers of records to be returned.
     
+    `*Pagination is applicable only for /temporal/entities API`
+    
     additional parameters to be used:
       - offset : The from parameter defines the offset from the first result you want to fetch,  ( <i>default : 0</i> )
       - limit : The size parameter allows you to configure the maximum results to be returned  ( <i>default: 5000</i> ) 

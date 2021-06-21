@@ -76,7 +76,12 @@ public class CoordinatesTypeValidator implements Validator {
     String[] coordinatesArray = coordinates.split(",");
     boolean checkLongitudeFlag = false;
     for (String coordinate : coordinatesArray) {
-
+      if(!coordinate.isBlank()) {
+        coordinate=coordinate.trim();
+      }else {
+        LOGGER.error("invalid/empty coordinate value");
+        return false;
+      }
       if (checkLongitudeFlag && !isValidLatitude(coordinate)) {
         return false;
       } else if (!isValidLongitude(coordinate)) {
