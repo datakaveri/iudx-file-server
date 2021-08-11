@@ -18,13 +18,6 @@ import static iudx.file.server.apiserver.utilities.Constants.PARAM_ID;
 import static iudx.file.server.apiserver.utilities.Utilities.getFileIdComponents;
 import static iudx.file.server.apiserver.utilities.Utilities.getQueryType;
 import static iudx.file.server.common.Constants.DB_SERVICE_ADDRESS;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_ACCEPT;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_ALLOW_ORIGIN;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_CONTENT_LENGTH;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_CONTENT_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_HOST;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_ORIGIN;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_REFERER;
 
 import java.util.HashSet;
 import java.util.List;
