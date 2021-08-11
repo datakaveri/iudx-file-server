@@ -15,6 +15,14 @@ public class Constants extends iudx.file.server.common.Constants{
 
   // header
   public static final String HEADER_TOKEN = "token";
+  public static final String HEADER_HOST = "Host";
+  public static final String HEADER_ACCEPT = "Accept";
+  public static final String HEADER_CONTENT_LENGTH = "Content-Length";
+  public static final String HEADER_CONTENT_TYPE = "Content-Type";
+  public static final String HEADER_ORIGIN = "Origin";
+  public static final String HEADER_REFERER = "Referer";
+  public static final String HEADER_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
+  public static final String HEADER_OPTIONS = "options";
 
 
   public static final String CONTENT_TYPE = "content-type";
