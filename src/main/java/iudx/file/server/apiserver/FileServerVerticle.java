@@ -1,15 +1,41 @@
 package iudx.file.server.apiserver;
 
+import static iudx.file.server.apiserver.utilities.Constants.API_APIS;
+import static iudx.file.server.apiserver.utilities.Constants.API_API_SPECS;
+import static iudx.file.server.apiserver.utilities.Constants.API_FILE_DELETE;
+import static iudx.file.server.apiserver.utilities.Constants.API_FILE_DOWNLOAD;
+import static iudx.file.server.apiserver.utilities.Constants.API_FILE_UPLOAD;
+import static iudx.file.server.apiserver.utilities.Constants.API_LIST_METADATA;
+import static iudx.file.server.apiserver.utilities.Constants.API_SPATIAL;
+import static iudx.file.server.apiserver.utilities.Constants.API_TEMPORAL;
+import static iudx.file.server.apiserver.utilities.Constants.APPLICATION_JSON;
+import static iudx.file.server.apiserver.utilities.Constants.CONTENT_TYPE;
+import static iudx.file.server.apiserver.utilities.Constants.HEADER_TOKEN;
 import static iudx.file.server.apiserver.utilities.Constants.*;
-import static iudx.file.server.apiserver.utilities.Utilities.*;
+import static iudx.file.server.apiserver.utilities.Constants.JSON_TYPE;
+import static iudx.file.server.apiserver.utilities.Constants.MAX_SIZE;
+import static iudx.file.server.apiserver.utilities.Constants.PARAM_ID;
+import static iudx.file.server.apiserver.utilities.Utilities.getFileIdComponents;
+import static iudx.file.server.apiserver.utilities.Utilities.getQueryType;
 import static iudx.file.server.common.Constants.DB_SERVICE_ADDRESS;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_ACCEPT;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_ALLOW_ORIGIN;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_CONTENT_LENGTH;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_CONTENT_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_HOST;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_ORIGIN;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_REFERER;
+
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import io.netty.handler.codec.http.HttpConstants;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.vertx.core.AbstractVerticle;
@@ -19,6 +45,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.file.FileSystem;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
@@ -31,6 +58,7 @@ import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.CorsHandler;
 import iudx.file.server.apiserver.handlers.AuthHandler;
 import iudx.file.server.apiserver.handlers.ValidationsHandler;
 import iudx.file.server.apiserver.query.QueryParams;
@@ -94,8 +122,29 @@ public class FileServerVerticle extends AbstractVerticle {
   public void start() throws Exception {
     int port;
     boolean isSSL;
-    router = Router.router(vertx);
+    
+    Set<String> allowedHeaders = new HashSet<>();
+    allowedHeaders.add(HEADER_ACCEPT);
+    allowedHeaders.add(HEADER_TOKEN);
+    allowedHeaders.add(HEADER_CONTENT_LENGTH);
+    allowedHeaders.add(HEADER_CONTENT_TYPE);
+    allowedHeaders.add(HEADER_HOST);
+    allowedHeaders.add(HEADER_ORIGIN);
+    allowedHeaders.add(HEADER_REFERER);
+    allowedHeaders.add(HEADER_ALLOW_ORIGIN);
 
+    Set<HttpMethod> allowedMethods = new HashSet<>();
+    allowedMethods.add(HttpMethod.GET);
+    allowedMethods.add(HttpMethod.POST);
+    allowedMethods.add(HttpMethod.OPTIONS);
+    allowedMethods.add(HttpMethod.DELETE);
+    allowedMethods.add(HttpMethod.PATCH);
+    allowedMethods.add(HttpMethod.PUT);
+    
+    router = Router.router(vertx);
+    router.route().handler(
+            CorsHandler.create("*").allowedHeaders(allowedHeaders).allowedMethods(allowedMethods));
+    
     requestValidator = new RequestValidator();
     contentTypeValidator = new ContentTypeValidator(config().getJsonObject("allowedContentType"));
 
