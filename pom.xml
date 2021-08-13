@@ -187,6 +187,11 @@
 			<artifactId>elasticsearch-rest-high-level-client</artifactId>
 			<version>${elasticsearch-rest-high-level-client.version}</version>
 		</dependency>
+		
+		<dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-auth-jwt</artifactId>
+        </dependency>
 	</dependencies>
 
 	<build>
