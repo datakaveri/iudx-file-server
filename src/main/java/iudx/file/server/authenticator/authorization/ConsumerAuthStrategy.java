@@ -48,7 +48,6 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
     if (!result && access.contains("file")) {
       result = consumerAuthorizationRules.get("file").contains(authRequest);
     }
-
     return result;
   }
 

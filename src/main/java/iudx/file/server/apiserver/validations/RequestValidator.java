@@ -56,19 +56,6 @@ public class RequestValidator {
     return true;
   }
 
-
-  private Future<Boolean> isValidGeoQuery(MultiMap map) {
-    Promise<Boolean> promsie = Promise.promise();
-    if (map.contains(PARAM_GEOREL) && map.contains(PARAM_COORDINATES)
-        && map.contains(PARAM_GEOMETRY)) {
-      promsie.complete(true);
-    } else {
-      LOGGER.error("Invalid geo query");
-      promsie.fail("Invalid geo query");
-    }
-    return promsie.future();
-  }
-
   public Future<Boolean> isValidArchiveRequest(MultiMap params) {
     Promise<Boolean> promise = Promise.promise();
     if (params.contains(PARAM_GEOMETRY) && params.contains(PARAM_COORDINATES)

@@ -13,7 +13,8 @@ public class Configuration {
 
   private static FileSystem fileSystem;
   private static final Logger LOGGER = LogManager.getLogger(Configuration.class);
-  private static final String CONFIG_PATH = "./secrets/all-verticles-configs/config-test.json";
+  //private static final String CONFIG_PATH = "./secrets/all-verticles-configs/config-test.json";
+  private static final String CONFIG_PATH = "./example-configs/config-test.json";
 
   /**
    * This is to read the config.json file from fileSystem to load configuration.

@@ -72,8 +72,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   @Override
   public AuthenticationService tokenInterospect(JsonObject request, JsonObject authenticationInfo,
       Handler<AsyncResult<JsonObject>> handler) {
-
-    String id = request.getJsonArray("ids").getString(0);
+    LOGGER.debug("token interospect called");
+    String id = authenticationInfo.getString("id");;
     String token = authenticationInfo.getString("token");
 
     Future<JwtData> jwtDecodeFuture = decodeJwt(token);

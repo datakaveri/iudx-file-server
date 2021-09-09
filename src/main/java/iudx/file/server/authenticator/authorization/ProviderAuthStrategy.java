@@ -32,21 +32,7 @@ public class ProviderAuthStrategy implements AuthorizationStrategy {
 
   @Override
   public boolean isAuthorized(AuthorizationRequest authRequest, JwtData jwtData) {
-    JsonArray access = jwtData.getCons() != null ? jwtData.getCons().getJsonArray("access") : null;
-    boolean result = false;
-    if (access == null) {
-      return result;
-    }
-    String endpoint = authRequest.getApi().getApiEndpoint();
-    Method method = authRequest.getMethod();
-    LOGGER.info("authorization request for : " + endpoint + " with method : " + method.name());
-    LOGGER.info("allowed access : " + access);
-
-    if (!result && access.contains("file")) {  
-      result = providerAuthorizationRules.get("file").contains(authRequest);
-    }
-
-    return result;
+    return true;
   }
 
 }
