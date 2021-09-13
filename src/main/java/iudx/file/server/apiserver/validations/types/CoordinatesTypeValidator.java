@@ -34,8 +34,13 @@ public class CoordinatesTypeValidator implements Validator {
   private DecimalFormat df = new DecimalFormat("#.######");
 
   private boolean isValidLatitude(String latitude) {
-    Float latitudeValue = Float.parseFloat(latitude);
-    if (!df.format(latitudeValue).matches(LATITUDE_PATTERN)) {
+    try {
+      Float latitudeValue = Float.parseFloat(latitude);
+      if (!df.format(latitudeValue).matches(LATITUDE_PATTERN)) {
+        LOGGER.error("Validation error : invalid latitude value " + latitude);
+        return false;
+      }
+    } catch (Exception ex) {
       LOGGER.error("Validation error : invalid latitude value " + latitude);
       return false;
     }
@@ -43,8 +48,13 @@ public class CoordinatesTypeValidator implements Validator {
   }
 
   private boolean isValidLongitude(String longitude) {
-    Float longitudeValue = Float.parseFloat(longitude);
-    if (!df.format(longitudeValue).matches(LONGITUDE_PATTERN)) {
+    try {
+      Float longitudeValue = Float.parseFloat(longitude);
+      if (!df.format(longitudeValue).matches(LONGITUDE_PATTERN)) {
+        LOGGER.error("Validation error : invalid longitude value " + longitude);
+        return false;
+      }
+    } catch (Exception ex) {
       LOGGER.error("Validation error : invalid longitude value " + longitude);
       return false;
     }
@@ -52,7 +62,13 @@ public class CoordinatesTypeValidator implements Validator {
   }
 
   private boolean isPricisonLengthAllowed(String value) {
-    return (new BigDecimal(value).scale() > VALIDATION_COORDINATE_PRECISION_ALLOWED);
+    boolean result = false;
+    try {
+      result = (new BigDecimal(value).scale() > VALIDATION_COORDINATE_PRECISION_ALLOWED);
+    } catch (Exception ex) {
+      LOGGER.error("Validation error : invalid value " + value);
+    }
+    return result;
   }
 
   private boolean isValidCoordinates(String value) {
@@ -60,7 +76,12 @@ public class CoordinatesTypeValidator implements Validator {
     String[] coordinatesArray = coordinates.split(",");
     boolean checkLongitudeFlag = false;
     for (String coordinate : coordinatesArray) {
-
+      if(!coordinate.isBlank()) {
+        coordinate=coordinate.trim();
+      }else {
+        LOGGER.error("invalid/empty coordinate value");
+        return false;
+      }
       if (checkLongitudeFlag && !isValidLatitude(coordinate)) {
         return false;
       } else if (!isValidLongitude(coordinate)) {
