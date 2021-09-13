@@ -68,7 +68,13 @@ public class DatabaseServiceTest {
     data = vertx.fileSystem().readFileBlocking("src/test/resources/data.json").toJsonArray();
     // LOGGER.debug("mapping : " + mapping);
     // LOGGER.debug("data :" + data);
-    dbService = new DatabaseServiceImpl(dbConfig);
+
+    dbConfig.put("databaseIP", "localhost");
+    dbConfig.put("databasePort", 9200);
+    dbConfig.put("databaseUser", "elastic");
+    dbConfig.put("databasePassword", "elk@elastic.in");
+
+    //dbService = new DatabaseServiceImpl(dbConfig);
 
     elasticContainer = new ElasticsearchContainer(CONTAINER);
     elasticContainer.withPassword(dbConfig.getString("databasePassword"));

@@ -1,6 +1,7 @@
 package iudx.file.server.authenticator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -8,8 +9,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import io.micrometer.core.ipc.http.HttpSender.Method;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -25,16 +28,17 @@ import iudx.file.server.common.service.CatalogueService;
 import iudx.file.server.common.service.impl.CatalogueServiceImpl;
 import iudx.file.server.configuration.Configuration;
 
-@ExtendWith(VertxExtension.class)
+@ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class JwtAuthServiceTest {
 
   private static final Logger LOGGER = LogManager.getLogger(JwtAuthServiceTest.class);
   private static JsonObject authConfig;
   private static JwtAuthenticationServiceImpl jwtAuthenticationService;
   private static Configuration config;
-  private static CatalogueService catalogueService;
+  private static CatalogueService catalogueServiceMock;
+  private static JwtAuthenticationServiceImpl jwtAuthImplSpy;
   private static WebClientFactory webClientFactory;
-  
+
   private static String delegateJwt =
       "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJhMTNlYjk1NS1jNjkxLTRmZDMtYjIwMC1mMThiYzc4ODEwYjUiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoiZm9vYmFyLml1ZHguaW8iLCJleHAiOjE2MjgxODIzMjcsImlhdCI6MTYyODEzOTEyNywiaWlkIjoicmk6ZXhhbXBsZS5jb20vNzllN2JmYTYyZmFkNmM3NjViYWM2OTE1NGMyZjI0Yzk0Yzk1MjIwYS9yZXNvdXJjZS1ncm91cC9yZXNvdXJjZSIsInJvbGUiOiJkZWxlZ2F0ZSIsImNvbnMiOnsiYWNjZXNzIjpbImFwaSIsInN1YnMiLCJpbmdlc3QiLCJmaWxlIl19fQ.tUoO1L-tXByxNtjY_iK41neeshCiYrNr505wWn1hC1ACwoeL9frebABeFiCqJQGrsBsGOZ1-OACZdHBNcetwyw";
   private static String consumerJwt =
@@ -51,6 +55,7 @@ public class JwtAuthServiceTest {
   static void init(Vertx vertx, VertxTestContext testContext) {
     config = new Configuration();
     authConfig = config.configLoader(1, vertx);
+    authConfig.put("host", "rs.iudx.io");
 
     JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
     jwtAuthOptions.addPubSecKey(
@@ -65,16 +70,17 @@ public class JwtAuthServiceTest {
     JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
 
     webClientFactory = new WebClientFactory(vertx, authConfig);
-    catalogueService = new CatalogueServiceImpl(vertx, webClientFactory, authConfig);
-    jwtAuthenticationService = new JwtAuthenticationServiceImpl(vertx, jwtAuth, authConfig, catalogueService);
-
+    // catalogueService = new CatalogueServiceImpl(vertx, webClientFactory, authConfig);
+    catalogueServiceMock = mock(CatalogueServiceImpl.class);
+    jwtAuthenticationService = new JwtAuthenticationServiceImpl(vertx, jwtAuth, authConfig, catalogueServiceMock);
+    jwtAuthImplSpy = spy(jwtAuthenticationService);
 
     LOGGER.info("Auth tests setup complete");
     testContext.completeNow();
   }
-  
-  
-  
+
+
+
   @Test
   @DisplayName("decode valid jwt")
   public void decodeJwtProviderSuccess(VertxTestContext testContext) {
@@ -128,7 +134,7 @@ public class JwtAuthServiceTest {
       }
     });
   }
-  
+
   @Test
   @DisplayName("success - allow consumer access to /entities endpoint for access [api,subs]")
   public void access4ConsumerTokenEntitiesAPI(VertxTestContext testContext) {
@@ -158,5 +164,210 @@ public class JwtAuthServiceTest {
       }
     });
   }
+  
+  
+  @Test
+  @DisplayName("fail - consumer access to /entities endpoint for access [subs]")
+  public void fail4ConsumerTokenEntitiesAPI(VertxTestContext testContext) {
+
+    JsonObject authInfo = new JsonObject();
+
+    authInfo.put("token", consumerJwt);
+    authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("method", Method.GET);
+
+    JwtData jwtData = new JwtData();
+    jwtData.setIss("auth.test.com");
+    jwtData.setAud("file.iudx.io");
+    jwtData.setExp(1627408865L);
+    jwtData.setIat(1627408865L);
+    jwtData.setIid("ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    jwtData.setRole("consumer");
+    jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api")));
+
+
+    jwtAuthenticationService.validateAccess(jwtData, authInfo).onComplete(handler -> {
+      if (handler.succeeded()) {
+        testContext.failNow("invalid access allowed");
+      } else {
+        testContext.completeNow();
+      }
+    });
+  }
+
+  @Test
+  @DisplayName("success - allow provider access to all")
+  public void access4ProviderTokenEntitiesAPI(VertxTestContext testContext) {
+
+    JsonObject authInfo = new JsonObject();
+
+    authInfo.put("token", consumerJwt);
+    authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("method", Method.GET);
+
+    JwtData jwtData = new JwtData();
+    jwtData.setIss("auth.test.com");
+    jwtData.setAud("file.iudx.io");
+    jwtData.setExp(1627408865L);
+    jwtData.setIat(1627408865L);
+    jwtData.setIid("ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    jwtData.setRole("provider");
+    jwtData.setCons(new JsonObject().put("access", new JsonArray().add("file")));
+
+
+    jwtAuthenticationService.validateAccess(jwtData, authInfo).onComplete(handler -> {
+      if (handler.succeeded()) {
+        testContext.completeNow();
+      } else {
+        testContext.failNow("invalid access");
+      }
+    });
+  }
+
+  @Test
+  @DisplayName("success - token interospection allow access")
+  public void successTokenInterospect(VertxTestContext testContext) {
+    JsonObject authInfo = new JsonObject();
+
+    authInfo.put("token", consumerJwt);
+    authInfo.put("id", "example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group");
+    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("method", Method.GET);
+
+    JsonObject request = new JsonObject();
+
+    doAnswer(Answer -> Future.succeededFuture(true)).when(catalogueServiceMock).isItemExist(any());
+    doAnswer(Answer -> Future.succeededFuture(true)).when(jwtAuthImplSpy).isValidAudienceValue(any());
+
+    jwtAuthImplSpy.tokenInterospect(request, authInfo, handler -> {
+      if (handler.succeeded()) {
+        testContext.completeNow();
+      } else {
+        testContext.failNow("failed");
+      }
+    });
+  }
+
+  @Test
+  @DisplayName("fail - token interospection deny access [invalid audience]")
+  public void failureTokenInterospectInvalidAudience(VertxTestContext testContext) {
+    JsonObject authInfo = new JsonObject();
+
+    authInfo.put("token", consumerJwt);
+    authInfo.put("id", "example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group");
+    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("method", Method.GET);
+
+    JsonObject request = new JsonObject();
+
+    doAnswer(Answer -> Future.succeededFuture(true)).when(catalogueServiceMock).isItemExist(any());
+
+    doAnswer(Answer -> Future.failedFuture("invalid audience value"))
+        .when(jwtAuthImplSpy)
+        .isValidAudienceValue(any());
+
+    jwtAuthImplSpy.tokenInterospect(request, authInfo, handler -> {
+      if (handler.succeeded()) {
+        testContext.failNow("failed");
+      } else {
+        testContext.completeNow();
+      }
+    });
+  }
+
+  @Test
+  @DisplayName("fail - token interospection deny access [invalid resource]")
+  public void failureTokenInterospectInvalidResource(VertxTestContext testContext) {
+    JsonObject authInfo = new JsonObject();
+
+    authInfo.put("token", consumerJwt);
+    authInfo.put("id", "example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group");
+    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("method", Method.GET);
+
+    JsonObject request = new JsonObject();
+
+    doAnswer(Answer -> Future.failedFuture("resource doesn't exist"))
+        .when(catalogueServiceMock)
+        .isItemExist(any());
+
+    doAnswer(Answer -> Future.succeededFuture(true))
+        .when(jwtAuthImplSpy)
+        .isValidAudienceValue(any());
+
+    jwtAuthImplSpy.tokenInterospect(request, authInfo, handler -> {
+      if (handler.succeeded()) {
+        testContext.failNow("failed");
+      } else {
+        testContext.completeNow();
+      }
+    });
+  }
+
+
+  @Test
+  @DisplayName("fail - invalid audience value")
+  public void fail4InvalidAud(VertxTestContext testContext) {
+
+    JwtData jwt = new JwtData();
+    jwt.setAud("rs.iudx.in");
+    jwtAuthenticationService.isValidAudienceValue(jwt).onComplete(handler -> {
+      if (handler.succeeded()) {
+        testContext.failNow("passed for invalid value");
+      } else {
+        testContext.completeNow();
+      }
+    });
+  }
+
+  @Test
+  @DisplayName("success - valid audience value")
+  public void success4ValidAud(VertxTestContext testContext) {
+
+    JwtData jwt = new JwtData();
+    jwt.setAud("rs.iudx.io");
+    jwtAuthenticationService.isValidAudienceValue(jwt).onComplete(handler -> {
+      if (handler.succeeded()) {
+        testContext.completeNow();
+      } else {
+        testContext.failNow("failed for valid value");
+      }
+    });
+  }
+
+
+  @Test
+  @DisplayName("fail - invalid id")
+  public void fail4InvalidId(VertxTestContext testContext) {
+
+    JwtData jwt = new JwtData();
+    jwt.setIid("rg:abc/xyz");
+    jwtAuthenticationService.isValidId(jwt, "abc/xyz/wxy").onComplete(handler -> {
+      if (handler.succeeded()) {
+        testContext.failNow("passed for invalid id");
+      } else {
+        testContext.completeNow();
+      }
+    });
+  }
+
+  @Test
+  @DisplayName("success - valid id")
+  public void success4validId(VertxTestContext testContext) {
+
+    JwtData jwt = new JwtData();
+    jwt.setIid("rg:abc/xyz");
+    jwtAuthenticationService.isValidId(jwt, "abc/xyz").onComplete(handler -> {
+      if (handler.succeeded()) {
+        testContext.completeNow();
+      } else {
+        testContext.failNow("failed for valid id");
+      }
+    });
+  }
+
+
 
 }
