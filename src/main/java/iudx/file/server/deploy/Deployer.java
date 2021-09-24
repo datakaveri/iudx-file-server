@@ -8,18 +8,22 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.DiscoveryStrategyConfig;
 import com.hazelcast.zookeeper.ZookeeperDiscoveryProperties;
 import com.hazelcast.zookeeper.ZookeeperDiscoveryStrategyFactory;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.cli.CLI;
@@ -99,6 +103,8 @@ public class Deployer {
 
   public static void setJVMmetrics() {
     MeterRegistry registry = BackendRegistries.getDefaultNow();
+    LOGGER.debug(registry);
+    new ClassLoaderMetrics().bindTo(registry);
     new JvmMemoryMetrics().bindTo(registry);
     new JvmGcMetrics().bindTo(registry);
     new ProcessorMetrics().bindTo(registry);
@@ -125,10 +131,11 @@ public class Deployer {
     EventBusOptions ebOptions = new EventBusOptions().setClusterPublicHost(host);
     VertxOptions options = new VertxOptions().setClusterManager(mgr).setEventBusOptions(ebOptions)
         .setMetricsOptions(getMetricsOptions());
-
+    LOGGER.debug("metrics-options"+options.getMetricsOptions());
     Vertx.clusteredVertx(options, res -> {
       if (res.succeeded()) {
         vertx = res.result();
+        LOGGER.debug(vertx.isMetricsEnabled());
         setJVMmetrics();
         recursiveDeploy(vertx, configuration, 0);
       } else {
@@ -146,6 +153,7 @@ public class Deployer {
     CountDownLatch latch_cluster = new CountDownLatch(1);
     CountDownLatch latch_vertx = new CountDownLatch(1);
     LOGGER.debug("number of verticles being undeployed are:" + deployIDSet.size());
+    // shutdown verticles
     for (String deploymentID : deployIDSet) {
       vertx.undeploy(deploymentID, handler -> {
         if (handler.succeeded()) {
@@ -158,47 +166,42 @@ public class Deployer {
       });
     }
 
-//    try {
-//      latch_verticles.await(5, TimeUnit.SECONDS);
-//      LOGGER.info("All the verticles undeployed");
-//      mgr.leave(handler -> {
-//        if (handler.succeeded()) {
-//          LOGGER.info("Hazelcast succesfully left:");
-//          latch_cluster.countDown();
-//
-//        } else {
-//          LOGGER.warn("Error while hazelcast leaving, reason:" + handler.cause());
-//        }
-//      });
-//    } catch (Exception e) {
-//      e.printStackTrace();
-//    }
-//
-//    try {
-//      latch_cluster.await(5, TimeUnit.SECONDS);
-//      vertx.close(handler -> {
-//        if (handler.succeeded()) {
-//          LOGGER.info("vertx closed succesfully");
-//          latch_vertx.countDown();
-//        } else {
-//          LOGGER.warn("Vertx didn't close properly, reason:" + handler.cause());
-//        }
-//      });
-//    } catch (Exception e) {
-//      e.printStackTrace();
-//    }
-//
-//    try {
-//      latch_vertx.await(5, TimeUnit.SECONDS);
-//      // then shut down log4j
-//      if (LogManager.getContext() instanceof LoggerContext) {
-//        LOGGER.debug("Shutting down log4j2");
-//        LogManager.shutdown((LoggerContext) LogManager.getContext());
-//      } else
-//        LOGGER.warn("Unable to shutdown log4j2");
-//    } catch (Exception e) {
-//      e.printStackTrace();
-//    }
+    try {
+      latch_verticles.await(5, TimeUnit.SECONDS);
+      LOGGER.info("All the verticles undeployed");
+      Promise<Void> promise = Promise.promise();
+      // leave cluster
+      mgr.leave(promise);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    try {
+      latch_cluster.await(5, TimeUnit.SECONDS);
+      // shutdown vertx
+      vertx.close(handler -> {
+        if (handler.succeeded()) {
+          LOGGER.info("vertx closed succesfully");
+          latch_vertx.countDown();
+        } else {
+          LOGGER.warn("Vertx didn't close properly, reason:" + handler.cause());
+        }
+      });
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    try {
+      latch_vertx.await(5, TimeUnit.SECONDS);
+      // then shut down log4j
+      if (LogManager.getContext() instanceof LoggerContext) {
+        LOGGER.debug("Shutting down log4j2");
+        LogManager.shutdown((LoggerContext) LogManager.getContext());
+      } else
+        LOGGER.warn("Unable to shutdown log4j2");
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   public static void main(String[] args) {
