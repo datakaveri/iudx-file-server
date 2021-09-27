@@ -11,7 +11,7 @@
 		<vertx.version>4.0.3</vertx.version>
 		<openjdk.version>11</openjdk.version>
 		<hazelcast.version>4.0.2</hazelcast.version>
-		<micrometer.version>1.7.0</micrometer.version>
+		<micrometer.version>1.6.2</micrometer.version>
 		<curator.version>5.1.0</curator.version>
 		<maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
 		<junit-jupiter-api.version>5.7.2</junit-jupiter-api.version>
@@ -312,6 +312,8 @@
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
 									<resource>META-INF/services/io.vertx.core.spi.VerticleFactory
 									</resource>
+									<resource>META-INF/services/io.vertx.core.spi.VertxServiceProvider
+									</resource>
 								</transformer>
 							</transformers>
 							<artifactSet></artifactSet>
@@ -348,6 +350,8 @@
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
 									<resource>META-INF/services/io.vertx.core.spi.VerticleFactory
+									</resource>
+									<resource>META-INF/services/io.vertx.core.spi.VertxServiceProvider
 									</resource>
 								</transformer>
 							</transformers>
