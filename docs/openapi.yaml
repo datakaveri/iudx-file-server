@@ -389,6 +389,12 @@ components:
           type: string
         results:
           type: object
+        limit:
+          type: string
+        offset: 
+          type: string
+        totalHits:
+          type: string
       example:
         type: urn:dx:rs:success
         title: Success
@@ -400,6 +406,9 @@ components:
           },
           "fileID":"suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta/sample.txt"
         }]
+        limit: 5000
+        offset: 0
+        totalHits: 9091
     standardDeleteSuccessResponse:
       title: standardDeleteSuccessResponse
       properties:
