@@ -1,8 +1,20 @@
-openapi: '3.0.2'
+openapi: 3.0.2
+
+schemes:
+  - "http"
+  - "https"
+
+produces:
+  - "application/json"
+  - "text/plain"
+
+consumes:
+  - "application/json"
+  - "text/plain"
 
 info:
   title: "IUDX File Server APIs"
-  version: '1.0'
+  version: 3.0.0
   description: |
   
     # Introduction
@@ -19,12 +31,13 @@ info:
     `*Pagination is applicable only for /temporal/entities API`
     
     additional parameters to be used:
-      - offset : The from parameter defines the offset from the first result you want to fetch,  ( <i>default : 0</i> )
-      - limit : The size parameter allows you to configure the maximum results to be returned  ( <i>default: 5000</i> ) 
-  x-logo:
-    url: "https://iudx.s3.ap-south-1.amazonaws.com/iudx_logo.png"
-    backgroundColor: "#FFFFFF"
-    altText: "IUDX"
+      - <b>offset</b> : The from parameter defines the offset from the first result you want to fetch,  ( <i>default : 0</i> ,<i>minValue: 0</i>, <i>maxValue: 49999</i> )
+      - <b>limit</b> : The size parameter allows you to configure the maximum results to be returned  ( <i>default: 5000</i> ,<i>minValue: 0</i>, <i>maxValue: 5000</i> )
+      
+      
+    # Tokens
+    All the <b>*upload, download and delete*</b> for archival calls to the file server should now contain a valid IUDX auth token presented in the query header. 
+    To upload, download and delete for archival files a consumer must get a token along with the associated constraints from the IUDX Auth Server. 
 
 tags:
 -  name: Files
@@ -330,7 +343,7 @@ components:
         detail:
           type: string
       example:
-        type: 400
+        type: urn:dx:rs:badRequest
         title: Bad Request Data
         detail: Bad query
     fileUploadResponse:
@@ -351,7 +364,7 @@ components:
         detail:
           type: string
       example:
-        type: 401
+        type: urn:dx:rs:invalidAuthorizationToken
         title: Invalid credentials
         detail: Invalid credentials
     standardFileNotFoundErrorResponse:
@@ -364,7 +377,7 @@ components:
         detail:
           type: string
       example:
-        type: 404
+        type: urn:dx:rs:resourceNotFound
         title: File does not exist
         detail: File does not exist
     standardQueryResponse:
@@ -377,7 +390,7 @@ components:
         results:
           type: object
       example:
-        type: 200
+        type: urn:dx:rs:success
         title: Success
         results: [{
           "id":"suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta",
