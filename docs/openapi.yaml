@@ -419,6 +419,6 @@ components:
         detail:
           type: string
       example:
-        type: 200
+        type: urn:dx:rs:success
         title: deleted successfully
         detail: successfully deleted file <<file-id>>
