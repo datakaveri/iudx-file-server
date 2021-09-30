@@ -69,7 +69,7 @@ public class AuthHandler implements Handler<RoutingContext> {
     }
 
     LOGGER.info("fileName : " + fileName);
-
+    LOGGER.info("id :"+id);
     JsonArray idArray = new JsonArray();
     idArray.add(id);
     JsonObject requestJson = new JsonObject().put("ids", idArray);
@@ -79,6 +79,7 @@ public class AuthHandler implements Handler<RoutingContext> {
       return;
     }
 
+    authInfo.put("id", id);
     authenticator.tokenInterospect(requestJson, authInfo, handler -> {
       if (handler.succeeded()) {
         LOGGER.info("auth success.");

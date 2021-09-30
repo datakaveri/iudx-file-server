@@ -1,10 +1,8 @@
 package iudx.file.server.authenticator.authorization;
 
-import static iudx.file.server.authenticator.authorization.Api.*;
-import static iudx.file.server.authenticator.authorization.Method.DELETE;
+import static iudx.file.server.authenticator.authorization.Api.DOWNLOAD;
+import static iudx.file.server.authenticator.authorization.Api.QUERY;
 import static iudx.file.server.authenticator.authorization.Method.GET;
-import static iudx.file.server.authenticator.authorization.Method.POST;
-import static iudx.file.server.authenticator.authorization.Method.PUT;
 
 import java.util.ArrayList;
 import java.util.HashMap;
