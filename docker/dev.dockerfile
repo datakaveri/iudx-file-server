@@ -21,4 +21,5 @@ ARG VERSION
 ENV JAR="iudx.file.server-dev-${VERSION}-fat.jar"
 
 WORKDIR /usr/share/app
+COPY docs docs
 COPY --from=builder /usr/share/app/target/${JAR} ./fatjar.jar
