@@ -4,7 +4,6 @@ services:
     env_file:
       - ./.file-server.env
     volumes:
-      - ./docs/:/usr/share/app/docs
       - ./secrets/keystore-file.jks:/usr/share/app/secrets/keystore-file.jks
       - ./secrets/keystore-rs.jks:/usr/share/app/secrets/keystore-rs.jks
       - type: volume
