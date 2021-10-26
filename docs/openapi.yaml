@@ -38,6 +38,9 @@ info:
     # Tokens
     All the <b>*upload, download and delete*</b> for archival calls to the file server should now contain a valid IUDX auth token presented in the query header. 
     To upload, download and delete for archival files a consumer must get a token along with the associated constraints from the IUDX Auth Server. 
+  contact:
+    name: For support contact IUDX Team at
+    email: support@iudx.org.in
 
 tags:
 -  name: Files
