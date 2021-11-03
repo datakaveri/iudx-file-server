@@ -17,6 +17,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
@@ -46,9 +47,7 @@ public class CatalogueServiceImpl implements CatalogueService {
   @Override
   public Future<Boolean> isAllowedMetaDataField(MultiMap params) {
     Promise<Boolean> promise = Promise.promise();
-
     promise.complete(true);
-
     return promise.future();
   }
 
@@ -155,7 +154,7 @@ public class CatalogueServiceImpl implements CatalogueService {
           if (responseHandler.succeeded()) {
             HttpResponse<Buffer> response = responseHandler.result();
             JsonObject responseBody = response.bodyAsJsonObject();
-            if (responseBody.getString("status").equalsIgnoreCase("urn:dx:cat:Success")
+            if (responseBody.getString("type").equalsIgnoreCase("urn:dx:cat:Success")
                 && responseBody.getInteger("totalHits") > 0) {
               promise.complete(true);
             } else {

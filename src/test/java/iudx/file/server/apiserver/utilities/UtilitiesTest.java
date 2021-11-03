@@ -41,7 +41,11 @@ public class UtilitiesTest {
         .put("endTime", "2020-09-15T00:00:00Z")
         .put("georel", "near;maxDistance=10")
         .put("coordinates", "[72.23,23.14]")
-        .put("geometry", "point");
+        .put("geometry", "point")
+        .put("offset", 0)
+        .put("limit", 10)
+        .put("attrs","attr1,attr2")
+        .put("q", "abc>123");
     QueryParams queryParam = query.mapTo(QueryParams.class).build();
     assertEquals(QueryType.TEMPORAL_GEO, utilities.getQueryType(queryParam));
   }
@@ -70,4 +74,17 @@ public class UtilitiesTest {
     QueryParams queryParam = query.mapTo(QueryParams.class).build();
     assertEquals(QueryType.LIST, utilities.getQueryType(queryParam));
   }
+  
+  @Test
+  public void testFileIdComponentsRL() {
+    String id="datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.org.in/pune-env-flood/FWR065/sample.txt";
+    assertEquals(6, utilities.getFileIdComponents(id).length);
+  }
+  
+  @Test
+  public void testFileIdComponentsGL() {
+    String id="suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/sample.txt";
+    assertEquals(5, utilities.getFileIdComponents(id).length);
+  }
+  
 }

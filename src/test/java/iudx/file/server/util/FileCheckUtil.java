@@ -38,4 +38,9 @@ public class FileCheckUtil {
     LOGGER.info("file to check from system ::: "+fileId.toString());
     return fs.existsBlocking(fileId.toString());
   }
+  
+  
+  public boolean isDirExist(String dirPath) {
+    return fs.existsBlocking(dirPath);
+  }
 }

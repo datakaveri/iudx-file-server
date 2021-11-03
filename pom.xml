@@ -247,13 +247,26 @@
 						<!-- classes are excluded since they are not testable or don't add 
 							any value if test cases are written. -->
 						<!-- ApiServerVerticle testing is covered in integration for now. -->
-						<exclude>iudx/file/server/FileServerVerticle.class</exclude>
+						<exclude>iudx/file/server/apiserver/FileServerVerticle.class</exclude>
+						<exclude>iudx/file/server/apiserver/FileServerVerticle**</exclude>
+						<!-- service proxy interfaces -->
+						<exclude>iudx/file/server/authenticator/AuthenticationService.class</exclude>
+						<exclude>iudx/file/server/database/DatabaseService.class</exclude>
+						<!-- generated classes -->
+						<exclude>**/JwtDataConverter.class</exclude>
 						<exclude>**/*VertxEBProxy.class</exclude>
 						<exclude>**/Constants.class</exclude>
 						<exclude>**/*VertxProxyHandler.class</exclude>
 						<exclude>**/*Verticle.class</exclude>
-						<exclude>iudx/file/server/deploy/*.class</exclude>
+						<exclude>iudx/file/server/deploy/**</exclude>
 					</excludes>
+					<limits>
+						<limit>
+							<counter>LINE</counter>
+							<value>COVEREDRATIO</value>
+							<minimum>80%</minimum>
+						</limit>
+					</limits>
 				</configuration>
 			</plugin>
 			<plugin>

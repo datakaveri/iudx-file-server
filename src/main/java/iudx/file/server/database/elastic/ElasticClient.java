@@ -71,12 +71,7 @@ public class ElasticClient {
         JsonArray dbResponse = new JsonArray();
         try {
           JsonObject responseJson = new JsonObject(EntityUtils.toString(response.getEntity()));
-          if (!responseJson.containsKey(HITS) && !responseJson.containsKey(DOCS_KEY)) {
-            responseBuilder =
-                new ResponseBuilder(FAILED).setTypeAndTitle(204).setMessage(EMPTY_RESPONSE);
-            searchHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-            return;
-          }
+
           responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(200);
           JsonArray responseHits = new JsonArray();
           if (responseJson.containsKey(HITS)) {
@@ -105,13 +100,9 @@ public class ElasticClient {
 
       @Override
       public void onFailure(Exception e) {
-        LOGGER.error(e.getLocalizedMessage());
-        LOGGER.error(e.getMessage());
         try {
-          String error = e.getMessage().substring(e.getMessage().indexOf("{"),
-              e.getMessage().lastIndexOf("}") + 1);
-          JsonObject dbError = new JsonObject(error);
-          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(dbError);
+          JsonObject dbError = new JsonObject().put("error", e.getMessage()).put("status", 400);
+          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(e.getMessage());
           searchHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
         } catch (DecodeException jsonError) {
           LOGGER.error("Json parsing exception: " + jsonError);
@@ -197,7 +188,6 @@ public class ElasticClient {
 
     Request deleteRequest = new Request("POST", deleteURI.toString());
     deleteRequest.setJsonEntity(query);
-
     client.performRequestAsync(deleteRequest, new ResponseListener() {
 
       @Override
@@ -222,6 +212,7 @@ public class ElasticClient {
 
       @Override
       public void onFailure(Exception ex) {
+        LOGGER.error("error : " + ex.getMessage());
         try {
           String error = ex.getMessage().substring(ex.getMessage().indexOf("{"),
               ex.getMessage().lastIndexOf("}") + 1);
@@ -281,12 +272,9 @@ public class ElasticClient {
 
       @Override
       public void onFailure(Exception e) {
-        LOGGER.error(e.getLocalizedMessage());
         try {
-          String error = e.getMessage().substring(e.getMessage().indexOf("{"),
-              e.getMessage().lastIndexOf("}") + 1);
-          JsonObject dbError = new JsonObject(error);
-          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(dbError);
+          JsonObject dbError = new JsonObject().put("error", e.getMessage()).put("status", 400);;
+          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(e.getMessage());
           countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
         } catch (DecodeException jsonError) {
           LOGGER.error("Json parsing exception: " + jsonError);
