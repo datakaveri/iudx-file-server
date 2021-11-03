@@ -41,19 +41,20 @@ public class LocalStorageFileServiceImpl implements FileService {
     final JsonObject metadata = new JsonObject();
     final JsonObject finalResponse = new JsonObject();
     LOGGER.info(directory + filePath);
-    fileSystem = fileSystem.mkdirsBlocking(directory + filePath);
+    fileSystem.mkdirsBlocking(directory + filePath);
     Iterator<FileUpload> fileUploadIterator = files.iterator();
     while (fileUploadIterator.hasNext()) {
       FileUpload fileUpload = fileUploadIterator.next();
       LOGGER.debug("uploading... " + fileUpload.fileName());
       String uuid = filename;
-      String fileExtension = FileNameUtils.getExtension(fileUpload.fileName());
+      String fileExtension = getFileExtension(fileUpload.fileName());
       String fileUploadPath = directory + "/" + filePath + "/" + uuid + "." + fileExtension;
       CopyOptions copyOptions = new CopyOptions();
       copyOptions.setReplaceExisting(true);
       fileSystem.move(fileUpload.uploadedFileName(), fileUploadPath, copyOptions,
           fileMoveHandler -> {
             if (fileMoveHandler.succeeded()) {
+              System.out.println("uploaded");
               metadata.put("fileName", fileUpload.fileName());
               metadata.put("content-type", fileUpload.contentType());
               metadata.put("content-transfer-encoding", fileUpload.contentTransferEncoding());
@@ -63,6 +64,7 @@ public class LocalStorageFileServiceImpl implements FileService {
               metadata.put("file-id", uuid + "." + fileExtension);
               promise.complete(metadata);
             } else {
+              System.out.println("failed uploading");
               LOGGER.debug("failed :" + fileMoveHandler.cause());
               finalResponse.put("type", HttpStatus.SC_INTERNAL_SERVER_ERROR);
               finalResponse.put("title", "failed to upload file.");
@@ -164,6 +166,10 @@ public class LocalStorageFileServiceImpl implements FileService {
       }
     });
     return promise.future();
+  }
+  
+  public String getFileExtension(String fileName) {
+    return FileNameUtils.getExtension(fileName);
   }
 
 }

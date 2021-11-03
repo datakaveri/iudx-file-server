@@ -33,31 +33,13 @@ public class ValidationsHandler implements Handler<RoutingContext> {
     MultiMap parameters = context.request().params();
     MultiMap headers = context.request().headers();
     List<Validator> validations = null;
-    switch (requestType) {
-      case TEMPORAL_QUERY:
-        validations = validationFactory.create(RequestType.TEMPORAL_QUERY, parameters, headers);
-        break;
-      case UPLOAD:
-        validations = validationFactory.create(RequestType.UPLOAD, parameters, headers);
-        break;
-      case DOWNLOAD:
-        validations = validationFactory.create(RequestType.DOWNLOAD, parameters, headers);
-        break;
-      case DELETE:
-        validations = validationFactory.create(RequestType.DELETE, parameters, headers);
-        break;
-      case LIST_QUERY:
-        validations = validationFactory.create(RequestType.LIST_QUERY, parameters, headers);
-        break;
-      case GEO_QUERY:
-        validations = validationFactory.create(RequestType.GEO_QUERY, parameters, headers);
-        break;
-      default:
-        break;
-    }
+    
+    validations=validationFactory.create(requestType, parameters, headers);
+    
     for (Validator validator : Optional.ofNullable(validations).orElse(Collections.emptyList())) {
       LOGGER.debug("validator :" + validator.getClass().getName());
       if (!validator.isValid()) {
+        System.out.println("false");
         error(context);
         return;
       }

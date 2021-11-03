@@ -130,11 +130,12 @@ public class QueryParams {
   public QueryParams build() {
     if (isGeoParamsPresent()) {
       if (this.geoRel != null && this.coordinates != null && this.geometry != null) {
-        if (this.geometry.equalsIgnoreCase(GEOM_POINT) && this.geoRel.equals(JSON_NEAR)) {
+        if (this.geometry.equalsIgnoreCase(GEOM_POINT) && this.geoRel.equalsIgnoreCase(JSON_NEAR)) {
           String[] coords = this.coordinates.replaceAll("\\[|\\]", "").split(",");
-          this.lat = Double.parseDouble(coords[0]);
-          this.lon = Double.parseDouble(coords[1]);
-          this.radius = Double.parseDouble(this.maxDistance);
+
+          this.setLat(Double.parseDouble(coords[0]));
+          this.setLon(Double.parseDouble(coords[1]));
+          this.setRadius(Double.parseDouble(this.maxDistance));
         }
       }
     }

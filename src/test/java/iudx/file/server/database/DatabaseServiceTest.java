@@ -1,6 +1,6 @@
 package iudx.file.server.database;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
@@ -74,7 +74,7 @@ public class DatabaseServiceTest {
     dbConfig.put("databaseUser", "elastic");
     dbConfig.put("databasePassword", "elk@elastic.in");
 
-    //dbService = new DatabaseServiceImpl(dbConfig);
+    // dbService = new DatabaseServiceImpl(dbConfig);
 
     elasticContainer = new ElasticsearchContainer(CONTAINER);
     elasticContainer.withPassword(dbConfig.getString("databasePassword"));
@@ -220,10 +220,31 @@ public class DatabaseServiceTest {
     });
   }
 
-
   @Test
   @Order(5)
   public void testTemporalQuery2(Vertx vertx, VertxTestContext testContext) {
+    assertTrue(elasticContainer.isRunning());
+    JsonObject temporalQuery = new JsonObject("{\n" +
+        "    \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\",\n"
+        +
+        "    \"timerel\": \"during\",\n" +
+        "    \"time\": \"2020-09-26T00:00:00Z\",\n" +
+        "    \"endTime\": \"2020-09-28T00:00:00Z\"\n" +
+        "}");
+
+    dbService.search(temporalQuery, QueryType.TEMPORAL, handler -> {
+      if (handler.succeeded()) {
+        testContext.failNow(handler.cause().getMessage());
+      } else {
+        testContext.completeNow();
+      }
+    });
+  }
+
+
+  @Test
+  @Order(5)
+  public void testTemporalQuery3(Vertx vertx, VertxTestContext testContext) {
     assertTrue(elasticContainer.isRunning());
     JsonObject temporalQuery = new JsonObject("{\n" +
         "    \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\",\n"
@@ -394,7 +415,10 @@ public class DatabaseServiceTest {
     });
   }
 
+ 
+
   @Test
+  @Order(10)
   public void testSearchWithInvalidParam(Vertx vertx, VertxTestContext testContext) {
     dbService.search(null, QueryType.GEO, handler -> {
       if (handler.failed()) {
@@ -408,6 +432,7 @@ public class DatabaseServiceTest {
   }
 
   @Test
+  @Order(10)
   public void testSaveWithInvalidDocument(Vertx vertx, VertxTestContext testContext) {
     dbService.save(null, handler -> {
       if (handler.failed()) {
@@ -421,7 +446,8 @@ public class DatabaseServiceTest {
   }
 
   @Test
-  public void testDeleteWithInvalidId(Vertx vertx, VertxTestContext testContext) {
+  @Order(10)
+  public void testDeleteWithNullId(Vertx vertx, VertxTestContext testContext) {
     dbService.delete(null, handler -> {
       if (handler.failed()) {
         JsonObject response = new JsonObject(handler.cause().getMessage());
@@ -432,6 +458,53 @@ public class DatabaseServiceTest {
       }
     });
   }
+
+  @Test
+  @Order(11)
+  public void closeContainer(Vertx vertx, VertxTestContext testContext) {
+    elasticContainer.close();
+    testContext.completeNow();
+  }
+
+
+  // @Test
+  // @Order(12)
+  // public void testPaginationParamsFail(Vertx vertx, VertxTestContext testContext) {
+  // assertFalse(elasticContainer.isRunning());
+  // JsonObject temporalQuery = new JsonObject("{\n" +
+  // " \"id\":
+  // \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\",\n"
+  // +
+  // " \"timerel\": \"during\",\n" +
+  // " \"time\": \"2020-09-10T00:00:00Z\",\n" +
+  // " \"endTime\": \"2020-09-15T00:00:00Z\",\n" +
+  // " \"limit\":2,\n" +
+  // " \"offset\":2\n" +
+  // "}");
+  //
+  // dbService.search(temporalQuery, QueryType.TEMPORAL, handler -> {
+  // if (handler.succeeded()) {
+  // testContext.failNow(handler.cause().getMessage());
+  // } else {
+  // testContext.completeNow();
+  // }
+  // });
+  // }
+  //
+  // @Test
+  // //@Order(12)
+  // public void testDeleteDocumentFail(Vertx vertx, VertxTestContext testContext) {
+  // String id =
+  // "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/2a553c97-e873-4983-86b6-070774e4e671.txt";
+  // dbService.delete(id, handler -> {
+  // if (handler.succeeded()) {
+  // testContext.failNow(handler.cause().getMessage());
+  // } else {
+  // testContext.completeNow();
+  // }
+  // });
+  // }
+
 
 
   @AfterAll

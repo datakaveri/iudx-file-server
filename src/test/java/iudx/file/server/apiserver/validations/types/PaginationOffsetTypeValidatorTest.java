@@ -47,6 +47,7 @@ public class PaginationOffsetTypeValidatorTest {
   static Stream<Arguments> invalidValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
+        Arguments.of(" ", true),
         Arguments.of("-1", false),
         Arguments.of("50001", false),
         Arguments.of("   ", false),

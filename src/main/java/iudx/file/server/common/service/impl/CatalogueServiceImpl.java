@@ -17,6 +17,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
@@ -46,9 +47,7 @@ public class CatalogueServiceImpl implements CatalogueService {
   @Override
   public Future<Boolean> isAllowedMetaDataField(MultiMap params) {
     Promise<Boolean> promise = Promise.promise();
-
     promise.complete(true);
-
     return promise.future();
   }
 
@@ -150,21 +149,25 @@ public class CatalogueServiceImpl implements CatalogueService {
     LOGGER.debug("isItemExist() started");
     Promise<Boolean> promise = Promise.promise();
     LOGGER.info("id : " + id);
-    webClient.get(port, host, CAT_ITEM_PATH).addQueryParam("id", id)
-        .expect(ResponsePredicate.JSON).send(responseHandler -> {
-          if (responseHandler.succeeded()) {
-            HttpResponse<Buffer> response = responseHandler.result();
-            JsonObject responseBody = response.bodyAsJsonObject();
-            if (responseBody.getString("status").equalsIgnoreCase("success")
-                && responseBody.getInteger("totalHits") > 0) {
-              promise.complete(true);
-            } else {
-              promise.fail(responseHandler.cause());
-            }
-          } else {
-            promise.fail(responseHandler.cause());
-          }
-        });
+    HttpRequest<Buffer> httpRequest = webClient.get(port, host, CAT_ITEM_PATH);
+    httpRequest.addQueryParam("id", id);
+    httpRequest.expect(ResponsePredicate.JSON);
+
+    httpRequest.send(responseHandler -> {
+      if (responseHandler.succeeded()) {
+        System.out.println("succss");
+        HttpResponse<Buffer> response = responseHandler.result();
+        JsonObject responseBody = response.bodyAsJsonObject();
+        if (responseBody.getString("status").equalsIgnoreCase("success")
+            && responseBody.getInteger("totalHits") > 0) {
+          promise.complete(true);
+        } else {
+          promise.fail(responseHandler.cause());
+        }
+      } else {
+        promise.fail(responseHandler.cause());
+      }
+    });
     return promise.future();
   }
 

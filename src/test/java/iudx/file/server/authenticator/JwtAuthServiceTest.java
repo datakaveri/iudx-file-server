@@ -1,7 +1,13 @@
 package iudx.file.server.authenticator;
 
+import static iudx.file.server.authenticator.authorization.Api.UPLOAD;
+import static iudx.file.server.authenticator.authorization.Method.*;
+import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,6 +28,7 @@ import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.file.server.authenticator.authorization.Api;
+import iudx.file.server.authenticator.authorization.AuthorizationRequest;
 import iudx.file.server.authenticator.utilities.JwtData;
 import iudx.file.server.common.WebClientFactory;
 import iudx.file.server.common.service.CatalogueService;
@@ -164,6 +171,69 @@ public class JwtAuthServiceTest {
       }
     });
   }
+  
+  
+  @Test
+  @DisplayName("fail - allow consumer access to /entities endpoint for null access")
+  public void failAccess4ConsumerTokenEntitiesAPI(VertxTestContext testContext) {
+
+    JsonObject authInfo = new JsonObject();
+
+    authInfo.put("token", consumerJwt);
+    authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("method", Method.GET);
+
+    JwtData jwtData = new JwtData();
+    jwtData.setIss("auth.test.com");
+    jwtData.setAud("file.iudx.io");
+    jwtData.setExp(1627408865L);
+    jwtData.setIat(1627408865L);
+    jwtData.setIid("ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    jwtData.setRole("consumer");
+    jwtData.setCons(null);
+
+
+    jwtAuthenticationService.validateAccess(jwtData, authInfo).onComplete(handler -> {
+      if (handler.succeeded()) {
+        testContext.failNow("success for invalid access");
+      } else {
+        testContext.completeNow();
+        
+      }
+    });
+  }
+  
+  @Test
+  @DisplayName("success - allow delegate access to /entities endpoint")
+  public void access4DelegateTokenEntitiesAPI(VertxTestContext testContext) {
+
+    JsonObject authInfo = new JsonObject();
+
+    authInfo.put("token", consumerJwt);
+    authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("method", Method.GET);
+
+    JwtData jwtData = new JwtData();
+    jwtData.setIss("auth.test.com");
+    jwtData.setAud("file.iudx.io");
+    jwtData.setExp(1627408865L);
+    jwtData.setIat(1627408865L);
+    jwtData.setIid("ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    jwtData.setRole("delegate");
+    jwtData.setCons(null);
+
+
+    jwtAuthenticationService.validateAccess(jwtData, authInfo).onComplete(handler -> {
+      if (handler.succeeded()) {
+        testContext.completeNow();
+      } else {
+        testContext.failNow("invalid access");
+      }
+    });
+  }
+  
   
   
   @Test
@@ -366,6 +436,22 @@ public class JwtAuthServiceTest {
         testContext.failNow("failed for valid id");
       }
     });
+  }
+  
+  @Test
+  @DisplayName("authRequest should not equal")
+  public void authRequestShouldNotEquals() {
+    AuthorizationRequest authR1= new AuthorizationRequest(POST, UPLOAD);
+    AuthorizationRequest authR2= new AuthorizationRequest(GET, UPLOAD);
+    assertFalse(authR1.equals(authR2));
+  }
+  
+  @Test
+  @DisplayName("authRequest should have same hashcode")
+  public void authRequestShouldhaveSamehash() {
+    AuthorizationRequest authR1= new AuthorizationRequest(POST, UPLOAD);
+    AuthorizationRequest authR2= new AuthorizationRequest(POST, UPLOAD);
+    assertEquals(authR1.hashCode(), authR2.hashCode());
   }
 
 
