@@ -40,8 +40,13 @@ public class AuthenticationVerticle extends AbstractVerticle {
                 "GGyyM2/MGF/zYTZV9Z28hHwvZgSfnbsrF36BBKnWszlOYW0AieyAUKaKdg==\n" +
                 "-----END PUBLIC KEY-----\n" +
                 ""));
-    
-    jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);
+    /* Default jwtIgnoreExpiry is false. If set through config, then that value is taken */
+    boolean jwtIgnoreExpiry = config().getBoolean("jwtIgnoreExpiry") == null ? false
+        : config().getBoolean("jwtIgnoreExpiry");
+    if (jwtIgnoreExpiry) {
+      jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);
+      LOGGER.warn("JWT ignore expiration set to true, do not set IgnoreExpiration in production!!");
+    }
     JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
 
     //@TODO: replace binder with jwt once auth server available.

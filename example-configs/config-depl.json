@@ -45,7 +45,8 @@
             "file-keystorePassword": "",
             
             "rs-keystore": "secrets/keystore-rs.jks",
-            "rs-keystorePassword": ""
+            "rs-keystorePassword": "",
+	    "jwtIgnoreExpiry": false
         },
         {
             "id": "iudx.file.server.database.DatabaseVerticle",
