@@ -159,8 +159,8 @@ public class FileServerVerticle extends AbstractVerticle {
         new ValidationsHandler(RequestType.TEMPORAL_QUERY);
     router.get(API_TEMPORAL).handler(BodyHandler.create())
         .handler(temporalQueryVaidationHandler)
-        .handler(this::query)
-        .failureHandler(validationsFailureHandler);
+        .handler(AuthHandler.create(vertx))
+        .handler(this::query).failureHandler(validationsFailureHandler);
 
     ValidationsHandler uploadValidationHandler = new ValidationsHandler(RequestType.UPLOAD);
     router.post(API_FILE_UPLOAD)
@@ -191,17 +191,23 @@ public class FileServerVerticle extends AbstractVerticle {
     ValidationsHandler geoQueryValidationHandler = new ValidationsHandler(RequestType.GEO_QUERY);
     router.get(API_SPATIAL).handler(BodyHandler.create())
         .handler(geoQueryValidationHandler)
+        .handler(AuthHandler.create(vertx))
         .handler(this::query).failureHandler(validationsFailureHandler);
 
-    router.get(API_API_SPECS).produces("application/json").handler(routingContext -> {
-      HttpServerResponse response = routingContext.response();
-      response.sendFile("docs/openapi.yaml");
-    });
+    router.get(API_API_SPECS).produces("application/json")
+        .handler(AuthHandler.create(vertx))
+        .handler(routingContext -> {
+          HttpServerResponse response = routingContext.response();
+          response.sendFile("docs/openapi.yaml");
+        });
+
     /* Get redoc */
-    router.get(API_APIS).produces("text/html").handler(routingContext -> {
-      HttpServerResponse response = routingContext.response();
-      response.sendFile("docs/apidoc.html");
-    });
+    router.get(API_APIS).produces("text/html")
+        .handler(AuthHandler.create(vertx))
+        .handler(routingContext -> {
+          HttpServerResponse response = routingContext.response();
+          response.sendFile("docs/apidoc.html");
+        });
 
 
 
@@ -243,14 +249,11 @@ public class FileServerVerticle extends AbstractVerticle {
 
     fileService = new LocalStorageFileServiceImpl(vertx.fileSystem(), directory);
     // check upload dir exist or not.
-    mkdirsIfNotExists(vertx.fileSystem(), directory, new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> event) {
-        if (event.succeeded()) {
-          LOGGER.info("directory exist/created successfully.");
-        } else {
-          LOGGER.error(event.cause().getMessage(), event.cause());
-        }
+    mkdirsIfNotExists(vertx.fileSystem(), directory, event -> {
+      if (event.succeeded()) {
+        LOGGER.info("directory exist/created successfully.");
+      } else {
+        LOGGER.error(event.cause().getMessage(), event.cause());
       }
     });
     LOGGER.info("FileServerVerticle started successfully");

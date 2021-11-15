@@ -6,9 +6,10 @@ public enum Api {
   UPLOAD("/iudx/v1/upload"),
   DOWNLOAD("/iudx/v1/download"),
   DELETE_FILE("/iudx/v1/delete"),
-  QUERY("/ngsi-ld/v1/temporal/entities");
-  
-
+  QUERY("/ngsi-ld/v1/temporal/entities"),
+  LIST("/iudx/v1/list"),
+  API_SPECS("/apis/spec"),
+  APIS("/apis");
 
   private final String endpoint;
 

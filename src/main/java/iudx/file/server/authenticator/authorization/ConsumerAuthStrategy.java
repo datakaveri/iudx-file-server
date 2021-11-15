@@ -1,7 +1,6 @@
 package iudx.file.server.authenticator.authorization;
 
-import static iudx.file.server.authenticator.authorization.Api.DOWNLOAD;
-import static iudx.file.server.authenticator.authorization.Api.QUERY;
+import static iudx.file.server.authenticator.authorization.Api.*;
 import static iudx.file.server.authenticator.authorization.Method.GET;
 
 import java.util.ArrayList;
@@ -14,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 
 import io.vertx.core.json.JsonArray;
 import iudx.file.server.authenticator.utilities.JwtData;
+import org.checkerframework.checker.units.qual.A;
 
 public class ConsumerAuthStrategy implements AuthorizationStrategy {
 
@@ -26,6 +26,9 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
     List<AuthorizationRequest> fileAccessList = new ArrayList<>();
     fileAccessList.add(new AuthorizationRequest(GET, QUERY));
     fileAccessList.add(new AuthorizationRequest(GET, DOWNLOAD));
+    fileAccessList.add(new AuthorizationRequest(GET, LIST));
+    fileAccessList.add(new AuthorizationRequest(GET,API_SPECS));
+    fileAccessList.add(new AuthorizationRequest(GET,APIS));
     consumerAuthorizationRules.put("file", fileAccessList);
 
   }
