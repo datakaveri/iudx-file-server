@@ -86,7 +86,28 @@ public class JwtAuthServiceTest {
     testContext.completeNow();
   }
 
+  JsonObject authenticationInfo() {
+    JsonObject authInfo = new JsonObject();
+    authInfo.put("token", consumerJwt);
+    authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("method", Method.GET);
 
+    return authInfo;
+  }
+
+  JwtData JWTData() {
+    JwtData jwtData = new JwtData();
+    jwtData.setIss("auth.test.com");
+    jwtData.setAud("file.iudx.io");
+    jwtData.setExp(1627408865L);
+    jwtData.setIat(1627408865L);
+    jwtData.setIid("ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    jwtData.setRole("consumer");
+    jwtData.setCons(new JsonObject().put("access", new JsonArray().add("file")));
+
+    return jwtData;
+  }
 
   @Test
   @DisplayName("decode valid jwt")
@@ -146,22 +167,9 @@ public class JwtAuthServiceTest {
   @DisplayName("success - allow consumer access to /entities endpoint for access [api,subs]")
   public void access4ConsumerTokenEntitiesAPI(VertxTestContext testContext) {
 
-    JsonObject authInfo = new JsonObject();
+    JsonObject authInfo = authenticationInfo();
 
-    authInfo.put("token", consumerJwt);
-    authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
-    authInfo.put("method", Method.GET);
-
-    JwtData jwtData = new JwtData();
-    jwtData.setIss("auth.test.com");
-    jwtData.setAud("file.iudx.io");
-    jwtData.setExp(1627408865L);
-    jwtData.setIat(1627408865L);
-    jwtData.setIid("ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
-    jwtData.setRole("consumer");
-    jwtData.setCons(new JsonObject().put("access", new JsonArray().add("file")));
-
+    JwtData jwtData = JWTData();
 
     jwtAuthenticationService.validateAccess(jwtData, authInfo).onComplete(handler -> {
       if (handler.succeeded()) {
@@ -240,22 +248,10 @@ public class JwtAuthServiceTest {
   @DisplayName("fail - consumer access to /entities endpoint for access [subs]")
   public void fail4ConsumerTokenEntitiesAPI(VertxTestContext testContext) {
 
-    JsonObject authInfo = new JsonObject();
+    JsonObject authInfo = authenticationInfo();
 
-    authInfo.put("token", consumerJwt);
-    authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
-    authInfo.put("method", Method.GET);
-
-    JwtData jwtData = new JwtData();
-    jwtData.setIss("auth.test.com");
-    jwtData.setAud("file.iudx.io");
-    jwtData.setExp(1627408865L);
-    jwtData.setIat(1627408865L);
-    jwtData.setIid("ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
-    jwtData.setRole("consumer");
+    JwtData jwtData = JWTData();
     jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api")));
-
 
     jwtAuthenticationService.validateAccess(jwtData, authInfo).onComplete(handler -> {
       if (handler.succeeded()) {
@@ -270,22 +266,10 @@ public class JwtAuthServiceTest {
   @DisplayName("success - allow provider access to all")
   public void access4ProviderTokenEntitiesAPI(VertxTestContext testContext) {
 
-    JsonObject authInfo = new JsonObject();
+    JsonObject authInfo = authenticationInfo();
 
-    authInfo.put("token", consumerJwt);
-    authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
-    authInfo.put("method", Method.GET);
-
-    JwtData jwtData = new JwtData();
-    jwtData.setIss("auth.test.com");
-    jwtData.setAud("file.iudx.io");
-    jwtData.setExp(1627408865L);
-    jwtData.setIat(1627408865L);
-    jwtData.setIid("ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    JwtData jwtData = JWTData();
     jwtData.setRole("provider");
-    jwtData.setCons(new JsonObject().put("access", new JsonArray().add("file")));
-
 
     jwtAuthenticationService.validateAccess(jwtData, authInfo).onComplete(handler -> {
       if (handler.succeeded()) {
@@ -299,12 +283,8 @@ public class JwtAuthServiceTest {
   @Test
   @DisplayName("success - token interospection allow access")
   public void successTokenInterospect(VertxTestContext testContext) {
-    JsonObject authInfo = new JsonObject();
-
-    authInfo.put("token", consumerJwt);
+    JsonObject authInfo = authenticationInfo();
     authInfo.put("id", "example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group");
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
-    authInfo.put("method", Method.GET);
 
     JsonObject request = new JsonObject();
 
@@ -323,12 +303,8 @@ public class JwtAuthServiceTest {
   @Test
   @DisplayName("fail - token interospection deny access [invalid audience]")
   public void failureTokenInterospectInvalidAudience(VertxTestContext testContext) {
-    JsonObject authInfo = new JsonObject();
-
-    authInfo.put("token", consumerJwt);
+    JsonObject authInfo = authenticationInfo();
     authInfo.put("id", "example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group");
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
-    authInfo.put("method", Method.GET);
 
     JsonObject request = new JsonObject();
 
@@ -350,12 +326,8 @@ public class JwtAuthServiceTest {
   @Test
   @DisplayName("fail - token interospection deny access [invalid resource]")
   public void failureTokenInterospectInvalidResource(VertxTestContext testContext) {
-    JsonObject authInfo = new JsonObject();
-
-    authInfo.put("token", consumerJwt);
+    JsonObject authInfo = authenticationInfo();
     authInfo.put("id", "example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group");
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
-    authInfo.put("method", Method.GET);
 
     JsonObject request = new JsonObject();
 
