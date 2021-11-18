@@ -247,11 +247,14 @@ public class FileServerVerticle extends AbstractVerticle {
 
     fileService = new LocalStorageFileServiceImpl(vertx.fileSystem(), directory);
     // check upload dir exist or not.
-    mkdirsIfNotExists(vertx.fileSystem(), directory, event -> {
-      if (event.succeeded()) {
-        LOGGER.info("directory exist/created successfully.");
-      } else {
-        LOGGER.error(event.cause().getMessage(), event.cause());
+    mkdirsIfNotExists(vertx.fileSystem(), directory, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> event) {
+        if (event.succeeded()) {
+          LOGGER.info("directory exist/created successfully.");
+        } else {
+          LOGGER.error(event.cause().getMessage(), event.cause());
+        }
       }
     });
     LOGGER.info("FileServerVerticle started successfully");
