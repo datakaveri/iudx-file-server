@@ -21,10 +21,15 @@ public class AuthHandler implements Handler<RoutingContext> {
   private static AuthenticationService authenticator;
   private final List<String> noUserAuthRequired =
       List.of(API_API_SPECS, API_APIS, API_LIST_METADATA);
+  
+  public AuthHandler(AuthenticationService authenticator) {
+    this.authenticator=authenticator;
+  }
+  
 
   public static AuthHandler create(Vertx vertx) {
     authenticator = AuthenticationService.createProxy(vertx, AUTHENTICATOR_SERVICE_ADDRESS);
-    return new AuthHandler();
+    return new AuthHandler(authenticator);
   }
 
   @Override

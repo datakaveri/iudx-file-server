@@ -59,15 +59,15 @@ public class ResponseBuilder {
     return this;
   }
   
-  public ResponseBuilder setFromParam(int from) {
-    response.put(PARAM_OFFSET, from);
-    return this;
-  }
-  
-  public ResponseBuilder setSizeParam(int size) {
-    response.put(PARAM_LIMIT, size);
-    return this;
-  }
+//  public ResponseBuilder setFromParam(int from) {
+//    response.put(PARAM_OFFSET, from);
+//    return this;
+//  }
+//  
+//  public ResponseBuilder setSizeParam(int size) {
+//    response.put(PARAM_LIMIT, size);
+//    return this;
+//  }
   
   public ResponseBuilder setTotalDocsCount(int totalDocs) {
    response.put("totalHits", totalDocs);

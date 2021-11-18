@@ -102,12 +102,4 @@ public final class JwtData {
     this.iat = iat;
   }
 
-  @Override
-  public String toString() {
-    return "JwtData [access_token=" + access_token + ", sub=" + sub + ", iss=" + iss + ", aud=" + aud + ", iid=" + iid
-        + ", role=" + role + ", cons=" + cons + "]";
-  }
-
-
-
 }

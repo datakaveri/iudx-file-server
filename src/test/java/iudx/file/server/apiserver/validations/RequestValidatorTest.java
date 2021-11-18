@@ -1,6 +1,11 @@
 package iudx.file.server.apiserver.validations;
 
-import static iudx.file.server.apiserver.utilities.Constants.*;
+import static iudx.file.server.apiserver.utilities.Constants.PARAM_COORDINATES;
+import static iudx.file.server.apiserver.utilities.Constants.PARAM_END_TIME;
+import static iudx.file.server.apiserver.utilities.Constants.PARAM_GEOMETRY;
+import static iudx.file.server.apiserver.utilities.Constants.PARAM_START_TIME;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -9,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
@@ -16,11 +22,24 @@ import io.vertx.junit5.VertxTestContext;
 public class RequestValidatorTest {
 
   static RequestValidator requestValidator;
+  static ContentTypeValidator contentTypeValidator;
+  
+  static JsonObject allowedContentType=new JsonObject("{\n" + 
+      "                \"text/plain\": \"txt\",\n" + 
+      "                \"text/csv\": \"csv\",\n" + 
+      "                \"application/pdf\": \"pdf\",\n" + 
+      "                \"video/mp4\": \"mp4\",\n" + 
+      "                \"application/zip\": \"zip\",\n" + 
+      "                \"application/x-7z-compressed\": \"7z\",\n" + 
+      "                \"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\": \"xlsx\",\n" + 
+      "                \"application/vnd.openxmlformats-officedocument.wordprocessingml.document\": \"docx\"\n" + 
+      "            }");
 
   @BeforeAll
   @DisplayName("Initialize Vertx and deploy Auth Verticle")
   static void init(Vertx vertx, VertxTestContext testContext) {
     requestValidator = new RequestValidator();
+    contentTypeValidator=new ContentTypeValidator(allowedContentType);
     testContext.completeNow();
   }
 
@@ -100,6 +119,18 @@ public class RequestValidatorTest {
         testContext.completeNow();
       }
     });
+  }
+  
+  @Test
+  @DisplayName("Invalid content type")
+  public void invalidContentType() {
+    assertFalse(contentTypeValidator.isValid("application/jsonp"));
+  }
+  
+  @Test
+  @DisplayName("valid content type")
+  public void validContentType() {
+    assertTrue(contentTypeValidator.isValid("text/plain"));
   }
 
 }
