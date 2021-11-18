@@ -73,7 +73,7 @@ public class CatalogueServiceTest {
     when(asyncResult.succeeded()).thenReturn(true);
     when(asyncResult.result()).thenReturn(response);
     when(response.bodyAsJsonObject()).thenReturn(new JsonObject()
-        .put("status", "success")
+        .put("type", "urn:dx:cat:Success")
         .put("totalHits", 1));
 
 
