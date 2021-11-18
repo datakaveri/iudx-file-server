@@ -7,6 +7,7 @@ public enum Api {
   DOWNLOAD("/iudx/v1/download"),
   DELETE_FILE("/iudx/v1/delete"),
   QUERY("/ngsi-ld/v1/temporal/entities"),
+  SPATIAL("/ngsi-ld/v1/entities"),
   LIST("/iudx/v1/list"),
   API_SPECS("/apis/spec"),
   APIS("/apis");

@@ -195,7 +195,6 @@ public class FileServerVerticle extends AbstractVerticle {
         .handler(this::query).failureHandler(validationsFailureHandler);
 
     router.get(API_API_SPECS).produces("application/json")
-        .handler(AuthHandler.create(vertx))
         .handler(routingContext -> {
           HttpServerResponse response = routingContext.response();
           response.sendFile("docs/openapi.yaml");
@@ -203,7 +202,6 @@ public class FileServerVerticle extends AbstractVerticle {
 
     /* Get redoc */
     router.get(API_APIS).produces("text/html")
-        .handler(AuthHandler.create(vertx))
         .handler(routingContext -> {
           HttpServerResponse response = routingContext.response();
           response.sendFile("docs/apidoc.html");
