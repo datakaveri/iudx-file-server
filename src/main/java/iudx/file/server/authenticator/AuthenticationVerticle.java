@@ -45,7 +45,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
         : config().getBoolean("jwtIgnoreExpiry");
     if (jwtIgnoreExpiry) {
       jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);
-      LOGGER.warn("JWT ignore expiration set to true, do not set IgnoreExpiration in production!!");
+      //LOGGER.warn("JWT ignore expiration set to true, do not set IgnoreExpiration in production!!");
     }
     JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
 
