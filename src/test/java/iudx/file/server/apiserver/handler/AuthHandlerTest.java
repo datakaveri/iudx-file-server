@@ -54,17 +54,6 @@ public class AuthHandlerTest {
   }
 
   @Test
-  public void testUrlBypassing() {
-    AuthenticationService authService = mock(AuthenticationService.class);
-    doReturn("/apis/spec").when(request).path();
-
-    new AuthHandler(authService).handle(event);
-
-    verify(request, times(1)).path();
-    verify(event, times(1)).next();
-  }
-
-  @Test
   @DisplayName("fail - auth handler fail when null token passed")
   public void failAuthHandlerTest() {
     AuthenticationService authService = mock(AuthenticationService.class);
