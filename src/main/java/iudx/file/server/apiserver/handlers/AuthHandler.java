@@ -19,13 +19,11 @@ public class AuthHandler implements Handler<RoutingContext> {
   private static final String AUTHENTICATOR_SERVICE_ADDRESS = AUTH_SERVICE_ADDRESS;
 
   private static AuthenticationService authenticator;
-  private final List<String> noUserAuthRequired =
-      List.of(API_API_SPECS, API_APIS, API_LIST_METADATA);
-  
+
   public AuthHandler(AuthenticationService authenticator) {
     this.authenticator=authenticator;
   }
-  
+
 
   public static AuthHandler create(Vertx vertx) {
     authenticator = AuthenticationService.createProxy(vertx, AUTHENTICATOR_SERVICE_ADDRESS);
@@ -36,13 +34,7 @@ public class AuthHandler implements Handler<RoutingContext> {
   public void handle(RoutingContext context) {
     HttpServerRequest request = context.request();
 
-    // bypassing handler for /token endpoint
-    if (noUserAuthRequired.contains(request.path())) {
-      context.next();
-      return;
-    }
-
-    String token = request.getHeader("token");
+    String token = request.getHeader(HEADER_TOKEN);
     final String path = request.path();
     LOGGER.debug("path : " + path);
     final String method = context.request().method().toString();
