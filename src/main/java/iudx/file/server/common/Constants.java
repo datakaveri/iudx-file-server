@@ -3,6 +3,7 @@ package iudx.file.server.common;
 public class Constants {
   public static final String DB_SERVICE_ADDRESS = "iudx.file.database.service";
   public static final String AUTH_SERVICE_ADDRESS = "iudx.file.auth.service";
+  public static final String AUDIT_SERVICE_ADDRESS = "iudx.file.auditing.service";
   
   public static final String GEOM_POINT="point";
   public static final String GEOM_POLYGON="polygon";
