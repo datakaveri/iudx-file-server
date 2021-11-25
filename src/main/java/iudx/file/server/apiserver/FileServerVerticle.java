@@ -333,7 +333,6 @@ public class FileServerVerticle extends AbstractVerticle {
         response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
             .setStatusCode(HttpStatus.SC_OK)
             .end(responseJson.toString());
-        // TODO: call audit service here
         updateAuditTable(auditParams);
       } else {
         processResponse(response, uploadHandler.cause().getMessage());
@@ -376,7 +375,6 @@ public class FileServerVerticle extends AbstractVerticle {
         response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
             .setStatusCode(HttpStatus.SC_OK)
             .end(responseJson.toString());
-        // TODO: call audit service here
         updateAuditTable(auditParams);
       } else {
         LOGGER.debug(handler.cause());
@@ -488,8 +486,8 @@ public class FileServerVerticle extends AbstractVerticle {
 
     JsonObject auditParams = new JsonObject()
             .put("resourceID", query.getString("id"))
-                    .put("api", context.request().path())
-                            .put("userID", context.data().get("AuthResult"));
+            .put("api", context.request().path())
+            .put("userID", context.data().get("AuthResult"));
 
     queryParamsValidator.compose(paramsValidator -> {
       return allowedFilters;
@@ -538,8 +536,6 @@ public class FileServerVerticle extends AbstractVerticle {
         response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
             .setStatusCode(HttpStatus.SC_OK)
             .end(queryHandler.result().toString());
-
-        // TODO: call audit service here
         updateAuditTable(auditParams);
       } else {
         processResponse(response, queryHandler.cause().getMessage());
@@ -590,12 +586,17 @@ public class FileServerVerticle extends AbstractVerticle {
     HttpServerResponse response = context.response();
     String id = request.getParam("id");
     JsonObject query = new JsonObject().put("id", id);
+    JsonObject auditParams = new JsonObject()
+            .put("api",request.path())
+            .put("userID", context.data().get("AuthResult"))
+            .put("resourceID",id);
+
     database.search(query, QueryType.LIST, queryHandler -> {
       if (queryHandler.succeeded()) {
         response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
             .setStatusCode(HttpStatus.SC_OK)
             .end(queryHandler.result().toString());
-        // TODO: call audit service here
+        updateAuditTable(auditParams);
       } else {
         processResponse(response, queryHandler.cause().getMessage());
       }
@@ -617,7 +618,6 @@ public class FileServerVerticle extends AbstractVerticle {
                     .title(deleteResult.getString("title"))
                     .details("File with id : " + id + " deleted successfully").build().toJson()
                     .toString());
-            // TODO: call audit service here
             updateAuditTable(auditParams);
           } else {
             processResponse(response, handler.cause().getMessage());
@@ -640,7 +640,6 @@ public class FileServerVerticle extends AbstractVerticle {
                     .title(deleteResult.getString("title"))
                     .details("File with id : " + id + " deleted successfully").build().toJson()
                     .toString());
-            // TODO: call audit service here
             updateAuditTable(auditParams);
           } else {
             processResponse(response, handler.cause().getMessage());
@@ -750,7 +749,7 @@ public class FileServerVerticle extends AbstractVerticle {
   /**
    * function to handle call to audit service
    *
-   * @param auditInfo contains item-id, api-endpoint and the HTTP method.
+   * @param auditInfo contains userid, api-endpoint and the resourceid
    */
   private void updateAuditTable(JsonObject auditInfo) {
     LOGGER.info("Updating audit table on successful transaction");
