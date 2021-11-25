@@ -209,10 +209,9 @@ public class AuditingServiceTest {
             })));
   }
 
-  // TODO: write equivalent test for invalid end time
   @Test
-  @DisplayName("Failure-testing Read query for Invalid date time format")
-  void readForInvalidDateTimeFormat(VertxTestContext vertxTestContext) {
+  @DisplayName("Failure-testing Read query for Invalid start time date time format")
+  void readForInvalidStartDateTimeFormat(VertxTestContext vertxTestContext) {
     JsonObject request = readRequest();
     request.put(START_TIME, "1970-01-0105:30:00+05:30[Asia/Kolkata]");
 
@@ -229,6 +228,24 @@ public class AuditingServiceTest {
             })));
   }
 
+  @Test
+  @DisplayName("Failure-testing Read query for Invalid end time date time format")
+  void readForInvalidEndDateTimeFormat(VertxTestContext vertxTestContext) {
+    JsonObject request = readRequest();
+    request.put(END_TIME, "2021-11-2405:30:00+05:30[Asia/Kolkata]");
+
+    auditingService.executeReadQuery(
+            request,
+            vertxTestContext.failing(
+                    response ->
+                            vertxTestContext.verify(
+                                    () -> {
+                                      assertEquals(
+                                              INVALID_DATE_TIME,
+                                              new JsonObject(response.getMessage()).getString(DETAIL));
+                                      vertxTestContext.completeNow();
+                                    })));
+  }
   @Test
   @DisplayName("Failure-testing Read query for empty response")
   void readforEmptyResponse(VertxTestContext vertxTestContext) {

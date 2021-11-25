@@ -23,6 +23,7 @@ import static iudx.file.server.apiserver.utilities.Constants.MAX_SIZE;
 import static iudx.file.server.apiserver.utilities.Constants.PARAM_ID;
 import static iudx.file.server.apiserver.utilities.Utilities.getFileIdComponents;
 import static iudx.file.server.apiserver.utilities.Utilities.getQueryType;
+import static iudx.file.server.common.Constants.AUDIT_SERVICE_ADDRESS;
 import static iudx.file.server.common.Constants.DB_SERVICE_ADDRESS;
 
 import java.util.HashSet;
@@ -73,6 +74,7 @@ import iudx.file.server.common.WebClientFactory;
 import iudx.file.server.common.service.CatalogueService;
 import iudx.file.server.common.service.impl.CatalogueServiceImpl;
 import iudx.file.server.database.DatabaseService;
+import iudx.file.server.auditing.AuditingService;
 
 /**
  * The File Server API Verticle.
@@ -105,6 +107,7 @@ public class FileServerVerticle extends AbstractVerticle {
   // private FileServer fileServer;
   private FileService fileService;
   private DatabaseService database;
+  private AuditingService auditingService;
   private String truststore, truststorePassword;
 
   private String directory;
@@ -114,6 +117,7 @@ public class FileServerVerticle extends AbstractVerticle {
   private ContentTypeValidator contentTypeValidator;
   private WebClientFactory webClientFactory;
   private CatalogueService catalogueService;
+  private String userId;
 
   private final ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
 
@@ -246,6 +250,8 @@ public class FileServerVerticle extends AbstractVerticle {
     database = DatabaseService.createProxy(vertx, DATABASE_SERVICE_ADDRESS);
 
     fileService = new LocalStorageFileServiceImpl(vertx.fileSystem(), directory);
+
+    auditingService = AuditingService.createProxy(vertx, AUDIT_SERVICE_ADDRESS);
     // check upload dir exist or not.
     mkdirsIfNotExists(vertx.fileSystem(), directory, new Handler<AsyncResult<Void>>() {
       @Override
@@ -320,6 +326,7 @@ public class FileServerVerticle extends AbstractVerticle {
         response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
             .setStatusCode(HttpStatus.SC_OK)
             .end(responseJson.toString());
+        // TODO: call audit service here
       } else {
         processResponse(response, uploadHandler.cause().getMessage());
       }
@@ -339,7 +346,6 @@ public class FileServerVerticle extends AbstractVerticle {
       String filePath, String id) {
     JsonObject uploadJson = new JsonObject();
     JsonObject responseJson = new JsonObject();
-
     Future<Boolean> requestValidatorFuture = requestValidator.isValidArchiveRequest(params);
 
     requestValidatorFuture.compose(requestValidatorhandler -> {
@@ -362,6 +368,7 @@ public class FileServerVerticle extends AbstractVerticle {
         response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
             .setStatusCode(HttpStatus.SC_OK)
             .end(responseJson.toString());
+        // TODO: call audit service here
       } else {
         LOGGER.debug(handler.cause());
         if (uploadJson.containsKey("upload") && uploadJson.getBoolean("upload")) {
@@ -428,6 +435,12 @@ public class FileServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     response.setChunked(true);
     String id = request.getParam("file-id");
+
+    JsonObject auditParams = new JsonObject()
+            .put("api", request.path())
+            .put("userID", routingContext.data().get("AuthResult"))
+            .put("resourceID", request.getParam("file-id"));
+
     String fileIdComponent[] = getFileIdComponents(id);
     StringBuilder uploadDir = new StringBuilder();
     uploadDir.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
@@ -444,6 +457,8 @@ public class FileServerVerticle extends AbstractVerticle {
           if (handler.failed()) {
             processResponse(response, handler.cause().getMessage());
           }
+          // TODO: call audit service here
+          updateAuditTable(auditParams);
           // do nothing response is already written and file is served using content-disposition.
         });
   }
@@ -463,6 +478,11 @@ public class FileServerVerticle extends AbstractVerticle {
     QueryParams params = query.mapTo(QueryParams.class).build();
     QueryType type = getQueryType(params);
 
+    JsonObject auditParams = new JsonObject()
+            .put("resourceID", query.getString("id"))
+                    .put("api", context.request().path())
+                            .put("userID", context.data().get("AuthResult"));
+
     queryParamsValidator.compose(paramsValidator -> {
       return allowedFilters;
     }).onComplete(handler -> {
@@ -479,7 +499,7 @@ public class FileServerVerticle extends AbstractVerticle {
           isValidFilters = true;
         }
         if (isValidFilters) {
-          executeSearch(JsonObject.mapFrom(params), type, response);
+          executeSearch(JsonObject.mapFrom(params), type, response, auditParams);
         } else {
           response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
               .setStatusCode(HttpStatus.SC_OK)
@@ -504,13 +524,15 @@ public class FileServerVerticle extends AbstractVerticle {
     });
   }
 
-  private void executeSearch(JsonObject json, QueryType type, HttpServerResponse response) {
+  private void executeSearch(JsonObject json, QueryType type, HttpServerResponse response, JsonObject auditParams) {
     database.search(json, type, queryHandler -> {
       if (queryHandler.succeeded()) {
         response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
             .setStatusCode(HttpStatus.SC_OK)
             .end(queryHandler.result().toString());
 
+        // TODO: call audit service here
+        updateAuditTable(auditParams);
       } else {
         processResponse(response, queryHandler.cause().getMessage());
       }
@@ -559,7 +581,7 @@ public class FileServerVerticle extends AbstractVerticle {
         response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
             .setStatusCode(HttpStatus.SC_OK)
             .end(queryHandler.result().toString());
-
+        // TODO: call audit service here
       } else {
         processResponse(response, queryHandler.cause().getMessage());
       }
@@ -581,6 +603,7 @@ public class FileServerVerticle extends AbstractVerticle {
                     .title(deleteResult.getString("title"))
                     .details("File with id : " + id + " deleted successfully").build().toJson()
                     .toString());
+            // TODO: call audit service here
           } else {
             processResponse(response, handler.cause().getMessage());
           }
@@ -602,6 +625,7 @@ public class FileServerVerticle extends AbstractVerticle {
                     .title(deleteResult.getString("title"))
                     .details("File with id : " + id + " deleted successfully").build().toJson()
                     .toString());
+            // TODO: call audit service here
           } else {
             processResponse(response, handler.cause().getMessage());
           }
@@ -705,6 +729,22 @@ public class FileServerVerticle extends AbstractVerticle {
 
     }
     return Optional.of(queryParams);
+  }
+
+  /**
+   * function to handle call to audit service
+   *
+   * @param auditInfo contains item-id, api-endpoint and the HTTP method.
+   */
+  private void updateAuditTable(JsonObject auditInfo) {
+    LOGGER.info("Updating audit table on successful transaction");
+    auditingService.executeWriteQuery(auditInfo, auditHandler -> {
+      if(auditHandler.succeeded()) {
+        LOGGER.info("audit table updated");
+      } else {
+        LOGGER.error("failed to update audit table");
+      }
+    });
   }
 
   @Override
