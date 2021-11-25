@@ -105,9 +105,7 @@ public class LocalStorageFileServiceImpl implements FileService {
             response.putHeader("content-type", "application/octet-stream");
             response.putHeader("Content-Disposition", "attachment; filename=" + fileName);
             asyncFile.pipeTo(response, pipeHandler -> {
-              asyncFile.endHandler(avoid -> {
                 promise.complete();
-              });
             });
           });
         } else {
