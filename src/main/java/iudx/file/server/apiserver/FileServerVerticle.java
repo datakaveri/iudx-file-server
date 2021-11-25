@@ -272,12 +272,19 @@ public class FileServerVerticle extends AbstractVerticle {
    */
   public void upload(RoutingContext routingContext) {
     LOGGER.debug("upload() started.");
+    HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    MultiMap formParam = routingContext.request().formAttributes();
+    MultiMap formParam = request.formAttributes();
     String id = formParam.get("id");
     Boolean isSample = Boolean.valueOf(formParam.get("isSample"));
     response.putHeader("content-type", "application/json");
     LOGGER.debug("id :" + id);
+
+    JsonObject auditParams = new JsonObject()
+            .put("api", request.path())
+            .put("userID", routingContext.data().get("AuthResult"))
+            .put("resourceID", id);
+
     String fileIdComponent[] = getFileIdComponents(id);
     StringBuilder uploadPath = new StringBuilder();
     uploadPath.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
@@ -295,9 +302,9 @@ public class FileServerVerticle extends AbstractVerticle {
     if (isSample) {
       if (fileIdComponent.length >= 5)
         uploadPath.append("/" + fileIdComponent[4]);
-      sampleFileUpload(response, files, "sample", uploadPath.toString(), id);
+      sampleFileUpload(response, files, "sample", uploadPath.toString(), id, auditParams);
     } else {
-      archiveFileUpload(response, formParam, files, uploadPath.toString(), id);
+      archiveFileUpload(response, formParam, files, uploadPath.toString(), id, auditParams);
     }
   }
 
@@ -312,7 +319,7 @@ public class FileServerVerticle extends AbstractVerticle {
    */
   private void sampleFileUpload(HttpServerResponse response, Set<FileUpload> files,
       String fileName,
-      String filePath, String id) {
+      String filePath, String id, JsonObject auditParams) {
 
     Future<JsonObject> uploadFuture = fileService.upload(files, fileName, filePath);
 
@@ -327,6 +334,7 @@ public class FileServerVerticle extends AbstractVerticle {
             .setStatusCode(HttpStatus.SC_OK)
             .end(responseJson.toString());
         // TODO: call audit service here
+        updateAuditTable(auditParams);
       } else {
         processResponse(response, uploadHandler.cause().getMessage());
       }
@@ -343,7 +351,7 @@ public class FileServerVerticle extends AbstractVerticle {
    */
   private void archiveFileUpload(HttpServerResponse response, MultiMap params,
       Set<FileUpload> files,
-      String filePath, String id) {
+      String filePath, String id, JsonObject auditParams) {
     JsonObject uploadJson = new JsonObject();
     JsonObject responseJson = new JsonObject();
     Future<Boolean> requestValidatorFuture = requestValidator.isValidArchiveRequest(params);
@@ -369,6 +377,7 @@ public class FileServerVerticle extends AbstractVerticle {
             .setStatusCode(HttpStatus.SC_OK)
             .end(responseJson.toString());
         // TODO: call audit service here
+        updateAuditTable(auditParams);
       } else {
         LOGGER.debug(handler.cause());
         if (uploadJson.containsKey("upload") && uploadJson.getBoolean("upload")) {
@@ -439,7 +448,7 @@ public class FileServerVerticle extends AbstractVerticle {
     JsonObject auditParams = new JsonObject()
             .put("api", request.path())
             .put("userID", routingContext.data().get("AuthResult"))
-            .put("resourceID", request.getParam("file-id"));
+            .put("resourceID", id);
 
     String fileIdComponent[] = getFileIdComponents(id);
     StringBuilder uploadDir = new StringBuilder();
@@ -457,7 +466,6 @@ public class FileServerVerticle extends AbstractVerticle {
           if (handler.failed()) {
             processResponse(response, handler.cause().getMessage());
           }
-          // TODO: call audit service here
           updateAuditTable(auditParams);
           // do nothing response is already written and file is served using content-disposition.
         });
@@ -548,6 +556,12 @@ public class FileServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     response.putHeader("content-type", "application/json");
     String id = request.getParam("file-id");
+
+    JsonObject auditParams = new JsonObject()
+            .put("api", request.path())
+            .put("userID", routingContext.data().get("AuthResult"))
+            .put("resourceID", id);
+
     String fileIdComponent[] = getFileIdComponents(id);
     StringBuilder uploadDir = new StringBuilder();
     uploadDir.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
@@ -565,9 +579,9 @@ public class FileServerVerticle extends AbstractVerticle {
     LOGGER.info(uploadDir);
     LOGGER.info("is archieve : " + isArchiveFile);
     if (isArchiveFile) {
-      deleteArchiveFile(response, id, fileUUID, uploadDir.toString());
+      deleteArchiveFile(response, id, fileUUID, uploadDir.toString(), auditParams);
     } else {
-      deleteSampleFile(response, id, fileUUID, uploadDir.toString());
+      deleteSampleFile(response, id, fileUUID, uploadDir.toString(), auditParams);
     }
   }
 
@@ -590,7 +604,7 @@ public class FileServerVerticle extends AbstractVerticle {
   }
 
   private void deleteSampleFile(HttpServerResponse response, String id, String fileUUID,
-      String uploadDir) {
+      String uploadDir, JsonObject auditParams) {
     LOGGER.info("delete sample file");
     fileService.delete(fileUUID, uploadDir.toString())
         .onComplete(handler -> {
@@ -604,6 +618,7 @@ public class FileServerVerticle extends AbstractVerticle {
                     .details("File with id : " + id + " deleted successfully").build().toJson()
                     .toString());
             // TODO: call audit service here
+            updateAuditTable(auditParams);
           } else {
             processResponse(response, handler.cause().getMessage());
           }
@@ -611,7 +626,7 @@ public class FileServerVerticle extends AbstractVerticle {
   }
 
   private void deleteArchiveFile(HttpServerResponse response, String id, String fileUUID,
-      String uploadDir) {
+      String uploadDir, JsonObject auditParams) {
     database.delete(id, dbDeleteHandler -> {
       if (dbDeleteHandler.succeeded()) {
         fileService.delete(fileUUID, uploadDir.toString()).onComplete(handler -> {
@@ -626,6 +641,7 @@ public class FileServerVerticle extends AbstractVerticle {
                     .details("File with id : " + id + " deleted successfully").build().toJson()
                     .toString());
             // TODO: call audit service here
+            updateAuditTable(auditParams);
           } else {
             processResponse(response, handler.cause().getMessage());
           }

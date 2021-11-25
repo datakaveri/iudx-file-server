@@ -79,7 +79,7 @@ public class AuthHandler implements Handler<RoutingContext> {
     authenticator.tokenInterospect(requestJson, authInfo, handler -> {
       if (handler.succeeded()) {
         LOGGER.info("auth success.");
-        context.data().put("AuthResult",handler.result().getString("consumer"));
+        context.data().put("AuthResult",handler.result().getString("userID"));
       } else {
         LOGGER.error("Authentication failed [" + handler.cause().getMessage() + "]");
         processUnauthorized(context);
