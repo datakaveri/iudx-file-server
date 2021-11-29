@@ -18,7 +18,7 @@ public class QueryBuilder {
 
   public JsonObject buildWriteQuery(JsonObject request) {
 
-    if(!request.containsKey(API) ||!request.containsKey(USER_ID) || !request.containsKey(RESOURCE_ID)) {
+    if(!request.containsKey(API) ||!request.containsKey(USER_ID) || !request.containsKey(RESOURCE_ID) || !request.containsKey(PROVIDER_ID)) {
       return new JsonObject().put(ERROR,DATA_NOT_FOUND);
     }
 
@@ -26,6 +26,7 @@ public class QueryBuilder {
     String userId = request.getString(USER_ID);
     String api = request.getString(API);
     String resourceID = request.getString(RESOURCE_ID);
+    String providerID = request.getString(PROVIDER_ID);
     ZonedDateTime zst = ZonedDateTime.now();
     LOGGER.info("TIME ZST: " + zst);
     long time = getEpochTime(zst);
@@ -36,10 +37,11 @@ public class QueryBuilder {
                             .replace("$1", primaryKey)
                             .replace("$2", userId)
                             .replace("$3", api)
-                            .replace("$6", Long.toString(time))
+                            .replace("$7", Long.toString(time))
                             .replace("$4", resourceID)
-                            .replace("$5", zst.toString()));
-    LOGGER.info("Info: Query " + query);
+                            .replace("$5", providerID)
+                            .replace("$6", zst.toString()));
+    LOGGER.info("Info: Query: " + query);
     return new JsonObject().put(QUERY_KEY, query);
   }
 

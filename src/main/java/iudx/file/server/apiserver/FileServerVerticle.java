@@ -463,8 +463,9 @@ public class FileServerVerticle extends AbstractVerticle {
         .onComplete(handler -> {
           if (handler.failed()) {
             processResponse(response, handler.cause().getMessage());
+          } else {
+            updateAuditTable(auditParams);
           }
-          updateAuditTable(auditParams);
           // do nothing response is already written and file is served using content-disposition.
         });
   }
@@ -753,6 +754,12 @@ public class FileServerVerticle extends AbstractVerticle {
    */
   private void updateAuditTable(JsonObject auditInfo) {
     LOGGER.info("Updating audit table on successful transaction");
+
+    /* getting provider id from the resource id */
+    String resourceID = auditInfo.getString("resourceID");
+    String providerID = resourceID.substring(0,resourceID.indexOf('/',resourceID.indexOf('/')+1));
+    auditInfo.put("providerID",providerID);
+
     auditingService.executeWriteQuery(auditInfo, auditHandler -> {
       if(auditHandler.succeeded()) {
         LOGGER.info("audit table updated");

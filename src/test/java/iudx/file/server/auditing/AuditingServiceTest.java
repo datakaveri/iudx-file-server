@@ -51,6 +51,7 @@ public class AuditingServiceTest {
     jsonObject
             .put(API,"/ngsi-ld/v1/temporal/entities")
             .put(USER_ID,"pranav-testing-stuff")
+            .put(PROVIDER_ID, "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86")
             .put(RESOURCE_ID,"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta");
     return jsonObject;
   }
@@ -100,7 +101,7 @@ public class AuditingServiceTest {
 
   @Test
   @DisplayName("Testing write query w/o RESOURCE ID")
-  void writeForMissingIUDXid(VertxTestContext vertxTestContext){
+  void writeForMissingResourceid(VertxTestContext vertxTestContext){
     JsonObject request = writeRequest();
     request.remove(RESOURCE_ID);
     auditingService.executeWriteQuery(
@@ -113,6 +114,23 @@ public class AuditingServiceTest {
             assertEquals(DATA_NOT_FOUND, new JsonObject(response.getMessage()).getString(DETAIL));
             vertxTestContext.completeNow();
           })));
+  }
+
+  @Test
+  @DisplayName("Testing write query w/o PROVIDER ID")
+  void writeForMissingProviderid(VertxTestContext vertxTestContext){
+    JsonObject request = writeRequest();
+    request.remove(PROVIDER_ID);
+    auditingService.executeWriteQuery(
+            request,
+            vertxTestContext.failing(
+                    response ->
+                            vertxTestContext.verify(
+                                    () -> {
+                                      LOGGER.info("RESPONSE" + new JsonObject(response.getMessage()).getString(DETAIL));
+                                      assertEquals(DATA_NOT_FOUND, new JsonObject(response.getMessage()).getString(DETAIL));
+                                      vertxTestContext.completeNow();
+                                    })));
   }
 
   @Test

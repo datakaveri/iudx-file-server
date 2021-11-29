@@ -167,6 +167,7 @@ public class AuditingServiceImpl implements AuditingService{
             .put(API,rs.getString(API_COLUMN_NAME))
             .put(USER_ID, rs.getString(USERID_COLUMN_NAME))
             .put(RESOURCE_ID,rs.getString(RESOURCE_COLUMN_NAME))
+            .put(PROVIDER_ID,rs.getString(PROVIDER_COLUMN_NAME))
             .put(TIME,rs.getString(TIME_COLUMN_NAME));
 
     return entries;

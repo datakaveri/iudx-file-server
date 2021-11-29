@@ -55,6 +55,17 @@
             "databaseUser": "elastic",
             "databasePassword": "elk@elastic.in",
             "databaseUsed": ""
+        },
+        {
+
+            "id": "iudx.file.server.auditing.AuditingVerticle",
+            "verticleInstances": 1,
+            "auditingDatabaseIP": "",
+            "auditingDatabasePort": 32508,
+            "auditingDatabaseName": "",
+            "auditingDatabaseUserName": "",
+            "auditingDatabasePassword": "",
+            "auditingPoolSize": 25
         }
     ]
 }

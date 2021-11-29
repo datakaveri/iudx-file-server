@@ -30,16 +30,18 @@ public class Constants {
   public static final String USER_ID = "userID";
   public static final String API = "api";
   public static final String RESOURCE_ID = "resourceID";
+  public static final String PROVIDER_ID = "providerID";
   public static final String WRITE_QUERY =
-          "INSERT INTO fsauditingtable (id, userId, api, resourceid, time, epochtime) VALUES ('$1','$2','$3','$4','$5',$6)";
+          "INSERT INTO fsauditingtable2 (id, userId, api, resourceid, providerid, time, epochtime) VALUES ('$1','$2','$3','$4','$5','$6', $7)";
   public static final String READ_QUERY =
-          "SELECT userId, api, resourceid, time from fsauditingtable where userId='$1'";
+          "SELECT userId, api, resourceid, providerid, time from fsauditingtable2 where userId='$1'";
   public static final String START_TIME_QUERY = " and epochtime>=$2";
   public static final String END_TIME_QUERY = " and epochtime<=$3";
   public static final String API_QUERY = " and api='$4'";
   //TODO: populate these fields ->
-  public static final String API_COLUMN_NAME = "(defaultdb.fsauditingtable.api)";
-  public static final String USERID_COLUMN_NAME = "(defaultdb.fsauditingtable.userid)";
-  public static final String RESOURCE_COLUMN_NAME = "(defaultdb.fsauditingtable.resourceid)";
-  public static final String TIME_COLUMN_NAME = "(defaultdb.fsauditingtable.time)";
+  public static final String API_COLUMN_NAME = "(defaultdb.fsauditingtable2.api)";
+  public static final String USERID_COLUMN_NAME = "(defaultdb.fsauditingtable2.userid)";
+  public static final String RESOURCE_COLUMN_NAME = "(defaultdb.fsauditingtable2.resourceid)";
+  public static final String PROVIDER_COLUMN_NAME = "(defaultdb.fsauditingtable2.providerid)";
+  public static final String TIME_COLUMN_NAME = "(defaultdb.fsauditingtable2.time)";
 }
