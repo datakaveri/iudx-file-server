@@ -35,11 +35,8 @@ public class AuthenticationVerticle extends AbstractVerticle {
     jwtAuthOptions.addPubSecKey(
         new PubSecKeyOptions()
             .setAlgorithm("ES256")
-            .setBuffer("-----BEGIN PUBLIC KEY-----\n" +
-                "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE8BKf2HZ3wt6wNf30SIsbyjYPkkTS\n" +
-                "GGyyM2/MGF/zYTZV9Z28hHwvZgSfnbsrF36BBKnWszlOYW0AieyAUKaKdg==\n" +
-                "-----END PUBLIC KEY-----\n" +
-                ""));
+            .setBuffer(
+                "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAErpLtzpUlszGvlbodGbCrfp3VlxIR\nfG/xkZiy5Jqtgryjv2IIj4vLwJbwm4jMP6WW8f5tAshbvoqYGCzTSBo8Rg==\n-----END PUBLIC KEY-----\n"));
     /* Default jwtIgnoreExpiry is false. If set through config, then that value is taken */
     boolean jwtIgnoreExpiry = config().getBoolean("jwtIgnoreExpiry") == null ? false
         : config().getBoolean("jwtIgnoreExpiry");
