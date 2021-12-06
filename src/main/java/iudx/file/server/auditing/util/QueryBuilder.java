@@ -34,11 +34,11 @@ public class QueryBuilder {
             new StringBuilder(
                     WRITE_QUERY
                             .replace("$1", primaryKey)
-                            .replace("$2", userId)
-                            .replace("$3", api)
-                            .replace("$7", Long.toString(time))
-                            .replace("$4", resourceID)
-                            .replace("$5", providerID)
+                            .replace("$2", api)
+                            .replace("$3", userId)
+                            .replace("$4", Long.toString(time))
+                            .replace("$5", resourceID)
+                            .replace("$7", providerID)
                             .replace("$6", zst.toString()));
     LOGGER.info("Info: Query: " + query);
     return new JsonObject().put(QUERY_KEY, query);

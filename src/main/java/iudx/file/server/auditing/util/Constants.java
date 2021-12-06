@@ -22,5 +22,5 @@ public class Constants {
   public static final String RESOURCE_ID = "resourceID";
   public static final String PROVIDER_ID = "providerID";
   public static final String WRITE_QUERY =
-          "INSERT INTO fsauditingtable2 (id, userId, api, resourceid, providerid, time, epochtime) VALUES ('$1','$2','$3','$4','$5','$6', $7)";
+          "INSERT INTO rsauditingtable (id,api,userid,epochtime,resourceid,isotime,providerid) VALUES ('$1','$2','$3',$4,'$5','$6','$7')";
 }
