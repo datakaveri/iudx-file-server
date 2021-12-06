@@ -87,6 +87,7 @@ public class AuthHandlerTest {
 
     AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
     when(asyncResult.succeeded()).thenReturn(true);
+    when(asyncResult.result()).thenReturn(new JsonObject().put("userID","aasadas"));
 
     Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
       @SuppressWarnings("unchecked")
