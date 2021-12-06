@@ -173,14 +173,14 @@ public class LocalFileStorageTest {
       }
     }).when(asyncFile).pipeTo(any(), any());
 
-    Mockito.doAnswer(new Answer<Handler<Void>>() {
-      @SuppressWarnings("unchecked")
-      @Override
-      public Handler<Void> answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<Void>) arg0.getArgument(0)).handle(null);
-        return null;
-      }
-    }).when(asyncFile).endHandler(any());
+//    Mockito.doAnswer(new Answer<Handler<Void>>() {
+//      @SuppressWarnings("unchecked")
+//      @Override
+//      public Handler<Void> answer(InvocationOnMock arg0) throws Throwable {
+//        ((Handler<Void>) arg0.getArgument(0)).handle(null);
+//        return null;
+//      }
+//    }).when(asyncFile).endHandler(any());
 
     Future<JsonObject> fut = fileService.download(file.fileName(), "/abc", response);
     fut.onComplete(handler -> {
