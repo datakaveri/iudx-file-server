@@ -2,9 +2,21 @@ package iudx.file.server.auditing;
 
 import static iudx.file.server.auditing.util.Constants.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.impl.future.FailedFuture;
+import io.vertx.core.impl.future.SucceededFuture;
 import io.vertx.core.json.JsonObject;
+import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.SqlConnection;
+import iudx.file.server.auditing.util.ResponseBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.junit5.VertxExtension;
@@ -13,14 +25,25 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 
 import iudx.file.server.configuration.Configuration;
-@ExtendWith({VertxExtension.class})
+
+import java.util.function.Function;
+
+@ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class AuditingServiceTest {
 
   private static final Logger LOGGER = LogManager.getLogger(AuditingServiceTest.class);
   private static AuditingService auditingService;
-  private static Configuration config;
+//  @Mock
+//  private ResponseBuilder responseBuilder;
+  @Mock
+  private SqlConnection sqlConnection;
   private static Vertx vertxObj;
   private static JsonObject dbConfig;
   private static String databaseIP;
@@ -29,20 +52,21 @@ public class AuditingServiceTest {
   private static String databaseUserName;
   private static String databasePassword;
   private static Integer databasePoolSize;
+  @Mock
+  PgPool pgPool;
 
   @BeforeAll
   @DisplayName("Deploying Verticle")
   static void startVertex(Vertx vertx, VertxTestContext vertxTestContext) {
     vertxObj = vertx;
-    config = new Configuration();
-    dbConfig = config.configLoader(3, vertx);
-    databaseIP = dbConfig.getString("auditingDatabaseIP");
-    databasePort = dbConfig.getInteger("auditingDatabasePort");
-    databaseName = dbConfig.getString("auditingDatabaseName");
-    databaseUserName = dbConfig.getString("auditingDatabaseUserName");
-    databasePassword = dbConfig.getString("auditingDatabasePassword");
-    databasePoolSize = dbConfig.getInteger("auditingPoolSize");
-    auditingService = new AuditingServiceImpl(dbConfig, vertxObj);
+    dbConfig = new JsonObject();
+    dbConfig.put("auditingDatabaseIP","localhost");
+    dbConfig.put("auditingDatabasePort", 123);
+    dbConfig.put("auditingDatabaseName","auditing");
+    dbConfig.put("auditingDatabaseUserName","immudb");
+    dbConfig.put("auditingDatabasePassword","");
+    dbConfig.put("auditingPoolSize", 24);
+    AuditingService auditingService = new AuditingServiceImpl(dbConfig, vertxObj);
     vertxTestContext.completeNow();
   }
 
@@ -61,6 +85,7 @@ public class AuditingServiceTest {
   void writeForMissingEndpoint(VertxTestContext vertxTestContext){
     JsonObject request = writeRequest();
     request.remove(API);
+
     auditingService.executeWriteQuery(
       request,
       vertxTestContext.failing(
@@ -112,31 +137,52 @@ public class AuditingServiceTest {
   void writeForMissingProviderid(VertxTestContext vertxTestContext){
     JsonObject request = writeRequest();
     request.remove(PROVIDER_ID);
-    auditingService.executeWriteQuery(
-            request,
-            vertxTestContext.failing(
-                    response ->
-                            vertxTestContext.verify(
-                                    () -> {
-                                      LOGGER.info("RESPONSE" + new JsonObject(response.getMessage()).getString(DETAIL));
-                                      assertEquals(DATA_NOT_FOUND, new JsonObject(response.getMessage()).getString(DETAIL));
-                                      vertxTestContext.completeNow();
-                                    })));
+    AuditingService auditingService = mock(AuditingService.class);
+    AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+    ResponseBuilder responseBuilder = mock(ResponseBuilder.class);
+    JsonObject jsonObject = mock(JsonObject.class);
+    when(asyncResult.succeeded()).thenReturn(false);
+    when(asyncResult.cause()).thenReturn(new Throwable("fail"));
+    when(responseBuilder.getResponse()).thenReturn(new JsonObject());
+//    when(responseBuilder.getResponse().toString()).thenReturn(new JsonObject().toString());
+    doReturn(jsonObject).when(responseBuilder).getResponse();
+    doReturn("fail").when(jsonObject).toString();
+    Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+      @Override
+      public AsyncResult<JsonObject> answer(InvocationOnMock invocationOnMock) throws Throwable {
+        ((Handler<AsyncResult<JsonObject>>) invocationOnMock.getArgument(1)).handle(asyncResult);
+        return null;
+      }
+    }).when(auditingService).executeWriteQuery(any(), any());
+
+
+    new AuditingServiceImpl().executeWriteQuery(request, any());
+
+    verify(responseBuilder, times(1)).setTypeAndTitle(anyInt());
+    verify(responseBuilder, times(1)).setMessage(any());
   }
 
   @Test
   @DisplayName("Testing Write Query")
   void writeData(VertxTestContext vertxTestContext) {
     JsonObject request = writeRequest();
-    auditingService.executeWriteQuery(
-    request,
-    vertxTestContext.succeeding(
-      response ->
-        vertxTestContext.verify(
-          () -> {
-            LOGGER.info("RESPONSE" + response.getString("title"));
-            assertEquals("Success", response.getString("title"));
-            vertxTestContext.completeNow();
-          })));
+    AuditingService auditingService = mock(AuditingService.class);
+    AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+    ResponseBuilder responseBuilder = mock(ResponseBuilder.class);
+
+    when(asyncResult.succeeded()).thenReturn(true);
+    Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+      @Override
+      public AsyncResult<JsonObject> answer(InvocationOnMock invocationOnMock) throws Throwable {
+        ((Handler<AsyncResult<JsonObject>>) invocationOnMock.getArgument(1)).handle(asyncResult);
+        return null;
+      }
+    }).when(auditingService).executeWriteQuery(any(), any());
+
+
+    new AuditingServiceImpl().executeWriteQuery(request, any());
+
+   verify(responseBuilder, times(0)).setTypeAndTitle(anyInt());
+   verify(responseBuilder, times(0)).setMessage(any());
   }
 }
