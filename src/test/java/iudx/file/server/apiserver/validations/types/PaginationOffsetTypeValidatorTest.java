@@ -3,6 +3,9 @@ package iudx.file.server.apiserver.validations.types;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import java.util.stream.Stream;
+
+import iudx.file.server.apiserver.exceptions.DxRuntimeException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -62,7 +65,7 @@ public class PaginationOffsetTypeValidatorTest {
   public void testInvalidOffsetTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
     paginationOffsetTypeValidator = new PaginationOffsetTypeValidator(value, required);
-    assertFalse(paginationOffsetTypeValidator.isValid());
+    Assertions.assertThrows(DxRuntimeException.class, () -> paginationOffsetTypeValidator.isValid());
     testContext.completeNow();
   }
 }

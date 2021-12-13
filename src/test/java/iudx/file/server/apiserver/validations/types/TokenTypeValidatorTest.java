@@ -4,6 +4,8 @@ import static org.junit.Assert.*;
 
 import java.util.stream.Stream;
 
+import iudx.file.server.apiserver.exceptions.DxRuntimeException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -54,7 +56,7 @@ public class TokenTypeValidatorTest {
   public void testinValidCoordinatesTypeValue(String value, boolean required,
       VertxTestContext testContext) {
     tokenTypeValidator = new TokenTypeValidator(value, required);
-    assertFalse(tokenTypeValidator.isValid());
+    Assertions.assertThrows(DxRuntimeException.class, () -> tokenTypeValidator.isValid());
     testContext.completeNow();
   }
 

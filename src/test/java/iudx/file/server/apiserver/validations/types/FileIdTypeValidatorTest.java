@@ -2,7 +2,10 @@ package iudx.file.server.apiserver.validations.types;
 
 import static org.junit.Assert.*;
 import java.util.stream.Stream;
+
+import iudx.file.server.apiserver.exceptions.DxRuntimeException;
 import org.apache.commons.lang.RandomStringUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -69,7 +72,7 @@ public class FileIdTypeValidatorTest {
   public void testInvalidFileIdTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
     fileIdTypeValidator = new FileIdTypeValidator(value, required);
-    assertFalse(fileIdTypeValidator.isValid());
+    Assertions.assertThrows(DxRuntimeException.class,() -> fileIdTypeValidator.isValid());
     testContext.completeNow();
   }
 }

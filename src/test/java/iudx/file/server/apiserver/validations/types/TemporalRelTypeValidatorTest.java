@@ -2,6 +2,9 @@ package iudx.file.server.apiserver.validations.types;
 
 import static org.junit.Assert.*;
 import java.util.stream.Stream;
+
+import iudx.file.server.apiserver.exceptions.DxRuntimeException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -64,7 +67,7 @@ public class TemporalRelTypeValidatorTest {
   public void testInvalidTemporalRelTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
     temporalRelTypeValidator = new TemporalRelTypeValidator(value, required);
-    assertFalse(temporalRelTypeValidator.isValid());
+    Assertions.assertThrows(DxRuntimeException.class, () -> temporalRelTypeValidator.isValid());
     testContext.completeNow();
   }
   

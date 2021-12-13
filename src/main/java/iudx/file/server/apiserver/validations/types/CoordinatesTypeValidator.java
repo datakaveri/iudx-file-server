@@ -151,6 +151,7 @@ public class CoordinatesTypeValidator implements Validator {
     String message = "";
     if (required && (value == null || value.isBlank())) {
       message = "Validation error : null or blank value for required mandatory field";
+      throw new DxRuntimeException(failureCode(), ResponseUrn.INVALID_GEO_PARAM, message);
     } else {
       if (value == null || value.isBlank()) {
         return true;
