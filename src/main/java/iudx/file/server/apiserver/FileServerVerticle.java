@@ -275,7 +275,7 @@ public class FileServerVerticle extends AbstractVerticle {
 
     Set<FileUpload> files = routingContext.fileUploads();
     if (files.size() == 0 || !isValidFileContentType(files)) {
-      handleResponse(response,HttpStatusCode.BAD_REQUEST, (ResponseUrn) null);
+      handleResponse(response,HttpStatusCode.BAD_REQUEST);
       String message = new RestResponse.Builder()
           .type(String.valueOf(400))
           .title(HttpStatusCode.BAD_REQUEST.getUrn())
@@ -489,7 +489,7 @@ public class FileServerVerticle extends AbstractVerticle {
         if (isValidFilters) {
           executeSearch(JsonObject.mapFrom(params), type, response, auditParams);
         } else {
-          handleResponse(response, HttpStatusCode.BAD_REQUEST, null, "Either geo or temporal parameter is not allowed for resource" );
+          handleResponse(response, HttpStatusCode.BAD_REQUEST, "Either geo or temporal parameter is not allowed for resource" );
         }
       } else {
         LOGGER.error(handler.cause().getMessage());
@@ -675,6 +675,16 @@ public class FileServerVerticle extends AbstractVerticle {
 
   private void handleResponse(HttpServerResponse response, HttpStatusCode code, ResponseUrn urn) {
     handleResponse(response, code, urn, code.getDescription());
+  }
+
+  private void handleResponse(HttpServerResponse response, HttpStatusCode code) {
+    ResponseUrn urn = ResponseUrn.fromCode(code.getUrn());
+    handleResponse(response, code, urn, code.getDescription());
+  }
+
+  private void handleResponse(HttpServerResponse response, HttpStatusCode code, String message) {
+    ResponseUrn urn = ResponseUrn.fromCode(code.getUrn());
+    handleResponse(response, code, urn, message);
   }
 
   private void handleResponse(HttpServerResponse response, HttpStatusCode code, ResponseUrn urn, String message) {
