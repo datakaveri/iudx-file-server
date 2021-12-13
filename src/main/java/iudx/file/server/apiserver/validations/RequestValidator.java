@@ -4,13 +4,15 @@ import static iudx.file.server.apiserver.utilities.Constants.*;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+
+import io.vertx.core.json.JsonObject;
+import iudx.file.server.apiserver.response.ResponseUrn;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.util.Set;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
-import iudx.file.server.apiserver.utilities.RestResponse;
 
 public class RequestValidator {
 
@@ -61,16 +63,26 @@ public class RequestValidator {
     if (params.contains(PARAM_GEOMETRY) && params.contains(PARAM_COORDINATES)
         && params.contains(PARAM_START_TIME) && params.contains(PARAM_END_TIME)) {
       promise.complete(true);
-    } else {
-      promise.fail(new RestResponse.Builder()
-          .type(400)
-          .title("Bad query")
-          .details("Bad request").build()
-          .toJsonString());
-      LOGGER.error("Invalid archieve request, All mandatory fields are required");
+    } else if (!params.contains(PARAM_GEOMETRY)) {
+      handleResponse(promise, "Missing Param : [ "+PARAM_GEOMETRY+" ]");
+    } else if (!params.contains(PARAM_COORDINATES)) {
+      handleResponse(promise, "Missing Param : [ "+PARAM_COORDINATES+" ]");
+    } else if (!params.contains(PARAM_START_TIME)) {
+      handleResponse(promise, "Missing Param : [ "+PARAM_START_TIME+" ]");
+    } else if (!params.contains(PARAM_END_TIME)) {
+      handleResponse(promise, "Missing Param : [ "+PARAM_END_TIME+" ]");
     }
 
     return promise.future();
+  }
+
+  public void handleResponse(Promise<Boolean> promise, String message) {
+    promise.fail(new JsonObject()
+            .put("type", 400)
+            .put("title", ResponseUrn.INVALID_PAYLOAD_FORMAT.getUrn())
+            .put("errorMessage", message)
+            .toString());
+    LOGGER.error("Invalid archieve request, All mandatory fields are required");
   }
 
 }

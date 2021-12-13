@@ -1,14 +1,14 @@
-package iudx.file.server.apiserver.utilities;
+package iudx.file.server.apiserver.response;
 
 import io.vertx.core.json.JsonObject;
 
 public class RestResponse {
 
-  private final int type;
+  private final String type;
   private final String title;
   private final String details;
 
-  private RestResponse(int status, String message, String details) {
+  private RestResponse(String status, String message, String details) {
     this.type = status;
     this.title = message;
     this.details = details;
@@ -27,13 +27,13 @@ public class RestResponse {
   }
 
   public static class Builder {
-    private int type;
+    private String type;
     private String title;
     private String details;
 
     public Builder() {}
 
-    public Builder type(int code) {
+    public Builder type(String code) {
       this.type = code;
       return this;
     }

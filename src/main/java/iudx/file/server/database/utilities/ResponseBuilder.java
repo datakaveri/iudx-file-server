@@ -4,6 +4,7 @@ package iudx.file.server.database.utilities;
 import static iudx.file.server.database.utilities.Constants.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import iudx.file.server.apiserver.utilities.HttpStatusCode;
 
 public class ResponseBuilder {
 
@@ -18,7 +19,7 @@ public class ResponseBuilder {
   }
 
   public ResponseBuilder setTypeAndTitle(int statusCode) {
-    response.put(ERROR_TYPE, statusCode);
+    response.put(ERROR_TYPE, HttpStatusCode.getByValue(statusCode).getUrn());
     if (SUCCESS.equalsIgnoreCase(status)) {
       response.put(TITLE, SUCCESS);
     } else if (FAILED.equalsIgnoreCase(status)) {

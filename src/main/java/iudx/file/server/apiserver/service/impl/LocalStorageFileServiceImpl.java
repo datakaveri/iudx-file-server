@@ -3,6 +3,9 @@ package iudx.file.server.apiserver.service.impl;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
+
+import iudx.file.server.apiserver.response.ResponseUrn;
+import iudx.file.server.apiserver.utilities.HttpStatusCode;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -66,7 +69,7 @@ public class LocalStorageFileServiceImpl implements FileService {
             } else {
               System.out.println("failed uploading");
               LOGGER.debug("failed :" + fileMoveHandler.cause());
-              finalResponse.put("type", HttpStatus.SC_INTERNAL_SERVER_ERROR);
+              finalResponse.put("type", HttpStatusCode.INTERNAL_SERVER_ERROR.getUrn());
               finalResponse.put("title", "failed to upload file.");
               finalResponse.put("details", fileMoveHandler.cause());
               promise.fail(finalResponse.toString());
@@ -100,7 +103,7 @@ public class LocalStorageFileServiceImpl implements FileService {
               finalResponse.put("statusCode", HttpStatus.SC_BAD_REQUEST);
               promise.complete(finalResponse);
             }
-            LOGGER.debug("seding file : " + fileName + " to client");
+            LOGGER.debug("sending file : " + fileName + " to client");
             ReadStream<Buffer> asyncFile = readEvent.result();
             response.putHeader("content-type", "application/octet-stream");
             response.putHeader("Content-Disposition", "attachment; filename=" + fileName);
@@ -110,7 +113,7 @@ public class LocalStorageFileServiceImpl implements FileService {
           });
         } else {
           finalResponse.put("type", HttpStatus.SC_NOT_FOUND);
-          finalResponse.put("title", "File does not exist");
+          finalResponse.put("title", "urn:dx:rs:resourceNotFound");
           finalResponse.put("details", "File does not exist");
           LOGGER.error("File does not exist");
           promise.fail(finalResponse.toString());
@@ -146,7 +149,7 @@ public class LocalStorageFileServiceImpl implements FileService {
             } else {
               LOGGER.info("File deleted");
               finalResponse.put("type", HttpStatus.SC_OK);
-              finalResponse.put("title", "File Deleted");
+              finalResponse.put("title", "urn:dx:rs:Success");
               finalResponse.put("details", "File Deleted");
               promise.complete(finalResponse);
             }
@@ -154,7 +157,7 @@ public class LocalStorageFileServiceImpl implements FileService {
         } else {
           LOGGER.error("File does not exist");
           finalResponse.put("type", HttpStatus.SC_NOT_FOUND);
-          finalResponse.put("title", "File does not exist");
+          finalResponse.put("title", ResponseUrn.RESOURCE_NOT_FOUND.getUrn());
           finalResponse.put("details", "File does not exist");
           promise.fail(finalResponse.toString());
         }

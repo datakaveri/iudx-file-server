@@ -1,26 +1,7 @@
 package iudx.file.server.apiserver;
 
-import static iudx.file.server.apiserver.utilities.Constants.API_APIS;
-import static iudx.file.server.apiserver.utilities.Constants.API_API_SPECS;
-import static iudx.file.server.apiserver.utilities.Constants.API_FILE_DELETE;
-import static iudx.file.server.apiserver.utilities.Constants.API_FILE_DOWNLOAD;
-import static iudx.file.server.apiserver.utilities.Constants.API_FILE_UPLOAD;
-import static iudx.file.server.apiserver.utilities.Constants.API_LIST_METADATA;
-import static iudx.file.server.apiserver.utilities.Constants.API_SPATIAL;
-import static iudx.file.server.apiserver.utilities.Constants.API_TEMPORAL;
-import static iudx.file.server.apiserver.utilities.Constants.APPLICATION_JSON;
-import static iudx.file.server.apiserver.utilities.Constants.CONTENT_TYPE;
-import static iudx.file.server.apiserver.utilities.Constants.HEADER_ACCEPT;
-import static iudx.file.server.apiserver.utilities.Constants.HEADER_ALLOW_ORIGIN;
-import static iudx.file.server.apiserver.utilities.Constants.HEADER_CONTENT_LENGTH;
-import static iudx.file.server.apiserver.utilities.Constants.HEADER_CONTENT_TYPE;
-import static iudx.file.server.apiserver.utilities.Constants.HEADER_HOST;
-import static iudx.file.server.apiserver.utilities.Constants.HEADER_ORIGIN;
-import static iudx.file.server.apiserver.utilities.Constants.HEADER_REFERER;
-import static iudx.file.server.apiserver.utilities.Constants.HEADER_TOKEN;
-import static iudx.file.server.apiserver.utilities.Constants.JSON_TYPE;
-import static iudx.file.server.apiserver.utilities.Constants.MAX_SIZE;
-import static iudx.file.server.apiserver.utilities.Constants.PARAM_ID;
+import static iudx.file.server.apiserver.utilities.Constants.*;
+import static iudx.file.server.apiserver.response.ResponseUrn.*;
 import static iudx.file.server.apiserver.utilities.Utilities.getFileIdComponents;
 import static iudx.file.server.apiserver.utilities.Utilities.getQueryType;
 import static iudx.file.server.common.Constants.AUDIT_SERVICE_ADDRESS;
@@ -32,6 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import iudx.file.server.apiserver.response.ResponseType;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -64,11 +46,13 @@ import iudx.file.server.apiserver.handlers.ValidationsHandler;
 import iudx.file.server.apiserver.query.QueryParams;
 import iudx.file.server.apiserver.service.FileService;
 import iudx.file.server.apiserver.service.impl.LocalStorageFileServiceImpl;
-import iudx.file.server.apiserver.utilities.RestResponse;
+import iudx.file.server.apiserver.response.RestResponse;
+import iudx.file.server.apiserver.response.ResponseUrn;
+import iudx.file.server.apiserver.utilities.HttpStatusCode;
 import iudx.file.server.apiserver.validations.ContentTypeValidator;
 import iudx.file.server.apiserver.validations.RequestType;
 import iudx.file.server.apiserver.validations.RequestValidator;
-import iudx.file.server.apiserver.validations.ValidationFailureHandler;
+import iudx.file.server.apiserver.handlers.ValidationFailureHandler;
 import iudx.file.server.common.QueryType;
 import iudx.file.server.common.WebClientFactory;
 import iudx.file.server.common.service.CatalogueService;
@@ -291,9 +275,10 @@ public class FileServerVerticle extends AbstractVerticle {
 
     Set<FileUpload> files = routingContext.fileUploads();
     if (files.size() == 0 || !isValidFileContentType(files)) {
+      handleResponse(response,HttpStatusCode.BAD_REQUEST, (ResponseUrn) null);
       String message = new RestResponse.Builder()
-          .type(400)
-          .title("Bad Request")
+          .type(String.valueOf(400))
+          .title(HttpStatusCode.BAD_REQUEST.getUrn())
           .details("bad request").build().toJsonString();
       LOGGER.error("Invalid File type or no file attached");
       processResponse(response, message);
@@ -330,9 +315,7 @@ public class FileServerVerticle extends AbstractVerticle {
         String fileId = id + "/" + uploadResult.getString("file-id");
         responseJson.put("fileId", fileId);
         // insertFileRecord(params, fileId); no need to insert in DB
-        response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .setStatusCode(HttpStatus.SC_OK)
-            .end(responseJson.toString());
+        handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
         updateAuditTable(auditParams);
       } else {
         processResponse(response, uploadHandler.cause().getMessage());
@@ -354,7 +337,7 @@ public class FileServerVerticle extends AbstractVerticle {
     JsonObject uploadJson = new JsonObject();
     JsonObject responseJson = new JsonObject();
     Future<Boolean> requestValidatorFuture = requestValidator.isValidArchiveRequest(params);
-
+    LOGGER.debug(requestValidatorFuture.result());
     requestValidatorFuture.compose(requestValidatorhandler -> {
       return fileService.upload(files, filePath);
     }).compose(uploadHandler -> {
@@ -372,9 +355,7 @@ public class FileServerVerticle extends AbstractVerticle {
     }).onComplete(handler -> {
       if (handler.succeeded()) {
         responseJson.put("fileId", uploadJson.getString("fileId"));
-        response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .setStatusCode(HttpStatus.SC_OK)
-            .end(responseJson.toString());
+        handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
         updateAuditTable(auditParams);
       } else {
         LOGGER.debug(handler.cause());
@@ -508,25 +489,11 @@ public class FileServerVerticle extends AbstractVerticle {
         if (isValidFilters) {
           executeSearch(JsonObject.mapFrom(params), type, response, auditParams);
         } else {
-          response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-              .setStatusCode(HttpStatus.SC_OK)
-              .end(new RestResponse.Builder()
-                  .type(400)
-                  .title("Bad query")
-                  .details("Either geo or temporal parameter is not allowed for resource").build()
-                  .toJson()
-                  .toString());
+          handleResponse(response, HttpStatusCode.BAD_REQUEST, null, "Either geo or temporal parameter is not allowed for resource" );
         }
       } else {
         LOGGER.error(handler.cause().getMessage());
-        response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .setStatusCode(HttpStatus.SC_OK)
-            .end(new RestResponse.Builder()
-                .type(400)
-                .title("Bad query")
-                .details("Bad query").build()
-                .toJson()
-                .toString());
+        handleResponse(response, HttpStatusCode.BAD_REQUEST, (ResponseUrn) null);
       }
     });
   }
@@ -534,9 +501,7 @@ public class FileServerVerticle extends AbstractVerticle {
   private void executeSearch(JsonObject json, QueryType type, HttpServerResponse response, JsonObject auditParams) {
     database.search(json, type, queryHandler -> {
       if (queryHandler.succeeded()) {
-        response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .setStatusCode(HttpStatus.SC_OK)
-            .end(queryHandler.result().toString());
+        handleResponse(response, HttpStatusCode.SUCCESS, queryHandler.result());
         updateAuditTable(auditParams);
       } else {
         processResponse(response, queryHandler.cause().getMessage());
@@ -594,9 +559,7 @@ public class FileServerVerticle extends AbstractVerticle {
 
     database.search(query, QueryType.LIST, queryHandler -> {
       if (queryHandler.succeeded()) {
-        response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .setStatusCode(HttpStatus.SC_OK)
-            .end(queryHandler.result().toString());
+        handleResponse(response, HttpStatusCode.SUCCESS, queryHandler.result());
         updateAuditTable(auditParams);
       } else {
         processResponse(response, queryHandler.cause().getMessage());
@@ -612,13 +575,8 @@ public class FileServerVerticle extends AbstractVerticle {
         .onComplete(handler -> {
           if (handler.succeeded()) {
             JsonObject deleteResult = handler.result();
-            response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-                .setStatusCode(HttpStatus.SC_OK)
-                .end(new RestResponse.Builder()
-                    .type(200)
-                    .title(deleteResult.getString("title"))
-                    .details("File with id : " + id + " deleted successfully").build().toJson()
-                    .toString());
+            ResponseUrn urn = ResponseUrn.fromCode(deleteResult.getString("title"));
+            handleResponse(response, HttpStatusCode.SUCCESS, urn, ("File with id : " + id + " deleted successfully"));
             updateAuditTable(auditParams);
           } else {
             processResponse(response, handler.cause().getMessage());
@@ -633,14 +591,9 @@ public class FileServerVerticle extends AbstractVerticle {
         fileService.delete(fileUUID, uploadDir.toString()).onComplete(handler -> {
           if (handler.succeeded()) {
             JsonObject deleteResult = handler.result();
+            ResponseUrn urn = ResponseUrn.fromCode(deleteResult.getString("title"));
             LOGGER.info(deleteResult);
-            response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-                .setStatusCode(HttpStatus.SC_OK)
-                .end(new RestResponse.Builder()
-                    .type(200)
-                    .title(deleteResult.getString("title"))
-                    .details("File with id : " + id + " deleted successfully").build().toJson()
-                    .toString());
+            handleResponse(response, HttpStatusCode.SUCCESS, urn,("File with id : " + id + " deleted successfully"));
             updateAuditTable(auditParams);
           } else {
             processResponse(response, handler.cause().getMessage());
@@ -684,29 +637,63 @@ public class FileServerVerticle extends AbstractVerticle {
     });
   }
 
-  private void processResponse(HttpServerResponse response, String message) {
-    LOGGER.debug("Info : " + message);
+  private void processResponse(HttpServerResponse response, String failureMessage) {
+    LOGGER.debug("Info : " + failureMessage);
     try {
-      JsonObject json = new JsonObject(message);
+      JsonObject json = new JsonObject(failureMessage);
       int type = json.getInteger(JSON_TYPE);
+      HttpStatusCode status = HttpStatusCode.getByValue(type);
+      String urnTitle = json.getString(JSON_TITLE);
+      ResponseUrn urn;
+      if(urnTitle != null) {
+        urn = ResponseUrn.fromCode(urnTitle);
+      } else {
+        urn = ResponseUrn.fromCode(type + "");
+      }
+
+      String message = json.getString(ERROR_MESSAGE);
       response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-          .setStatusCode(type)
-          .end(new RestResponse.Builder()
-              .type(type)
-              .title(json.getString("title"))
-              .details(json.getString("details"))
-              .build().toJson().toString());
+          .setStatusCode(type);
+
+      if (message == null || message.isEmpty()) {
+        response.end(generateResponse(status,urn).toString());
+      } else {
+        response.end(generateResponse(status,urn, message).toString());
+      }
     } catch (DecodeException ex) {
       LOGGER.error("ERROR : Expecting Json received else from backend service");
-      response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-          .setStatusCode(500)
-          .end(new RestResponse.Builder()
-              .type(500)
-              .title("Internal server error")
-              .details("ERROR : Expecting Json received else from backend service")
-              .build().toJson().toString());
+      handleResponse(response, HttpStatusCode.BAD_REQUEST, BACKING_SERVICE_FORMAT);
     }
 
+  }
+
+  private void handleResponse(HttpServerResponse response, HttpStatusCode code, JsonObject result) {
+    response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .setStatusCode(code.getValue())
+            .end(result.toString());
+  }
+
+  private void handleResponse(HttpServerResponse response, HttpStatusCode code, ResponseUrn urn) {
+    handleResponse(response, code, urn, code.getDescription());
+  }
+
+  private void handleResponse(HttpServerResponse response, HttpStatusCode code, ResponseUrn urn, String message) {
+    response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .setStatusCode(code.getValue())
+            .end(generateResponse(code, urn, message).toString());
+  }
+
+  private JsonObject generateResponse(HttpStatusCode code, ResponseUrn urn) {
+    return generateResponse(code, urn, urn.getMessage());
+  }
+
+  private JsonObject generateResponse(HttpStatusCode code, ResponseUrn urn, String message) {
+    String type = urn != null ? urn.getUrn() : code.getUrn();
+    return new RestResponse.Builder()
+            .type(type)
+            .title(code.getDescription())
+            .details(message)
+            .build().toJson();
   }
 
 
@@ -736,13 +723,7 @@ public class FileServerVerticle extends AbstractVerticle {
     } catch (IllegalArgumentException ex) {
       response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
           .setStatusCode(HttpStatus.SC_BAD_REQUEST)
-          .end(new RestResponse.Builder()
-              .type(HttpStatus.SC_BAD_REQUEST)
-              .title("Bad request")
-              .details("Error while decoding params.")
-              .build().toJson().toString());
-
-
+          .end(generateResponse(HttpStatusCode.BAD_REQUEST, INVALID_ATTR_PARAM).toString());
     }
     return Optional.of(queryParams);
   }

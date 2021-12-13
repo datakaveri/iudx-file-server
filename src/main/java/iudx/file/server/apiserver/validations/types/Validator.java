@@ -7,4 +7,8 @@ public interface Validator {
   int failureCode();
 
   String failureMessage();
+
+  default String failureMessage(final String value) {
+    return failureMessage() + " [ " + value + " ] ";
+  }
 }
