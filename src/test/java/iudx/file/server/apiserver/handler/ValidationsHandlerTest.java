@@ -1,8 +1,10 @@
 package iudx.file.server.apiserver.handler;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static iudx.file.server.apiserver.utilities.Constants.*;
 
+import iudx.file.server.apiserver.exceptions.DxRuntimeException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -57,16 +59,10 @@ public class ValidationsHandlerTest {
     Mockito.doReturn(parameters).when(request).params();
     Mockito.doReturn(headers).when(request).headers();
 
-    Mockito.doReturn(response).when(response).putHeader(anyString(), anyString());
-    Mockito.doReturn(response).when(response).setStatusCode(anyInt());
-
-    new ValidationsHandler(RequestType.LIST_QUERY).handle(event);
-
-    Mockito.verify(response, times(1)).putHeader(anyString(), anyString());
-    Mockito.verify(response, times(1)).setStatusCode(anyInt());
-    Mockito.verify(response, times(1)).end(anyString());
+    ValidationsHandler validationsHandler = new ValidationsHandler(RequestType.LIST_QUERY);
+    assertThrows(DxRuntimeException.class, () -> validationsHandler.handle(event));
   }
-  
+
   
 
 }

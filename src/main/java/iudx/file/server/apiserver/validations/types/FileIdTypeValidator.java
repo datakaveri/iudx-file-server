@@ -1,5 +1,7 @@
 package iudx.file.server.apiserver.validations.types;
 
+import iudx.file.server.apiserver.exceptions.DxRuntimeException;
+import iudx.file.server.apiserver.response.ResponseUrn;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,7 +22,7 @@ public class FileIdTypeValidator implements Validator {
   public boolean isValid() {
     if (required && (value == null || value.isBlank())) {
       LOGGER.error("Validation error : null or blank value for required mandatory field");
-      return false;
+      throw new DxRuntimeException(failureCode(), ResponseUrn.MANDATORY_FIELD, "Validation error : null or blank value for required mandatory field");
     } else {
       if (value == null || value.isBlank()) {
         return true;
@@ -28,7 +30,7 @@ public class FileIdTypeValidator implements Validator {
     }
     if (!isValidLength(value) || !isValidId(value)) {
       LOGGER.error("Validation error : invalid file id [ " + value + " ]");
-      return false;
+      throw new DxRuntimeException(failureCode(), ResponseUrn.INVALID_ATTR_VALUE, "Validation error : invalid file id [ " + value + " ]");
     }
     return true;
   }

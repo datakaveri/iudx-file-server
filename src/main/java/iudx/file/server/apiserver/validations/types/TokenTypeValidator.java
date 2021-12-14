@@ -1,5 +1,7 @@
 package iudx.file.server.apiserver.validations.types;
 
+import iudx.file.server.apiserver.exceptions.DxRuntimeException;
+import iudx.file.server.apiserver.response.ResponseUrn;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,7 +20,7 @@ public class TokenTypeValidator implements Validator {
   @Override
   public boolean isValid() {
     if (required && (value == null || value.isBlank())) {
-      return false;
+      throw new DxRuntimeException(failureCode(), ResponseUrn.INVALID_TOKEN, "Validation error : token is empty");
     } else {
       if (value == null || value.isBlank()) {
         return true;

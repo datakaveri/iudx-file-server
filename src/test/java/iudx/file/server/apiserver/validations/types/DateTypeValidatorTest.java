@@ -2,6 +2,9 @@ package iudx.file.server.apiserver.validations.types;
 
 import static org.junit.Assert.*;
 import java.util.stream.Stream;
+
+import iudx.file.server.apiserver.exceptions.DxRuntimeException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -63,7 +66,7 @@ public class DateTypeValidatorTest {
   public void testInvalidDateTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
     dateTypeValidator = new DateTypeValidator(value, required);
-    assertFalse(dateTypeValidator.isValid());
+    Assertions.assertThrows(DxRuntimeException.class, () -> dateTypeValidator.isValid());
     testContext.completeNow();
   }
 }

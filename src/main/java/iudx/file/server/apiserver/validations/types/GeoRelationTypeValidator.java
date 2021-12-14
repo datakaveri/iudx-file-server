@@ -1,6 +1,9 @@
 package iudx.file.server.apiserver.validations.types;
 
 import java.util.List;
+
+import iudx.file.server.apiserver.exceptions.DxRuntimeException;
+import iudx.file.server.apiserver.response.ResponseUrn;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -22,7 +25,7 @@ public class GeoRelationTypeValidator implements Validator {
   public boolean isValid() {
     if (required && (value == null || value.isBlank())) {
       LOGGER.error("Validation error : null or blank value for required mandatory field");
-      return false;
+      throw new DxRuntimeException(failureCode(), ResponseUrn.MANDATORY_FIELD, "Validation error : null or blank value for required mandatory field");
     } else {
       if (value == null || value.isBlank()) {
         return true;
@@ -30,7 +33,7 @@ public class GeoRelationTypeValidator implements Validator {
     }
     if (!allowedValues.contains(value)) {
       LOGGER.error("Validation error : Invalid geo relation value passed [ " + value + " ]");
-      return false;
+      throw new DxRuntimeException(failureCode(), ResponseUrn.INVALID_ATTR_VALUE, "Validation error: Invalid geo relation value passed [ " + value + " ]");
     }
     return true;
   }

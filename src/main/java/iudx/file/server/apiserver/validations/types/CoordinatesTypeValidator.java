@@ -8,6 +8,9 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import iudx.file.server.apiserver.exceptions.DxRuntimeException;
+import iudx.file.server.apiserver.response.ResponseUrn;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -34,31 +37,35 @@ public class CoordinatesTypeValidator implements Validator {
   private DecimalFormat df = new DecimalFormat("#.######");
 
   private boolean isValidLatitude(String latitude) {
+    String message = "";
     try {
       Float latitudeValue = Float.parseFloat(latitude);
       if (!df.format(latitudeValue).matches(LATITUDE_PATTERN)) {
-        LOGGER.error("Validation error : invalid latitude value " + latitude);
-        return false;
+        message = ("Validation error : invalid latitude value " + latitude);
       }
     } catch (Exception ex) {
-      LOGGER.error("Validation error : invalid latitude value " + latitude);
-      return false;
+      message = ("Validation error : invalid latitude value " + latitude);
     }
-    return true;
+    if(message.isBlank()) {
+      return true;
+    }
+    throw new DxRuntimeException(failureCode(), ResponseUrn.INVALID_GEO_PARAM, message);
   }
 
   private boolean isValidLongitude(String longitude) {
+    String message = "";
     try {
       Float longitudeValue = Float.parseFloat(longitude);
       if (!df.format(longitudeValue).matches(LONGITUDE_PATTERN)) {
-        LOGGER.error("Validation error : invalid longitude value " + longitude);
-        return false;
+        message = ("Validation error : invalid longitude value " + longitude);
       }
     } catch (Exception ex) {
-      LOGGER.error("Validation error : invalid longitude value " + longitude);
-      return false;
+        message = ("Validation error : invalid longitude value " + longitude);
     }
-    return true;
+    if(message.isBlank()) {
+      return true;
+    }
+    throw new DxRuntimeException(failureCode(), ResponseUrn.INVALID_GEO_PARAM, message);
   }
 
   private boolean isPricisonLengthAllowed(String value) {
@@ -66,7 +73,7 @@ public class CoordinatesTypeValidator implements Validator {
     try {
       result = (new BigDecimal(value).scale() > VALIDATION_COORDINATE_PRECISION_ALLOWED);
     } catch (Exception ex) {
-      LOGGER.error("Validation error : invalid value " + value);
+     throw new DxRuntimeException(failureCode(), ResponseUrn.INVALID_GEO_VALUE, "Validation error : invalid value " + value);
     }
     return result;
   }
@@ -141,31 +148,31 @@ public class CoordinatesTypeValidator implements Validator {
 
   @Override
   public boolean isValid() {
+    String message = "";
     if (required && (value == null || value.isBlank())) {
-      LOGGER.error("Validation error : null or blank value for required mandatory field");
-      return false;
+      message = "Validation error : null or blank value for required mandatory field";
+      throw new DxRuntimeException(failureCode(), ResponseUrn.INVALID_GEO_PARAM, message);
     } else {
       if (value == null || value.isBlank()) {
         return true;
       }
     }
     if (!isValidCoordinateCount(value)) {
-      LOGGER.error(
-          "Invalid numbers of coordinates supplied (Only 10 coordinates allowed for polygon and line & 1 coordinate for point)");
-      return false;
+      message = "Invalid numbers of coordinates supplied (Only 10 coordinates allowed for polygon and line & 1 coordinate for point)";
     }
     if (!isValidCoordinates(value)) {
-      LOGGER.error("invalid coordinate (only 6 digits to precision allowed)");
-      return false;
+      message = "invalid coordinate (only 6 digits to precision allowed)";
     }
-
-    return true;
+    if(message.isBlank()) {
+      return true;
+    }
+    throw new DxRuntimeException(failureCode(), ResponseUrn.INVALID_GEO_PARAM, message);
   }
 
   @Override
   public int failureCode() {
     // TODO Auto-generated method stub
-    return 0;
+    return 400;
   }
 
   @Override

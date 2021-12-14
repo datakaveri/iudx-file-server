@@ -1,9 +1,11 @@
 package iudx.file.server.apiserver.validations.types;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import java.util.stream.Stream;
+
+import iudx.file.server.apiserver.exceptions.DxRuntimeException;
 import org.apache.commons.lang.RandomStringUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -67,7 +69,7 @@ public class GeomTypeValidatorTest {
   public void testInvalidGeomTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
     geomTypeValidator = new GeomTypeValidator(value, required);
-    assertFalse(geomTypeValidator.isValid());
+    Assertions.assertThrows(DxRuntimeException.class, () -> geomTypeValidator.isValid());
     testContext.completeNow();
   }
 }

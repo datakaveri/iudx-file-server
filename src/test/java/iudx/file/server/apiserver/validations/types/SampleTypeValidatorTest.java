@@ -2,7 +2,10 @@ package iudx.file.server.apiserver.validations.types;
 
 import static org.junit.Assert.*;
 import java.util.stream.Stream;
+
+import iudx.file.server.apiserver.exceptions.DxRuntimeException;
 import org.apache.commons.lang.RandomStringUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -60,7 +63,7 @@ public class SampleTypeValidatorTest {
   public void testInvalidIsSampleTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
     sampleTypeValidator = new SampleTypeValidator(value, required);
-    assertFalse(sampleTypeValidator.isValid());
+    Assertions.assertThrows(DxRuntimeException.class, () -> sampleTypeValidator.isValid());
     testContext.completeNow();
   }
 }

@@ -2,6 +2,8 @@ package iudx.file.server.apiserver.validations.types;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import iudx.file.server.apiserver.exceptions.DxRuntimeException;
+import iudx.file.server.apiserver.response.ResponseUrn;
 
 public class IDTypeValidator implements Validator {
 
@@ -17,19 +19,27 @@ public class IDTypeValidator implements Validator {
 
   @Override
   public boolean isValid() {
+    String message = "";
     if (required && (value == null || value.isBlank())) {
-      LOGGER.error("Validation error : null or blank value for required mandatory field");
-      return false;
+      message = "Validation error : null or blank value for required mandatory field";
     } else {
       if (value == null) {
         return true;
       }
+      if(value.isBlank()) {
+        message = "Validation error : blank value for passed";
+      }
     }
-    if (!isValidLength(value) || !isValidId(value)) {
-      LOGGER.error("Validation error : Invalid id [ "+value+" ]");
-      return false;
+    if(value!=null && !isValidLength(value)) {
+      message = "Validation error: Value exceed max character limit";
     }
-    return true;
+    if (value!= null &&  !isValidId(value)) {
+      message = "Validation error : Invalid id [ "+value+" ]";
+    }
+    if(message.isBlank()) {
+      return true;
+    }
+    throw new DxRuntimeException(failureCode(), ResponseUrn.INVALID_PAYLOAD_FORMAT, message);
   }
 
   @Override

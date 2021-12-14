@@ -2,6 +2,9 @@ package iudx.file.server.apiserver.validations.types;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
+
+import iudx.file.server.apiserver.exceptions.DxRuntimeException;
+import iudx.file.server.apiserver.response.ResponseUrn;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -21,7 +24,7 @@ public class DateTypeValidator implements Validator {
   public boolean isValid() {
     if (required && (value == null || value.isBlank())) {
       LOGGER.error("Validation error : null or blank value for required mandatory field");
-      return false;
+      throw new DxRuntimeException(failureCode(), ResponseUrn.MANDATORY_FIELD, "Validation error : null or blank value for required mandatory field");
     } else {
       if (value == null || value.isBlank()) {
         return true;
@@ -46,8 +49,7 @@ public class DateTypeValidator implements Validator {
       ZonedDateTime.parse(dateString);
       return true;
     } catch (DateTimeParseException e) {
-      LOGGER.error("Validation error : Invalid date-time format [ "+value+" ]");
-      return false;
+      throw new DxRuntimeException(failureCode(), ResponseUrn.INVALID_TEMPORAL_DATE_FORMAT, "Validation error : Invalid date-time format [ "+value+" ]");
     }
   }
 
