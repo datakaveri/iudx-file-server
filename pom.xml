@@ -210,6 +210,11 @@
             <artifactId>vertx-pg-client</artifactId>
             <version>4.0.3</version>
         </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-rabbitmq-client</artifactId>
+            <version>4.0.3</version>
+        </dependency>
     </dependencies>
 
 	<build>
