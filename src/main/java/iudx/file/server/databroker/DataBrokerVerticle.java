@@ -30,7 +30,8 @@ public class DataBrokerVerticle extends AbstractVerticle {
 
   private static final String BROKER_SERVICE_ADDRESS = "iudx.file.broker.service";
   private static final Logger LOGGER = LogManager.getLogger(DataBrokerVerticle.class);
-  private  DataBrokerService dataBroker;
+  private DataBrokerService dataBroker;
+  private PostgresClient pgClient;
   private RabbitMQOptions config;
   private RabbitMQClient client;
   private String dataBrokerIP;
@@ -49,6 +50,17 @@ public class DataBrokerVerticle extends AbstractVerticle {
   private ServiceBinder binder;
   private MessageConsumer<JsonObject> consumer;
 
+  /* Database Properties */
+  private String databaseIP;
+  private int databasePort;
+  private String databaseName;
+  private String databaseUserName;
+  private String databasePassword;
+  private int poolSize;
+  private PgPool pgPool;
+  private PoolOptions poolOptions;
+  private PgConnectOptions pgConnectOptions;
+
   @Override
   public void start() throws Exception {
 
@@ -66,6 +78,13 @@ public class DataBrokerVerticle extends AbstractVerticle {
     requestedChannelMax = config().getInteger("requestedChannelMax");
     networkRecoveryInterval =
             config().getInteger("networkRecoveryInterval");
+
+    databaseIP = config().getString("callbackDatabaseIP");
+    databasePort = config().getInteger("callbackDatabasePort");
+    databaseName = config().getString("callbackDatabaseName");
+    databaseUserName = config().getString("callbackDatabaseUserName");
+    databasePassword = config().getString("callbackDatabasePassword");
+    poolSize = config().getInteger("callbackpoolSize");
 
     config = new RabbitMQOptions();
     config.setUser(dataBrokerUserName);
@@ -87,6 +106,19 @@ public class DataBrokerVerticle extends AbstractVerticle {
     webConfig.setDefaultPort(dataBrokerManagementPort);
     webConfig.setKeepAliveTimeout(86400000);
 
+    if (pgConnectOptions == null) {
+      pgConnectOptions = new PgConnectOptions().setPort(databasePort).setHost(databaseIP)
+              .setDatabase(databaseName).setUser(databaseUserName).setPassword(databasePassword);
+    }
+
+    /* Pool options */
+    if (poolOptions == null) {
+      poolOptions = new PoolOptions().setMaxSize(poolSize);
+    }
+
+    /* Create the client pool */
+    pgPool = PgPool.pool(vertx, pgConnectOptions, poolOptions);
+
     /* Create a RabbitMQ Client with the configuration and vertx cluster instance. */
     client = RabbitMQClient.create(vertx, config);
 
@@ -95,7 +127,8 @@ public class DataBrokerVerticle extends AbstractVerticle {
       if(resultHandler.succeeded()) {
         LOGGER.info("RMQ client started successfully");
 
-        dataBroker = new DataBrokerServiceImpl(client);
+        pgClient = new PostgresClient(pgPool);
+        dataBroker = new DataBrokerServiceImpl(client, pgClient);
 
         binder = new ServiceBinder(vertx);
 

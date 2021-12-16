@@ -1,6 +1,8 @@
 package iudx.file.server.databroker;
 
 import io.vertx.core.Future;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,8 +19,7 @@ import io.vertx.rabbitmq.RabbitMQConsumer;
 
 import java.util.concurrent.TimeUnit;
 
-import static iudx.file.server.databroker.util.Constants.CACHE_TIMEOUT_AMOUNT;
-
+import static iudx.file.server.databroker.util.Constants.*;
 
 /**
  * The Data Broker Service Implementation.
@@ -36,6 +37,7 @@ public class DataBrokerServiceImpl implements DataBrokerService{
 
   private static final Logger LOGGER = LogManager.getLogger(DataBrokerServiceImpl.class);
   private final RabbitMQClient client;
+  private final PostgresClient pgClient;
 
   private final QueueOptions options =
           new QueueOptions()
@@ -48,8 +50,9 @@ public class DataBrokerServiceImpl implements DataBrokerService{
                   .expireAfterAccess(CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES)
                   .build();
 
-  public DataBrokerServiceImpl(RabbitMQClient client) {
+  public DataBrokerServiceImpl(RabbitMQClient client, PostgresClient pgClient) {
     this.client = client;
+    this.pgClient = pgClient;
   }
 
 
@@ -60,7 +63,7 @@ public class DataBrokerServiceImpl implements DataBrokerService{
       client.start();
     }
 
-    client.basicConsumer("file-server-token-invalidation", options, consumeHandler -> {
+    client.basicConsumer(QUEUE_NAME, options, consumeHandler -> {
       if(consumeHandler.succeeded()) {
         RabbitMQConsumer rmqConsumer = consumeHandler.result();
         rmqConsumer.handler(message -> {
@@ -74,6 +77,19 @@ public class DataBrokerServiceImpl implements DataBrokerService{
           } else {
             LOGGER.error(consumeHandler.cause().getMessage());
             handler.handle(Future.failedFuture("null/empty message"));
+          }
+        });
+      } else {
+        pgClient.getAsync(QUERY).onComplete(dbHandler -> {
+          if(dbHandler.succeeded()) {
+            RowSet<Row> rowSet = dbHandler.result();
+            for(Row rs : rowSet) {
+              String userID = rs.getString("sub");
+              String timestamp = rs.getString("time");
+              tokenInvalidationCache.put(userID, timestamp);
+            }
+          } else {
+            LOGGER.fatal("Fail: Read from DB failed");
           }
         });
       }

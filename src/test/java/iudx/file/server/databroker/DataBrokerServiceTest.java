@@ -2,6 +2,8 @@ package iudx.file.server.databroker;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.sqlclient.PoolOptions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
@@ -17,11 +19,14 @@ import io.vertx.junit5.VertxTestContext;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
 import iudx.file.server.configuration.Configuration;
+import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.SqlConnection;
 
 @ExtendWith(VertxExtension.class)
 public class DataBrokerServiceTest {
 
   static DataBrokerService databroker;
+  static PostgresClient pgClient;
   static private String dataBrokerIP;
   static private int dataBrokerPort;
   static private int dataBrokerManagementPort;
@@ -37,7 +42,15 @@ public class DataBrokerServiceTest {
   private static RabbitMQClient client;
   private static Configuration appConfig;
   private static WebClientOptions webConfig;
-
+  private static String databaseIP;
+  private static Integer databasePort;
+  private static String databaseName;
+  private static String databaseUserName;
+  private static String databasePassword;
+  private static Integer databasePoolSize;
+  private static PgPool pgPool;
+  private static PgConnectOptions pgConnectOptions;
+  private static PoolOptions poolOptions;
 
   private static final Logger logger = LogManager.getLogger(DataBrokerServiceTest.class);
 
@@ -79,11 +92,24 @@ public class DataBrokerServiceTest {
     webConfig.setDefaultPort(dataBrokerManagementPort);
     webConfig.setKeepAliveTimeout(86400000);
 
+    databaseIP = brokerConfig.getString("callbackDatabaseIP");
+    databasePort = brokerConfig.getInteger("callbackDatabasePort");
+    databaseName = brokerConfig.getString("callbackDatabaseName");
+    databaseUserName = brokerConfig.getString("callbackDatabaseUserName");
+    databasePassword = brokerConfig.getString("callbackDatabasePassword");
+    databasePoolSize = brokerConfig.getInteger("callbackpoolSize");
+
+    pgConnectOptions = new PgConnectOptions().setPort(databasePort).setHost(databaseIP)
+            .setDatabase(databaseName).setUser(databaseUserName).setPassword(databasePassword);
+    poolOptions = new PoolOptions().setMaxSize(databasePoolSize);
+
     client = RabbitMQClient.create(vertx, config);
+    pgPool = PgPool.pool(vertx, pgConnectOptions, poolOptions);
 
     client.start(startHandler -> {
       if(startHandler.succeeded()) {
-        databroker = new DataBrokerServiceImpl(client);
+        pgClient = new PostgresClient(pgPool);
+        databroker = new DataBrokerServiceImpl(client, pgClient);
         testContext.completeNow();
       } else {
         logger.error("startup failed");
