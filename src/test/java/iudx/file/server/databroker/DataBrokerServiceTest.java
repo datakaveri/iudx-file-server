@@ -104,9 +104,8 @@ public class DataBrokerServiceTest {
         logger.debug("Message from queue is: " + response);
         assertEquals(expected, response);
         testContext.completeNow();
-      } else {
-        testContext.failNow("fail");
       }
     });
+    testContext.failNow("fail");
   }
 }

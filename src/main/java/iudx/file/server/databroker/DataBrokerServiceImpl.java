@@ -4,6 +4,9 @@ import io.vertx.core.Future;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
@@ -11,6 +14,10 @@ import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.rabbitmq.QueueOptions;
 import io.vertx.rabbitmq.RabbitMQConsumer;
+
+import java.util.concurrent.TimeUnit;
+
+import static iudx.file.server.databroker.util.Constants.CACHE_TIMEOUT_AMOUNT;
 
 
 /**
@@ -35,6 +42,12 @@ public class DataBrokerServiceImpl implements DataBrokerService{
                   .setMaxInternalQueueSize(1000)
                   .setKeepMostRecent(true);
 
+  Cache<String, String> tokenInvalidationCache =
+          CacheBuilder.newBuilder()
+                  .maximumSize(100)
+                  .expireAfterAccess(CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES)
+                  .build();
+
   public DataBrokerServiceImpl(RabbitMQClient client) {
     this.client = client;
   }
@@ -54,7 +67,9 @@ public class DataBrokerServiceImpl implements DataBrokerService{
           Buffer body = message.body();
           if(body != null) {
             JsonObject result = new JsonObject(body);
-            LOGGER.debug(result);
+            String userID = result.getString("sub");
+            String timestamp = result.getString("time");
+            tokenInvalidationCache.put(userID, timestamp);
             handler.handle(Future.succeededFuture(result));
           } else {
             LOGGER.error(consumeHandler.cause().getMessage());
