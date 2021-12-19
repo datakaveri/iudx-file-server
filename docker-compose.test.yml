@@ -7,6 +7,7 @@ services:
     image: ghcr.io/karun-singh/fs-test:latest
     volumes:
       - /home/ubuntu/configs/fs-config-dev.json:/usr/share/app/secrets/all-verticles-configs/config.json
+      - ./docker/runTests.sh:/usr/share/app/docker/runTests.sh
       - ${WORKSPACE}:/tmp/test
     command: bash -c "docker/runTests.sh && cp -r target /tmp/test"
     ports:
