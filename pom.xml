@@ -21,7 +21,7 @@
 		<slf4j-log4j12.version>1.7.30</slf4j-log4j12.version>
 		<testcontainers.version>1.15.3</testcontainers.version>
 		<testcontainer-elastic.version>1.15.3</testcontainer-elastic.version>
-		<log4j-core.version>2.16.0</log4j-core.version>
+		<log4j-core.version>2.17.0</log4j-core.version>
 		<disruptor.version>3.4.4</disruptor.version>
 		<junit-jupiter.version>1.15.3</junit-jupiter.version>
 		<elasticsearch-rest-client.version>7.12.1</elasticsearch-rest-client.version>
