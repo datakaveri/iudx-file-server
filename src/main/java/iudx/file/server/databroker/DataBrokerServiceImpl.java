@@ -1,6 +1,7 @@
 package iudx.file.server.databroker;
 
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import org.apache.logging.log4j.LogManager;
@@ -17,6 +18,9 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.rabbitmq.QueueOptions;
 import io.vertx.rabbitmq.RabbitMQConsumer;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static iudx.file.server.databroker.util.Constants.*;
@@ -46,8 +50,8 @@ public class DataBrokerServiceImpl implements DataBrokerService{
 
   Cache<String, String> tokenInvalidationCache =
           CacheBuilder.newBuilder()
-                  .maximumSize(100)
-                  .expireAfterAccess(CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES)
+                  .maximumSize(1000)
+                  .expireAfterWrite(CACHE_TIMEOUT_AMOUNT, TimeUnit.HOURS)
                   .build();
 
   public DataBrokerServiceImpl(RabbitMQClient client, PostgresClient pgClient) {
@@ -65,36 +69,36 @@ public class DataBrokerServiceImpl implements DataBrokerService{
 
     client.basicConsumer(QUEUE_NAME, options, consumeHandler -> {
       if(consumeHandler.succeeded()) {
-        RabbitMQConsumer rmqConsumer = consumeHandler.result();
-        rmqConsumer.handler(message -> {
-          Buffer body = message.body();
-          if(body != null) {
-            JsonObject result = new JsonObject(body);
-            String userID = result.getString("sub");
-            String timestamp = result.getString("time");
-            tokenInvalidationCache.put(userID, timestamp);
-            handler.handle(Future.succeededFuture(result));
-          } else {
-            LOGGER.error(consumeHandler.cause().getMessage());
-            handler.handle(Future.failedFuture("null/empty message"));
-          }
-        });
+        pullFromDB()
+                .onComplete(completionHandler -> handler.handle(Future.succeededFuture()))
+                .onFailure(failureHandler -> handler.handle(Future.failedFuture(failureHandler.getMessage())));
       } else {
-        pgClient.getAsync(QUERY).onComplete(dbHandler -> {
-          if(dbHandler.succeeded()) {
-            RowSet<Row> rowSet = dbHandler.result();
-            for(Row rs : rowSet) {
-              String userID = rs.getString("sub");
-              String timestamp = rs.getString("time");
-              tokenInvalidationCache.put(userID, timestamp);
-            }
-          } else {
-            LOGGER.fatal("Fail: Read from DB failed");
-          }
-        });
+        LOGGER.error(consumeHandler.cause().getMessage());
+        handler.handle(Future.failedFuture("null/empty message"));
       }
     });
 
     return this;
+  }
+
+  private Future<Void> pullFromDB() {
+    Promise<Void> promise = Promise.promise();
+
+    pgClient.getAsync(QUERY).onComplete(dbHandler -> {
+      if(dbHandler.succeeded()) {
+        RowSet<Row> rowSet = dbHandler.result();
+        for(Row rs : rowSet) {
+          String userID = String.valueOf(rs.getUUID("_id"));
+          String timestamp = String.valueOf(rs.getLocalDateTime("modified_at"));
+          tokenInvalidationCache.put(userID, timestamp);
+        }
+        promise.complete();
+      } else {
+        LOGGER.fatal("Fail: Read from DB failed");
+        promise.fail("Read from DB failed");
+      }
+    });
+
+    return promise.future();
   }
 }

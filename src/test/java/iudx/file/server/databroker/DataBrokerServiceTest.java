@@ -105,10 +105,10 @@ public class DataBrokerServiceTest {
 
     client = RabbitMQClient.create(vertx, config);
     pgPool = PgPool.pool(vertx, pgConnectOptions, poolOptions);
+    pgClient = new PostgresClient(pgPool);
 
     client.start(startHandler -> {
       if(startHandler.succeeded()) {
-        pgClient = new PostgresClient(pgPool);
         databroker = new DataBrokerServiceImpl(client, pgClient);
         testContext.completeNow();
       } else {
@@ -122,16 +122,14 @@ public class DataBrokerServiceTest {
   @DisplayName("Get Message from Queue")
   void successfulGetMessage(VertxTestContext testContext) {
     JsonObject expected = new JsonObject()
-            .put("sub","123e4567-e89b-12d3-a456-426614174000")
-                    .put("time","timestamp");
+            .put("_id","123e4567-e89b-12d3-a456-426614174000")
+                    .put("modified_at","2021-12-20T04:12:01.000Z");
     databroker.getMessage("file-server-token-invalidation", handler -> {
       if(handler.succeeded()) {
-        JsonObject response = handler.result();
-        logger.debug("Message from queue is: " + response);
-        assertEquals(expected, response);
         testContext.completeNow();
+      } else {
+        testContext.failNow("fail");
       }
     });
-    testContext.failNow("fail");
   }
 }

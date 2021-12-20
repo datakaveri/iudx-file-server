@@ -6,7 +6,6 @@ import org.apache.logging.log4j.Logger;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.rabbitmq.RabbitMQClient;
@@ -45,7 +44,6 @@ public class DataBrokerVerticle extends AbstractVerticle {
   private int handshakeTimeout;
   private int requestedChannelMax;
   private int networkRecoveryInterval;
-  private WebClientOptions webConfig;
 
   private ServiceBinder binder;
   private MessageConsumer<JsonObject> consumer;
@@ -99,13 +97,6 @@ public class DataBrokerVerticle extends AbstractVerticle {
     config.setNetworkRecoveryInterval(networkRecoveryInterval);
     config.setAutomaticRecoveryEnabled(true);
 
-    webConfig = new WebClientOptions();
-    webConfig.setKeepAlive(true);
-    webConfig.setConnectTimeout(86400000);
-    webConfig.setDefaultHost(dataBrokerIP);
-    webConfig.setDefaultPort(dataBrokerManagementPort);
-    webConfig.setKeepAliveTimeout(86400000);
-
     if (pgConnectOptions == null) {
       pgConnectOptions = new PgConnectOptions().setPort(databasePort).setHost(databaseIP)
               .setDatabase(databaseName).setUser(databaseUserName).setPassword(databasePassword);
@@ -118,6 +109,7 @@ public class DataBrokerVerticle extends AbstractVerticle {
 
     /* Create the client pool */
     pgPool = PgPool.pool(vertx, pgConnectOptions, poolOptions);
+    pgClient = new PostgresClient(pgPool);
 
     /* Create a RabbitMQ Client with the configuration and vertx cluster instance. */
     client = RabbitMQClient.create(vertx, config);
@@ -127,7 +119,6 @@ public class DataBrokerVerticle extends AbstractVerticle {
       if(resultHandler.succeeded()) {
         LOGGER.info("RMQ client started successfully");
 
-        pgClient = new PostgresClient(pgPool);
         dataBroker = new DataBrokerServiceImpl(client, pgClient);
 
         binder = new ServiceBinder(vertx);
