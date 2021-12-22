@@ -59,7 +59,7 @@ pipeline {
         script{
             // sh 'scp Jmeter/CatalogueServer.jmx jenkins@jenkins-master:/var/lib/jenkins/iudx/cat/Jmeter/'
             sh 'scp src/test/resources/iudx-file-server-api.Release-v3.5.postman_collection.json jenkins@jenkins-master:/var/lib/jenkins/iudx/fs/Newman/'
-            sh 'docker-compose up -f docker-compose.test.yml -d perfTest'
+            sh 'docker-compose -f docker-compose.test.yml up -d perfTest'
             sh 'sleep 45'
         }
       }
@@ -114,7 +114,7 @@ pipeline {
     
     stage('Clean up'){
       steps{
-        sh 'docker-compose down -f docker-compose.test.yml --remove-orphans'
+        sh 'docker-compose -f docker-compose.test.yml down --remove-orphans'
       }
     }
 
