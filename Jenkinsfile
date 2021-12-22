@@ -58,7 +58,7 @@ pipeline {
       steps{
         script{
             // sh 'scp Jmeter/CatalogueServer.jmx jenkins@jenkins-master:/var/lib/jenkins/iudx/cat/Jmeter/'
-            sh 'scp src/test/resources/iudx-file-server-api.Release-v3.5.postman_collection.json jenkins@jenkins-master:/var/lib/jenkins/iudx/file-server/Newman/'
+            sh 'scp src/test/resources/iudx-file-server-api.Release-v3.5.postman_collection.json jenkins@jenkins-master:/var/lib/jenkins/iudx/fs/Newman/'
             sh 'docker-compose up -f docker-compose.test.yml -d perfTest'
             sh 'sleep 45'
         }
@@ -94,7 +94,7 @@ pipeline {
           script{
             startZap ([host: 'localhost', port: 8090, zapHome: '/var/lib/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/OWASP_ZAP/ZAP_2.11.0'])
             catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-              sh 'HTTP_PROXY=\'127.0.0.1:8090\' newman run /var/lib/jenkins/iudx/file-server/Newman/iudx-file-server-api.Release-v3.5.postman_collection.json -e /home/ubuntu/configs/fs-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/file-server/Newman/report/report.html'
+              sh 'HTTP_PROXY=\'127.0.0.1:8090\' newman run /var/lib/jenkins/iudx/fs/Newman/iudx-file-server-api.Release-v3.5.postman_collection.json -e /home/ubuntu/configs/fs-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/fs/Newman/report/report.html'
             }
             runZapAttack()
           }
@@ -105,7 +105,7 @@ pipeline {
           node('master') {
             script{
                archiveZap failAllAlerts: 15
-               publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: '/var/lib/jenkins/iudx/file-server/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: ''])
+               publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: '/var/lib/jenkins/iudx/fs/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: ''])
             }  
           }
         }
