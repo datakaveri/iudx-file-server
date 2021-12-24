@@ -116,8 +116,6 @@ public class DataBrokerVerticle extends AbstractVerticle {
     /* Create a RabbitMQ Client with the configuration and vertx cluster instance. */
     client = RabbitMQClient.create(vertx, config);
 
-    LOGGER.info("RMQ client started successfully");
-
     dataBroker = new DataBrokerServiceImpl(client, pgClient, vertx);
 
     binder = new ServiceBinder(vertx);

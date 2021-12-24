@@ -78,10 +78,10 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     this.dataBrokerService = dataBrokerService;
 
     /* populate cache on startup */
-    populateCache();
+    populateCacheFromDB();
 
     /* periodically pull invalidation data to update cache */
-    vertx.setPeriodic(TimeUnit.HOURS.toMillis(6), timerHandler -> populateCache());
+    vertx.setPeriodic(TimeUnit.HOURS.toMillis(6), timerHandler -> populateCacheFromDB());
   }
 
   @Override
@@ -125,6 +125,18 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     return this;
   }
 
+  @Override
+  public AuthenticationService populateCache(JsonObject invalidationResult) {
+    LOGGER.info("populate cache is called");
+
+    Set<String> keySet = invalidationResult.getMap().keySet();
+    keySet.forEach((key) -> {
+      String modifiedAt = invalidationResult.getString(key);
+      tokenInvalidationCache.put(key,modifiedAt);
+    });
+    return this;
+  }
+
   Future<Boolean> isRevokedClientToken(JwtData jwtData) {
     Promise<Boolean> promise = Promise.promise();
     String subId = jwtData.getSub();
@@ -147,7 +159,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
           promise.complete(true);
         }
       } else {
-        promise.fail(invalidationHandler.cause());
+        LOGGER.debug("No Tokens revoked for this user");
+        promise.complete(true);
       }
     });
 
@@ -228,17 +241,12 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     return promise.future();
   }
 
-  private void populateCache() {
-    LOGGER.info("populate cache is called");
+  private void populateCacheFromDB() {
 
     dataBrokerService.getInvalidationDataFromDB(invalidationResultHandler -> {
       if(invalidationResultHandler.succeeded()) {
         JsonObject jsonResult = invalidationResultHandler.result();
-        Set<String> keySet = jsonResult.getMap().keySet();
-        keySet.forEach((key) -> {
-         String modifiedAt = jsonResult.getString(key);
-         tokenInvalidationCache.put(key,modifiedAt);
-        });
+        populateCache(jsonResult);
       } else {
         LOGGER.info(invalidationResultHandler.cause());
       }
@@ -251,8 +259,13 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     if(modified_at != null && !modified_at.isBlank()) {
       handler.handle(Future.succeededFuture(modified_at));
     } else {
-      handler.handle(Future.failedFuture("id not in cache"));
-      populateCache();
+      populateCacheFromDB();
+      modified_at = tokenInvalidationCache.getIfPresent(id);
+      if(modified_at != null && !modified_at.isBlank()) {
+        handler.handle(Future.succeededFuture(modified_at));
+      } else {
+        handler.handle(Future.failedFuture("id not in cache"));
+      }
     }
   }
 

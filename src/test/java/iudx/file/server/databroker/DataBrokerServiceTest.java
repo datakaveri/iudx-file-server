@@ -133,7 +133,7 @@ public class DataBrokerServiceTest {
   @Test
   @DisplayName("Get invalidation value from database")
   void successfulGetFromDB(VertxTestContext testContext) {
-    String expected = "2021-12-22T09:18";
+    String expected = "2020-12-22T09:18";
     String _id = "844e251b-574b-46e6-9247-f76f1f70a637";
 
     databroker.getInvalidationDataFromDB(resultHandler -> {

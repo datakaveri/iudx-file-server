@@ -37,5 +37,8 @@ public interface DataBrokerService {
   }
 
   @Fluent
+  DataBrokerService consumeMessageFromQueue(Handler<AsyncResult<JsonObject>> handler);
+
+  @Fluent
   DataBrokerService getInvalidationDataFromDB(Handler<AsyncResult<JsonObject>> handler);
 }

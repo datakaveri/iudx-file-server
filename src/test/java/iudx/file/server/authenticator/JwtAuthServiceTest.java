@@ -10,7 +10,9 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
+import io.vertx.core.DeploymentOptions;
 import iudx.file.server.databroker.DataBrokerService;
+import iudx.file.server.databroker.DataBrokerVerticle;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
@@ -67,27 +69,39 @@ public class JwtAuthServiceTest {
     authConfig = config.configLoader(2, vertx);
     authConfig.put("host", "rs.iudx.io");
 
-    JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
-    jwtAuthOptions.addPubSecKey(
-        new PubSecKeyOptions()
-            .setAlgorithm("ES256")
-            .setBuffer("-----BEGIN PUBLIC KEY-----\n" +
-                "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE8BKf2HZ3wt6wNf30SIsbyjYPkkTS\n" +
-                "GGyyM2/MGF/zYTZV9Z28hHwvZgSfnbsrF36BBKnWszlOYW0AieyAUKaKdg==\n" +
-                "-----END PUBLIC KEY-----\n" +
-                ""));
-    jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);// ignore token expiration only for test
-    JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
+   JsonObject databrokerConfig = config.configLoader(1, vertx);
+   vertx.deployVerticle(DataBrokerVerticle.class.getName(),
+           new DeploymentOptions()
+                   .setInstances(1)
+                   .setConfig(databrokerConfig),
+           databrokerDeployer -> {
+              if(databrokerDeployer.succeeded()) {
+                dataBrokerService = DataBrokerService.createProxy(vertx, DATA_BROKER_SERVICE_ADDRESS);
+                JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
+                jwtAuthOptions.addPubSecKey(
+                    new PubSecKeyOptions()
+                        .setAlgorithm("ES256")
+                        .setBuffer("-----BEGIN PUBLIC KEY-----\n" +
+                            "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE8BKf2HZ3wt6wNf30SIsbyjYPkkTS\n" +
+                            "GGyyM2/MGF/zYTZV9Z28hHwvZgSfnbsrF36BBKnWszlOYW0AieyAUKaKdg==\n" +
+                            "-----END PUBLIC KEY-----\n" +
+                            ""));
+                jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);// ignore token expiration only for test
+                JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
 
-    webClientFactory = new WebClientFactory(vertx, authConfig);
-    // catalogueService = new CatalogueServiceImpl(vertx, webClientFactory, authConfig);
-    catalogueServiceMock = mock(CatalogueServiceImpl.class);
-    dataBrokerService = DataBrokerService.createProxy(vertx, DATA_BROKER_SERVICE_ADDRESS);
-    jwtAuthenticationService = new JwtAuthenticationServiceImpl(vertx, jwtAuth, authConfig, catalogueServiceMock, dataBrokerService);
-    jwtAuthImplSpy = spy(jwtAuthenticationService);
+                webClientFactory = new WebClientFactory(vertx, authConfig);
+//                 catalogueService = new CatalogueServiceImpl(vertx, webClientFactory, authConfig);
+                catalogueServiceMock = mock(CatalogueServiceImpl.class);
+                dataBrokerService = DataBrokerService.createProxy(vertx, DATA_BROKER_SERVICE_ADDRESS);
+                jwtAuthenticationService = new JwtAuthenticationServiceImpl(vertx, jwtAuth, authConfig, catalogueServiceMock, dataBrokerService);
+                jwtAuthImplSpy = spy(jwtAuthenticationService);
 
-    LOGGER.info("Auth tests setup complete");
-    testContext.completeNow();
+                LOGGER.info("Auth tests setup complete");
+                testContext.completeNow();
+              } else {
+                testContext.failNow("fail to deploy DataBroker Verticle for JWT Verticle Test");
+              }
+           });
   }
 
 
@@ -498,6 +512,24 @@ public class JwtAuthServiceTest {
     AuthorizationRequest authR1= new AuthorizationRequest(POST, UPLOAD);
     AuthorizationRequest authR2= new AuthorizationRequest(POST, UPLOAD);
     assertEquals(authR1.hashCode(), authR2.hashCode());
+  }
+
+  @Test
+  @DisplayName("Successful population of cache")
+  public void successfulPopulateCacheTest(VertxTestContext testContext) {
+    String expected = "2020-12-22T09:18";
+    String _id = "844e251b-574b-46e6-9247-f76f1f70a637";
+
+    dataBrokerService.consumeMessageFromQueue(consumeHandler -> {
+      if(consumeHandler.succeeded()) {
+        String actual = jwtAuthenticationService.tokenInvalidationCache.getIfPresent(_id);
+        assertEquals(expected,actual);
+        testContext.completeNow();
+
+      } else {
+        testContext.failNow("epic fail");
+      }
+    });
   }
 
 

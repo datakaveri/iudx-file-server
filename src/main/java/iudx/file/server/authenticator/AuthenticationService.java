@@ -1,5 +1,6 @@
 package iudx.file.server.authenticator;
 
+import com.google.common.cache.Cache;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
@@ -43,4 +44,8 @@ public interface AuthenticationService {
   AuthenticationService tokenInterospect(JsonObject request,
       JsonObject authenticationInfo,
       Handler<AsyncResult<JsonObject>> handler);
+
+  @Fluent
+  AuthenticationService populateCache(JsonObject invalidationResult);
+
 }

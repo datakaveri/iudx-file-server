@@ -4,6 +4,9 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
+import iudx.file.server.auditing.AuditingServiceImpl;
+import iudx.file.server.authenticator.AuthenticationService;
+import iudx.file.server.authenticator.JwtAuthenticationServiceImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -14,6 +17,7 @@ import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.QueueOptions;
 
 
+import static iudx.file.server.common.Constants.AUTH_SERVICE_ADDRESS;
 import static iudx.file.server.databroker.util.Constants.*;
 
 /**
@@ -33,6 +37,7 @@ public class DataBrokerServiceImpl implements DataBrokerService{
   private static final Logger LOGGER = LogManager.getLogger(DataBrokerServiceImpl.class);
   private final RabbitMQClient client;
   private final PostgresClient pgClient;
+  private final AuthenticationService authenticationService;
 
   private final QueueOptions options =
           new QueueOptions()
@@ -43,6 +48,15 @@ public class DataBrokerServiceImpl implements DataBrokerService{
   public DataBrokerServiceImpl(RabbitMQClient client, PostgresClient pgClient, Vertx vertx) {
     this.client = client;
     this.pgClient = pgClient;
+    this.client.start(startHandler -> {
+      if(startHandler.succeeded()) {
+        LOGGER.info("RMQ started");
+      } else {
+        LOGGER.error("RMQ start failed");
+      }
+    });
+
+    authenticationService = AuthenticationService.createProxy(vertx,AUTH_SERVICE_ADDRESS);
 
     /* consume message from queue on startup */
     consumeMessageFromQueue(handler -> {
@@ -52,7 +66,8 @@ public class DataBrokerServiceImpl implements DataBrokerService{
     });
   }
 
-  void consumeMessageFromQueue(Handler<AsyncResult<JsonObject>> handler) {
+  @Override
+  public DataBrokerService consumeMessageFromQueue(Handler<AsyncResult<JsonObject>> handler) {
 
     if (!client.isConnected()) {
       client.start();
@@ -62,6 +77,7 @@ public class DataBrokerServiceImpl implements DataBrokerService{
       if(consumeHandler.succeeded()) {
         getInvalidationDataFromDB(invalidationHandler -> {
           if(invalidationHandler.succeeded()) {
+            authenticationService.populateCache(invalidationHandler.result());
             handler.handle(Future.succeededFuture());
           } else {
             handler.handle(Future.failedFuture(invalidationHandler.cause()));
@@ -72,6 +88,8 @@ public class DataBrokerServiceImpl implements DataBrokerService{
         handler.handle(Future.failedFuture("null/empty message"));
       }
     });
+
+    return this;
   }
 
 
