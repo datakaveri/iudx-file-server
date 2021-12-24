@@ -32,6 +32,28 @@
             }
         },
         {
+            "id": "iudx.file.server.databroker.DataBrokerVerticle",
+            "verticleInstances": 1,
+            "dataBrokerIP": "localhost",
+            "dataBrokerPort": 12345,
+            "dataBrokerVhost": "",
+            "dataBrokerUserName": "",
+            "dataBrokerPassword": "",
+            "dataBrokerManagementPort": 30042,
+            "connectionTimeout": 6000,
+            "requestedHeartbeat": 60,
+            "handshakeTimeout": 6000,
+            "requestedChannelMax": 5,
+            "networkRecoveryInterval": 500,
+            "automaticRecoveryEnabled": "true",
+            "callbackDatabaseIP": "localhost",
+            "callbackDatabasePort": 5432,
+            "callbackDatabaseName": "",
+            "callbackDatabaseUserName": "",
+            "callbackDatabasePassword": "",
+            "callbackpoolSize": 25
+        },
+        {
             "id": "iudx.file.server.authenticator.AuthenticationVerticle",
             "verticleInstances": 1,
             
@@ -67,22 +89,6 @@
             "auditingDatabaseUserName": "",
             "auditingDatabasePassword": "",
             "auditingPoolSize": 25
-        },
-        {
-            "id": "iudx.file.server.databroker.DataBrokerVerticle",
-            "verticleInstances": 1,
-            "dataBrokerIP": "",
-            "dataBrokerPort": 1234,
-            "dataBrokerVhost": "",
-            "dataBrokerUserName": "",
-            "dataBrokerPassword": "",
-            "dataBrokerManagementPort": 30042,
-            "connectionTimeout": 6000,
-            "requestedHeartbeat": 60,
-            "handshakeTimeout": 6000,
-            "requestedChannelMax": 5,
-            "networkRecoveryInterval": 500,
-            "automaticRecoveryEnabled": "true"
         }
     ]
 }

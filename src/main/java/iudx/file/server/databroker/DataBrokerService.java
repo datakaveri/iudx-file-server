@@ -1,10 +1,9 @@
 package iudx.file.server.databroker;
 
-import io.vertx.codegen.annotations.Fluent;
-import io.vertx.codegen.annotations.ProxyGen;
-import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.codegen.annotations.*;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -26,11 +25,17 @@ import io.vertx.core.json.JsonObject;
 public interface DataBrokerService {
 
   /**
-   * The getMessage implements the read from a queue of the data broker.
+   * The createProxy helps the code generation blocks to generate proxy code.
    *
-   * @param queueName which is a String
-   * @param handler which is a Request Handler
+   * @param vertx which is the vertx instance
+   * @param address which is the proxy address
+   * @return DataBrokerServiceVertxEBProxy which is a service proxy
    */
+  @GenIgnore
+  static DataBrokerService createProxy(Vertx vertx, String address) {
+    return new DataBrokerServiceVertxEBProxy(vertx, address);
+  }
+
   @Fluent
-  DataBrokerService getMessage(String queueName, Handler<AsyncResult<JsonObject>> handler);
+  DataBrokerService getInvalidationDataFromDB(Handler<AsyncResult<JsonObject>> handler);
 }

@@ -5,5 +5,5 @@ public class Constants {
   public static final String SUCCESS = "success";
   public static final String QUEUE_NAME = "file-server-token-invalidation";
   public static final int CACHE_TIMEOUT_AMOUNT = 12;
-  public static final String QUERY = "SELECT _id,modified_at FROM revoke_tokens ORDER BY modified_at DESC LIMIT 10";
+  public static final String QUERY = "SELECT _id,modified_at FROM revoke_tokens;";
 }

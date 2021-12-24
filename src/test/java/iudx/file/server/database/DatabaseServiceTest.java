@@ -63,7 +63,7 @@ public class DatabaseServiceTest {
       throws TimeoutException, IOException {
 
     config = new Configuration();
-    dbConfig = config.configLoader(2, vertx);
+    dbConfig = config.configLoader(3, vertx);
     mapping = vertx.fileSystem().readFileBlocking("src/test/resources/mapping.json").toJsonObject();
     data = vertx.fileSystem().readFileBlocking("src/test/resources/data.json").toJsonArray();
     // LOGGER.debug("mapping : " + mapping);

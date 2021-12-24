@@ -2,6 +2,7 @@ package iudx.file.server.authenticator;
 
 import static iudx.file.server.authenticator.authorization.Api.UPLOAD;
 import static iudx.file.server.authenticator.authorization.Method.*;
+import static iudx.file.server.common.Constants.DATA_BROKER_SERVICE_ADDRESS;
 import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -9,6 +10,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
+import iudx.file.server.databroker.DataBrokerService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
@@ -43,6 +45,7 @@ public class JwtAuthServiceTest {
   private static JwtAuthenticationServiceImpl jwtAuthenticationService;
   private static Configuration config;
   private static CatalogueService catalogueServiceMock;
+  private static DataBrokerService dataBrokerService;
   private static JwtAuthenticationServiceImpl jwtAuthImplSpy;
   private static WebClientFactory webClientFactory;
 
@@ -61,7 +64,7 @@ public class JwtAuthServiceTest {
   @DisplayName("Initialize Vertx and deploy Auth Verticle")
   static void init(Vertx vertx, VertxTestContext testContext) {
     config = new Configuration();
-    authConfig = config.configLoader(1, vertx);
+    authConfig = config.configLoader(2, vertx);
     authConfig.put("host", "rs.iudx.io");
 
     JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
@@ -79,7 +82,8 @@ public class JwtAuthServiceTest {
     webClientFactory = new WebClientFactory(vertx, authConfig);
     // catalogueService = new CatalogueServiceImpl(vertx, webClientFactory, authConfig);
     catalogueServiceMock = mock(CatalogueServiceImpl.class);
-    jwtAuthenticationService = new JwtAuthenticationServiceImpl(vertx, jwtAuth, authConfig, catalogueServiceMock);
+    dataBrokerService = DataBrokerService.createProxy(vertx, DATA_BROKER_SERVICE_ADDRESS);
+    jwtAuthenticationService = new JwtAuthenticationServiceImpl(vertx, jwtAuth, authConfig, catalogueServiceMock, dataBrokerService);
     jwtAuthImplSpy = spy(jwtAuthenticationService);
 
     LOGGER.info("Auth tests setup complete");
@@ -437,7 +441,49 @@ public class JwtAuthServiceTest {
       }
     });
   }
-  
+
+  @Test
+  @DisplayName("success - token not expired")
+  public void success4nonExpiredToken(VertxTestContext testContext) {
+    JwtData jwtData = new JwtData();
+    jwtData.setIss("auth.test.com");
+    jwtData.setSub("ccfe1562-f392-4813-8629-98a78bd9dd4c");
+    jwtData.setExp(1658408865L);
+    jwtData.setIat(1647408865L);
+    jwtData.setRole("consumer");
+
+    jwtAuthenticationService.tokenInvalidationCache.put("ccfe1562-f392-4813-8629-98a78bd9dd4c","2022-03-16T05:34:25");
+
+    jwtAuthenticationService.isRevokedClientToken(jwtData).onComplete(handler -> {
+      if (handler.succeeded()) {
+        testContext.completeNow();
+      } else {
+        testContext.failNow("failed for non-expired token");
+      }
+    });
+  }
+
+  @Test
+  @DisplayName("fail - expired token is passed")
+  public void fail4nonExpiredToken(VertxTestContext testContext) {
+    JwtData jwtData = new JwtData();
+    jwtData.setIss("auth.test.com");
+    jwtData.setSub("ccfe1562-f392-4813-8629-98a78bd9dd4c");
+    jwtData.setExp(1658408865L);
+    jwtData.setIat(1627408865L);
+    jwtData.setRole("consumer");
+
+    jwtAuthenticationService.tokenInvalidationCache.put("ccfe1562-f392-4813-8629-98a78bd9dd4c","2022-03-16T05:34:25");
+
+    jwtAuthenticationService.isRevokedClientToken(jwtData).onComplete(handler -> {
+      if (handler.succeeded()) {
+        testContext.failNow("Expired token bypasses test case");
+      } else {
+        testContext.completeNow();
+      }
+    });
+  }
+
   @Test
   @DisplayName("authRequest should not equal")
   public void authRequestShouldNotEquals() {

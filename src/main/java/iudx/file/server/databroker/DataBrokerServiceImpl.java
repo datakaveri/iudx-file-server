@@ -1,27 +1,18 @@
 package iudx.file.server.databroker;
 
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rabbitmq.RabbitMQClient;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.rabbitmq.QueueOptions;
-import io.vertx.rabbitmq.RabbitMQConsumer;
 
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import static iudx.file.server.databroker.util.Constants.*;
 
@@ -48,57 +39,61 @@ public class DataBrokerServiceImpl implements DataBrokerService{
                   .setMaxInternalQueueSize(1000)
                   .setKeepMostRecent(true);
 
-  Cache<String, String> tokenInvalidationCache =
-          CacheBuilder.newBuilder()
-                  .maximumSize(1000)
-                  .expireAfterWrite(CACHE_TIMEOUT_AMOUNT, TimeUnit.HOURS)
-                  .build();
 
-  public DataBrokerServiceImpl(RabbitMQClient client, PostgresClient pgClient) {
+  public DataBrokerServiceImpl(RabbitMQClient client, PostgresClient pgClient, Vertx vertx) {
     this.client = client;
     this.pgClient = pgClient;
+
+    /* consume message from queue on startup */
+    consumeMessageFromQueue(handler -> {
+      if(handler.succeeded()) {
+        LOGGER.info("Queue messages consumed ");
+      }
+    });
   }
 
+  void consumeMessageFromQueue(Handler<AsyncResult<JsonObject>> handler) {
 
-  @Override
-  public DataBrokerService getMessage(String queueName, Handler<AsyncResult<JsonObject>> handler) {
-
-    if(!client.isConnected()) {
+    if (!client.isConnected()) {
       client.start();
     }
 
     client.basicConsumer(QUEUE_NAME, options, consumeHandler -> {
       if(consumeHandler.succeeded()) {
-        pullFromDB()
-                .onComplete(completionHandler -> handler.handle(Future.succeededFuture()))
-                .onFailure(failureHandler -> handler.handle(Future.failedFuture(failureHandler.getMessage())));
+        getInvalidationDataFromDB(invalidationHandler -> {
+          if(invalidationHandler.succeeded()) {
+            handler.handle(Future.succeededFuture());
+          } else {
+            handler.handle(Future.failedFuture(invalidationHandler.cause()));
+          }
+        });
       } else {
-        LOGGER.error(consumeHandler.cause().getMessage());
+        LOGGER.info(consumeHandler.cause().getMessage());
         handler.handle(Future.failedFuture("null/empty message"));
       }
     });
-
-    return this;
   }
 
-  private Future<Void> pullFromDB() {
-    Promise<Void> promise = Promise.promise();
+
+  @Override
+  public DataBrokerService getInvalidationDataFromDB(Handler<AsyncResult<JsonObject>> resultHandler) {
 
     pgClient.getAsync(QUERY).onComplete(dbHandler -> {
       if(dbHandler.succeeded()) {
         RowSet<Row> rowSet = dbHandler.result();
+        JsonObject invalidationResult =  new JsonObject();
         for(Row rs : rowSet) {
           String userID = String.valueOf(rs.getUUID("_id"));
           String timestamp = String.valueOf(rs.getLocalDateTime("modified_at"));
-          tokenInvalidationCache.put(userID, timestamp);
+          invalidationResult.put(userID,timestamp);
         }
-        promise.complete();
+        resultHandler.handle(Future.succeededFuture(invalidationResult));
       } else {
         LOGGER.fatal("Fail: Read from DB failed");
-        promise.fail("Read from DB failed");
+        resultHandler.handle(Future.failedFuture(dbHandler.cause()));
       }
     });
 
-    return promise.future();
+    return this;
   }
 }

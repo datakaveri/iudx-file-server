@@ -13,6 +13,8 @@ import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.serviceproxy.ServiceBinder;
 import io.vertx.sqlclient.PoolOptions;
 
+import static iudx.file.server.common.Constants.DATA_BROKER_SERVICE_ADDRESS;
+
 /**
  * The Data Broker Verticle.
  * <h1>Data Broker Verticle</h1>
@@ -27,7 +29,7 @@ import io.vertx.sqlclient.PoolOptions;
 
 public class DataBrokerVerticle extends AbstractVerticle {
 
-  private static final String BROKER_SERVICE_ADDRESS = "iudx.file.broker.service";
+  private static final String BROKER_SERVICE_ADDRESS = DATA_BROKER_SERVICE_ADDRESS;
   private static final Logger LOGGER = LogManager.getLogger(DataBrokerVerticle.class);
   private DataBrokerService dataBroker;
   private PostgresClient pgClient;
@@ -114,24 +116,16 @@ public class DataBrokerVerticle extends AbstractVerticle {
     /* Create a RabbitMQ Client with the configuration and vertx cluster instance. */
     client = RabbitMQClient.create(vertx, config);
 
-    /* Call the databroker constructor with the RabbitMQ client. */
-    client.start(resultHandler -> {
-      if(resultHandler.succeeded()) {
-        LOGGER.info("RMQ client started successfully");
+    LOGGER.info("RMQ client started successfully");
 
-        dataBroker = new DataBrokerServiceImpl(client, pgClient);
+    dataBroker = new DataBrokerServiceImpl(client, pgClient, vertx);
 
-        binder = new ServiceBinder(vertx);
+    binder = new ServiceBinder(vertx);
 
-        /* Publish the Data Broker service with the Event Bus against an address. */
-        consumer = binder
-                .setAddress(BROKER_SERVICE_ADDRESS)
-                .register(DataBrokerService.class, dataBroker);
-      } else {
-        LOGGER.info("RMQ client startup failed");
-        LOGGER.error(resultHandler.cause());
-      }
-    });
+    /* Publish the Data Broker service with the Event Bus against an address. */
+    consumer = binder
+            .setAddress(BROKER_SERVICE_ADDRESS)
+            .register(DataBrokerService.class, dataBroker);
   }
 
 

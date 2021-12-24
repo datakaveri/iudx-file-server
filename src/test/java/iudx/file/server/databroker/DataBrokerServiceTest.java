@@ -6,9 +6,7 @@ import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.sqlclient.PoolOptions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import io.vertx.core.Vertx;
@@ -20,12 +18,13 @@ import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
 import iudx.file.server.configuration.Configuration;
 import io.vertx.pgclient.PgPool;
-import io.vertx.sqlclient.SqlConnection;
+
+import java.util.HashMap;
 
 @ExtendWith(VertxExtension.class)
 public class DataBrokerServiceTest {
 
-  static DataBrokerService databroker;
+  static DataBrokerServiceImpl databroker;
   static PostgresClient pgClient;
   static private String dataBrokerIP;
   static private int dataBrokerPort;
@@ -58,7 +57,7 @@ public class DataBrokerServiceTest {
   @DisplayName("Deploy verticle")
   static void startVertx(Vertx vertx, VertxTestContext testContext) {
     appConfig = new Configuration();
-    JsonObject brokerConfig =  appConfig.configLoader(4, vertx);
+    JsonObject brokerConfig =  appConfig.configLoader(1, vertx);
     dataBrokerIP = brokerConfig.getString("dataBrokerIP");
     dataBrokerPort = brokerConfig.getInteger("dataBrokerPort");
     dataBrokerManagementPort =
@@ -109,7 +108,7 @@ public class DataBrokerServiceTest {
 
     client.start(startHandler -> {
       if(startHandler.succeeded()) {
-        databroker = new DataBrokerServiceImpl(client, pgClient);
+        databroker = new DataBrokerServiceImpl(client, pgClient, vertx);
         testContext.completeNow();
       } else {
         logger.error("startup failed");
@@ -121,15 +120,32 @@ public class DataBrokerServiceTest {
   @Test
   @DisplayName("Get Message from Queue")
   void successfulGetMessage(VertxTestContext testContext) {
-    JsonObject expected = new JsonObject()
-            .put("_id","123e4567-e89b-12d3-a456-426614174000")
-                    .put("modified_at","2021-12-20T04:12:01.000Z");
-    databroker.getMessage("file-server-token-invalidation", handler -> {
+
+    databroker.consumeMessageFromQueue(handler -> {
       if(handler.succeeded()) {
         testContext.completeNow();
       } else {
         testContext.failNow("fail");
       }
     });
+  }
+
+  @Test
+  @DisplayName("Get invalidation value from database")
+  void successfulGetFromDB(VertxTestContext testContext) {
+    String expected = "2021-12-22T09:18";
+    String _id = "844e251b-574b-46e6-9247-f76f1f70a637";
+
+    databroker.getInvalidationDataFromDB(resultHandler -> {
+      if(resultHandler.succeeded()) {
+        String actual = resultHandler.result().getString(_id);
+        assertEquals(expected,actual);
+        testContext.completeNow();
+      } else {
+        testContext.failNow("fail");
+      }
+    });
+
+
   }
 }
