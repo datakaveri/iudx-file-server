@@ -3,7 +3,7 @@
 		"_postman_id": "ccba3e41-9daf-47b9-af75-63ff0117fe16",
 		"name": "iudx-file-server-api",
 		"description": "iudx-file-server-api",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "http://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -24,8 +24,8 @@
 							}
 						},
 						"url": {
-							"raw": "https://authdev.iudx.io/auth/v1/token",
-							"protocol": "https",
+							"raw": "http://authdev.iudx.io/auth/v1/token",
+							"protocol": "http",
 							"host": [
 								"authdev",
 								"iudx",
@@ -108,7 +108,7 @@
 						},
 						"url": {
 							"raw": "{{base_url}}:8443/iudx/v1/upload",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -185,7 +185,7 @@
 						},
 						"url": {
 							"raw": "{{base_url}}:8443/iudx/v1/upload",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -292,7 +292,7 @@
 						},
 						"url": {
 							"raw": "{{base_url}}:8443/iudx/v1/upload",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -384,7 +384,7 @@
 						},
 						"url": {
 							"raw": "{{base_url}}:8443/iudx/v1/upload",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -450,7 +450,7 @@
 						},
 						"url": {
 							"raw": "{{base_url}}:8443/iudx/v1/upload",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -516,7 +516,7 @@
 						},
 						"url": {
 							"raw": "{{base_url}}:8443/iudx/v1/upload",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -562,7 +562,7 @@
 						],
 						"url": {
 							"raw": "{{base_url}}:8443/iudx/v1/download?file-id={{rl_sample}}",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -608,7 +608,7 @@
 						],
 						"url": {
 							"raw": "{{base_url}}:8443/iudx/v1/download?file-id={{rl_sample}}_abced",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -655,7 +655,7 @@
 						],
 						"url": {
 							"raw": "{{base_url}}:8443/iudx/v1/download?file-id={{gl_sample}}",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -701,7 +701,7 @@
 						],
 						"url": {
 							"raw": "{{base_url}}:8443/iudx/v1/download?file-id={{rl_archive}}",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -747,7 +747,7 @@
 						],
 						"url": {
 							"raw": "{{base_url}}:8443/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/8185010f-705d-4966-ac44-2050887c68f3_invalid.txt",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -793,7 +793,7 @@
 						],
 						"url": {
 							"raw": "{{base_url}}:8443/iudx/v1/download?file-id={{gl_archive}}",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -839,7 +839,7 @@
 						],
 						"url": {
 							"raw": "{{base_url}}:8443/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/0fad5b98-4e90-4c06-bd68-1fba01a5a6ab.txt",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -892,7 +892,7 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}:8443/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information&time=2020-09-10T00:00:00Z&endTime=2020-09-15T00:00:00Z&timerel=during",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -953,7 +953,7 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}:8443/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&time=2020-09-10T00:00:00Z&endTime=2020-09-15T00:00:00Z&timerel=during",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -1014,7 +1014,7 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}:8443/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&time=2020-09-10T00:00:00Z&endTime=2020-09-15T00:00:00Z&timerel=during&georel=near;maxDistance=10000&geometry=point&coordinates=[72.79,21.16]",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -1094,7 +1094,7 @@
 						],
 						"url": {
 							"raw": "{{base_url}}:8443/iudx/v1/list?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -1142,7 +1142,7 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}:8443/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&georel=near;maxDistance=10000&geometry=point&coordinates=[72.79,21.16]",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -1211,7 +1211,7 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}:8443/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&georel=within&geometry=polygon&coordinates=[[[72.7815,21.1726],[72.7856,21.1519],[72.807,21.1527],[72.8170,21.1680],[72.800,21.1808],[72.7815,21.1726]]]",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -1279,7 +1279,7 @@
 						],
 						"url": {
 							"raw": "{{base_url}}:8443/iudx/v1/delete?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/992cad13-6725-42ab-bcee-e4e53fda0.csv",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -1325,7 +1325,7 @@
 						],
 						"url": {
 							"raw": "{{base_url}}:8443/iudx/v1/delete?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/992cad13-6725-42ab-bcee-e4e53fda0.csv",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -1358,7 +1358,7 @@
 						],
 						"url": {
 							"raw": "{{base_url}}:8443/iudx/v1/delete?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/bf7b00db-0b5f-489f-b33e-3ae901144.csv",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -1404,7 +1404,7 @@
 						],
 						"url": {
 							"raw": "{{base_url}}:8443/iudx/v1/delete?file-id={{rl_sample}}",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -1450,7 +1450,7 @@
 						],
 						"url": {
 							"raw": "{{base_url}}:8443/iudx/v1/delete?file-id={{gl_sample}}",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -1496,7 +1496,7 @@
 						],
 						"url": {
 							"raw": "{{base_url}}:8443/iudx/v1/delete?file-id={{rl_archive}}",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
@@ -1542,7 +1542,7 @@
 						],
 						"url": {
 							"raw": "{{base_url}}:8443/iudx/v1/delete?file-id={{gl_archive}}",
-							"protocol": "https",
+							"protocol": "http",
 							"host": [
 								"{{base_url}}"
 							],
