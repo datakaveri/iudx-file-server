@@ -13,8 +13,6 @@ services:
       - ./src/:/usr/share/app/src
       - ${WORKSPACE}:/tmp/test
     command: bash -c "docker/runTests.sh && cp -r target /tmp/test"
-    ports:
-      - "8080:8080"
     networks: 
       - fs-net
 
@@ -28,6 +26,6 @@ services:
       - ${WORKSPACE}:/tmp/test
     command: bash -c "mvn clean compile exec:java@file-server"
     ports:
-      - "8080:8080"
+      - "8443:8080"
     networks: 
       - fs-net
