@@ -112,11 +112,11 @@ pipeline {
       }
     }
     
-    stage('Clean up'){
-      steps{
-        sh 'docker-compose -f docker-compose.test.yml down --remove-orphans'
-      }
-    }
+    // stage('Clean up'){
+    //   steps{
+    //     sh 'docker-compose -f docker-compose.test.yml down --remove-orphans'
+    //   }
+    // }
 
     stage('Push Image') {
       when{
