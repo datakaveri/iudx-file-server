@@ -1,7 +1,6 @@
 package iudx.file.server.authenticator;
 
 import static iudx.file.server.authenticator.utilities.Constants.*;
-import static iudx.file.server.databroker.util.Constants.CACHE_TIMEOUT_AMOUNT;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -9,7 +8,7 @@ import java.time.ZoneId;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import iudx.file.server.databroker.DataBrokerService;
+import iudx.file.server.cachelayer.CacheService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -45,7 +44,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   final int port;;
   final String audience;
   final CatalogueService catalogueService;
-  final DataBrokerService dataBrokerService;
+  final CacheService cacheService;
 
   // resourceGroupCache will contains ACL info about all resource group in a resource server
   private final Cache<String, String> resourceGroupCache = CacheBuilder
@@ -61,27 +60,16 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       .build();
 
 
-  public final Cache<String, String> tokenInvalidationCache =
-          CacheBuilder.newBuilder()
-                  .maximumSize(1000)
-                  .expireAfterWrite(CACHE_TIMEOUT_AMOUNT, TimeUnit.HOURS)
-                  .build();
-
   JwtAuthenticationServiceImpl(Vertx vertx, final JWTAuth jwtAuth, final JsonObject config,
-      final CatalogueService catalogueService,final DataBrokerService dataBrokerService) {
+      final CatalogueService catalogueService,final CacheService cacheService) {
     this.jwtAuth = jwtAuth;
     this.audience = config.getString("host");
     this.catalogueService = catalogueService;
     host = config.getString("catalogueHost");
     port = config.getInteger("cataloguePort");
 
-    this.dataBrokerService = dataBrokerService;
+    this.cacheService = cacheService;
 
-    /* populate cache on startup */
-    populateCacheFromDB();
-
-    /* periodically pull invalidation data to update cache */
-    vertx.setPeriodic(TimeUnit.HOURS.toMillis(6), timerHandler -> populateCacheFromDB());
   }
 
   @Override
@@ -125,23 +113,11 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     return this;
   }
 
-  @Override
-  public AuthenticationService populateCache(JsonObject invalidationResult) {
-    LOGGER.info("populate cache is called");
-
-    Set<String> keySet = invalidationResult.getMap().keySet();
-    keySet.forEach((key) -> {
-      String modifiedAt = invalidationResult.getString(key);
-      tokenInvalidationCache.put(key,modifiedAt);
-    });
-    return this;
-  }
-
   Future<Boolean> isRevokedClientToken(JwtData jwtData) {
     Promise<Boolean> promise = Promise.promise();
     String subId = jwtData.getSub();
 
-    getInvalidationTimeFromCache(subId, invalidationHandler -> {
+    cacheService.getInvalidationTimeFromCache(subId, invalidationHandler -> {
       if(invalidationHandler.succeeded()) {
         String timestamp = invalidationHandler.result();
         LOGGER.info("token issued before " + timestamp + " are revoked for this user");
@@ -239,34 +215,6 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     }
 
     return promise.future();
-  }
-
-  private void populateCacheFromDB() {
-
-    dataBrokerService.getInvalidationDataFromDB(invalidationResultHandler -> {
-      if(invalidationResultHandler.succeeded()) {
-        JsonObject jsonResult = invalidationResultHandler.result();
-        populateCache(jsonResult);
-      } else {
-        LOGGER.info(invalidationResultHandler.cause());
-      }
-    });
-  }
-
-  public void getInvalidationTimeFromCache(String id, Handler<AsyncResult<String>> handler) {
-    String modified_at = tokenInvalidationCache.getIfPresent(id);
-
-    if(modified_at != null && !modified_at.isBlank()) {
-      handler.handle(Future.succeededFuture(modified_at));
-    } else {
-      populateCacheFromDB();
-      modified_at = tokenInvalidationCache.getIfPresent(id);
-      if(modified_at != null && !modified_at.isBlank()) {
-        handler.handle(Future.succeededFuture(modified_at));
-      } else {
-        handler.handle(Future.failedFuture("id not in cache"));
-      }
-    }
   }
 
 }

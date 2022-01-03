@@ -1,8 +1,6 @@
 package iudx.file.server.authenticator;
 
-import static iudx.file.server.common.Constants.AUTH_SERVICE_ADDRESS;
-import static iudx.file.server.common.Constants.DATA_BROKER_SERVICE_ADDRESS;
-
+import iudx.file.server.cachelayer.CacheService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -23,12 +21,15 @@ import iudx.file.server.common.service.CatalogueService;
 import iudx.file.server.common.service.impl.CatalogueServiceImpl;
 import iudx.file.server.databroker.DataBrokerService;
 
+import static iudx.file.server.common.Constants.*;
+
 public class AuthenticationVerticle extends AbstractVerticle {
 
   private AuthenticationService auth;
   private CatalogueService catalogueService;
   private WebClientFactory webClientFactory;
-  private DataBrokerService dataBrokerService;
+//  private DataBrokerService dataBrokerService;
+	private CacheService cacheService;
   private static final String authAddress = AUTH_SERVICE_ADDRESS;
   private ServiceBinder binder;
   private MessageConsumer<JsonObject> consumer;
@@ -64,10 +65,10 @@ public class AuthenticationVerticle extends AbstractVerticle {
 			/* Publish the Authentication service with the Event Bus against an address. */
 			binder = new ServiceBinder(vertx);
 
-			dataBrokerService = DataBrokerService.createProxy(vertx,DATA_BROKER_SERVICE_ADDRESS);
+			cacheService = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
 			//@TODO: replace binder with jwt once auth server available.
 			jwtAuthenticationService =
-					new JwtAuthenticationServiceImpl(vertx, jwtAuth, config(), catalogueService, dataBrokerService);
+					new JwtAuthenticationServiceImpl(vertx, jwtAuth, config(), catalogueService, cacheService);
 
 			consumer = binder.setAddress(AUTH_SERVICE_ADDRESS).register(AuthenticationService.class,
 					jwtAuthenticationService);

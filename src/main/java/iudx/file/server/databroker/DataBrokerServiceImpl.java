@@ -4,9 +4,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
-import iudx.file.server.auditing.AuditingServiceImpl;
-import iudx.file.server.authenticator.AuthenticationService;
-import iudx.file.server.authenticator.JwtAuthenticationServiceImpl;
+import iudx.file.server.cachelayer.CacheService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,7 +15,7 @@ import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.QueueOptions;
 
 
-import static iudx.file.server.common.Constants.AUTH_SERVICE_ADDRESS;
+import static iudx.file.server.common.Constants.CACHE_SERVICE_ADDRESS;
 import static iudx.file.server.databroker.util.Constants.*;
 
 /**
@@ -37,7 +35,7 @@ public class DataBrokerServiceImpl implements DataBrokerService{
   private static final Logger LOGGER = LogManager.getLogger(DataBrokerServiceImpl.class);
   private final RabbitMQClient client;
   private final PostgresClient pgClient;
-  private final AuthenticationService authenticationService;
+  private final CacheService cacheService;
 
   private final QueueOptions options =
           new QueueOptions()
@@ -56,7 +54,7 @@ public class DataBrokerServiceImpl implements DataBrokerService{
       }
     });
 
-    authenticationService = AuthenticationService.createProxy(vertx,AUTH_SERVICE_ADDRESS);
+    cacheService = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
 
     /* consume message from queue on startup */
     consumeMessageFromQueue(handler -> {
@@ -77,7 +75,7 @@ public class DataBrokerServiceImpl implements DataBrokerService{
       if(consumeHandler.succeeded()) {
         getInvalidationDataFromDB(invalidationHandler -> {
           if(invalidationHandler.succeeded()) {
-            authenticationService.populateCache(invalidationHandler.result());
+            cacheService.populateCache(invalidationHandler.result());
             handler.handle(Future.succeededFuture());
           } else {
             handler.handle(Future.failedFuture(invalidationHandler.cause()));
