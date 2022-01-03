@@ -6,7 +6,7 @@ services:
   test:
     image: ghcr.io/karun-singh/fs-test:latest
     volumes:
-      - /home/ubuntu/configs/fs-config-test.json:/usr/share/app/secrets/all-verticles-configs/config.json
+      - /home/ubuntu/configs/fs-config-test.json:/usr/share/app/secrets/all-verticles-configs/config-dev.json
       - /home/ubuntu/configs/keystore-file.jks:/usr/share/app/secrets/keystore-file.jks
       - /home/ubuntu/configs/keystore-rs.jks:/usr/share/app/secrets/keystore-rs.jks      
       - ./docker/runTests.sh:/usr/share/app/docker/runTests.sh
@@ -19,7 +19,7 @@ services:
   perfTest:
     image: ghcr.io/karun-singh/fs-test:latest
     volumes:
-      - /home/ubuntu/configs/fs-config-test.json:/usr/share/app/secrets/all-verticles-configs/config.json
+      - /home/ubuntu/configs/fs-config-test.json:/usr/share/app/secrets/all-verticles-configs/config-dev.json
       - /home/ubuntu/configs/keystore-file.jks:/usr/share/app/secrets/keystore-file.jks
       - /home/ubuntu/configs/keystore-rs.jks:/usr/share/app/secrets/keystore-rs.jks
       - ./src/:/usr/share/app/src
