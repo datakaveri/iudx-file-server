@@ -2,7 +2,7 @@ package iudx.file.server.authenticator;
 
 import static iudx.file.server.authenticator.authorization.Api.UPLOAD;
 import static iudx.file.server.authenticator.authorization.Method.*;
-import static iudx.file.server.common.Constants.DATA_BROKER_SERVICE_ADDRESS;
+import static iudx.file.server.common.Constants.CACHE_SERVICE_ADDRESS;
 import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -11,8 +11,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 import io.vertx.core.DeploymentOptions;
-import iudx.file.server.databroker.DataBrokerService;
-import iudx.file.server.databroker.DataBrokerVerticle;
+import iudx.file.server.cachelayer.CacheService;
+import iudx.file.server.cachelayer.CacheVerticle;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
@@ -47,7 +47,7 @@ public class JwtAuthServiceTest {
   private static JwtAuthenticationServiceImpl jwtAuthenticationService;
   private static Configuration config;
   private static CatalogueService catalogueServiceMock;
-  private static DataBrokerService dataBrokerService;
+  private static CacheService cacheService;
   private static JwtAuthenticationServiceImpl jwtAuthImplSpy;
   private static WebClientFactory webClientFactory;
 
@@ -69,14 +69,13 @@ public class JwtAuthServiceTest {
     authConfig = config.configLoader(2, vertx);
     authConfig.put("host", "rs.iudx.io");
 
-   JsonObject databrokerConfig = config.configLoader(1, vertx);
-   vertx.deployVerticle(DataBrokerVerticle.class.getName(),
+   JsonObject cacheConfig = config.configLoader(5, vertx);
+   vertx.deployVerticle(CacheVerticle.class.getName(),
            new DeploymentOptions()
                    .setInstances(1)
-                   .setConfig(databrokerConfig),
-           databrokerDeployer -> {
-              if(databrokerDeployer.succeeded()) {
-                dataBrokerService = DataBrokerService.createProxy(vertx, DATA_BROKER_SERVICE_ADDRESS);
+                   .setConfig(cacheConfig),
+           cacheDeployer -> {
+              if(cacheDeployer.succeeded()) {
                 JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
                 jwtAuthOptions.addPubSecKey(
                     new PubSecKeyOptions()
@@ -92,14 +91,14 @@ public class JwtAuthServiceTest {
                 webClientFactory = new WebClientFactory(vertx, authConfig);
 //                 catalogueService = new CatalogueServiceImpl(vertx, webClientFactory, authConfig);
                 catalogueServiceMock = mock(CatalogueServiceImpl.class);
-                dataBrokerService = DataBrokerService.createProxy(vertx, DATA_BROKER_SERVICE_ADDRESS);
-                jwtAuthenticationService = new JwtAuthenticationServiceImpl(vertx, jwtAuth, authConfig, catalogueServiceMock, dataBrokerService);
+                cacheService = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
+                jwtAuthenticationService = new JwtAuthenticationServiceImpl(vertx, jwtAuth, authConfig, catalogueServiceMock, cacheService);
                 jwtAuthImplSpy = spy(jwtAuthenticationService);
 
                 LOGGER.info("Auth tests setup complete");
                 testContext.completeNow();
               } else {
-                testContext.failNow("fail to deploy DataBroker Verticle for JWT Verticle Test");
+                testContext.failNow("fail to deploy Cache Verticle for JWT Verticle Test");
               }
            });
   }
@@ -466,7 +465,7 @@ public class JwtAuthServiceTest {
     jwtData.setIat(1647408865L);
     jwtData.setRole("consumer");
 
-    jwtAuthenticationService.tokenInvalidationCache.put("ccfe1562-f392-4813-8629-98a78bd9dd4c","2022-03-16T05:34:25");
+    cacheService.populateCache(new JsonObject().put("ccfe1562-f392-4813-8629-98a78bd9dd4c","2022-03-16T05:34:25"));
 
     jwtAuthenticationService.isRevokedClientToken(jwtData).onComplete(handler -> {
       if (handler.succeeded()) {
@@ -487,7 +486,7 @@ public class JwtAuthServiceTest {
     jwtData.setIat(1627408865L);
     jwtData.setRole("consumer");
 
-    jwtAuthenticationService.tokenInvalidationCache.put("ccfe1562-f392-4813-8629-98a78bd9dd4c","2022-03-16T05:34:25");
+    cacheService.populateCache(new JsonObject().put("ccfe1562-f392-4813-8629-98a78bd9dd4c","2022-03-16T05:34:25"));
 
     jwtAuthenticationService.isRevokedClientToken(jwtData).onComplete(handler -> {
       if (handler.succeeded()) {
@@ -513,25 +512,5 @@ public class JwtAuthServiceTest {
     AuthorizationRequest authR2= new AuthorizationRequest(POST, UPLOAD);
     assertEquals(authR1.hashCode(), authR2.hashCode());
   }
-
-  @Test
-  @DisplayName("Successful population of cache")
-  public void successfulPopulateCacheTest(VertxTestContext testContext) {
-    String expected = "2020-12-22T09:18";
-    String _id = "844e251b-574b-46e6-9247-f76f1f70a637";
-
-    dataBrokerService.consumeMessageFromQueue(consumeHandler -> {
-      if(consumeHandler.succeeded()) {
-        String actual = jwtAuthenticationService.tokenInvalidationCache.getIfPresent(_id);
-        assertEquals(expected,actual);
-        testContext.completeNow();
-
-      } else {
-        testContext.failNow("epic fail");
-      }
-    });
-  }
-
-
 
 }

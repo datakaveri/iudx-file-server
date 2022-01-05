@@ -95,6 +95,7 @@ public class DataBrokerServiceImpl implements DataBrokerService{
   public DataBrokerService getInvalidationDataFromDB(Handler<AsyncResult<JsonObject>> resultHandler) {
 
     pgClient.getAsync(QUERY).onComplete(dbHandler -> {
+      LOGGER.debug("here");
       if(dbHandler.succeeded()) {
         RowSet<Row> rowSet = dbHandler.result();
         JsonObject invalidationResult =  new JsonObject();

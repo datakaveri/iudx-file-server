@@ -19,8 +19,6 @@ import io.vertx.rabbitmq.RabbitMQOptions;
 import iudx.file.server.configuration.Configuration;
 import io.vertx.pgclient.PgPool;
 
-import java.util.HashMap;
-
 @ExtendWith(VertxExtension.class)
 public class DataBrokerServiceTest {
 
