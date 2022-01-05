@@ -1059,7 +1059,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}:8443/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/5e79c456-d6cc-4f45-99c5-4656cbdd9196.txt",
+							"raw": "{{base_url}}:8443/iudx/v1/download?file-id={{rl_archive}}",
 							"protocol": "http",
 							"host": [
 								"{{base_url}}"
@@ -1073,7 +1073,7 @@
 							"query": [
 								{
 									"key": "file-id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/5e79c456-d6cc-4f45-99c5-4656cbdd9196.txt"
+									"value": "{{rl_archive}}"
 								}
 							]
 						}
@@ -1274,7 +1274,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}:8443/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/f0db6e57-fabe-45de-9d4f-5f422fc7fd12.txt",
+							"raw": "{{base_url}}:8443/iudx/v1/download?file-id={{gl_archive}}",
 							"protocol": "http",
 							"host": [
 								"{{base_url}}"
@@ -1288,7 +1288,7 @@
 							"query": [
 								{
 									"key": "file-id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/f0db6e57-fabe-45de-9d4f-5f422fc7fd12.txt"
+									"value": "{{gl_archive}}"
 								}
 							]
 						}
@@ -2522,7 +2522,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}:8443/iudx/v1/delete?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/3047b3bb-a9d2-4534-9f42-493c4748e728.txt",
+							"raw": "{{base_url}}:8443/iudx/v1/delete?file-id={{rl_archive}}",
 							"protocol": "http",
 							"host": [
 								"{{base_url}}"
@@ -2536,7 +2536,7 @@
 							"query": [
 								{
 									"key": "file-id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/3047b3bb-a9d2-4534-9f42-493c4748e728.txt"
+									"value": "{{rl_archive}}"
 								}
 							]
 						}
@@ -2568,7 +2568,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}:8443/iudx/v1/delete?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/98512ead-4194-4a5e-8903-5dee5ff95ed2.txt",
+							"raw": "{{base_url}}:8443/iudx/v1/delete?file-id={{gl_archive}}",
 							"protocol": "http",
 							"host": [
 								"{{base_url}}"
@@ -2582,7 +2582,7 @@
 							"query": [
 								{
 									"key": "file-id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/98512ead-4194-4a5e-8903-5dee5ff95ed2.txt"
+									"value": "{{gl_archive}}"
 								}
 							]
 						}
