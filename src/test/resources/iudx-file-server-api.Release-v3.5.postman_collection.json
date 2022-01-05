@@ -385,12 +385,6 @@
 								"key": "token",
 								"type": "text",
 								"value": "{{resourceToken}}"
-							},
-							{
-								"key": "fileServerToken",
-								"type": "text",
-								"value": "fcff7e13-eb2d-4843-a2a2-99eedbf73c12",
-								"disabled": true
 							}
 						],
 						"body": {
