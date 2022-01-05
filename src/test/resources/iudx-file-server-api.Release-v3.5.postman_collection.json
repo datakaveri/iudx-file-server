@@ -417,22 +417,6 @@
 									"type": "text"
 								},
 								{
-									"key": "age",
-									"value": "10",
-									"type": "text"
-								},
-								{
-									"key": "area",
-									"value": "surat",
-									"type": "text"
-								},
-								{
-									"key": "invalid_metadatafield",
-									"value": "abc",
-									"type": "text",
-									"disabled": true
-								},
-								{
 									"key": "geometry",
 									"value": "point",
 									"type": "text"
@@ -492,12 +476,6 @@
 								"key": "token",
 								"type": "text",
 								"value": "{{resourceToken}}",
-								"disabled": true
-							},
-							{
-								"key": "fileServerToken",
-								"type": "text",
-								"value": "fcff7e13-eb2d-4843-a2a2-99eedbf73c12",
 								"disabled": true
 							}
 						],
@@ -601,12 +579,6 @@
 								"key": "token",
 								"type": "text",
 								"value": "{{groupToken}}"
-							},
-							{
-								"key": "fileServerToken",
-								"type": "text",
-								"value": "fcff7e13-eb2d-4843-a2a2-99eedbf73c12",
-								"disabled": true
 							}
 						],
 						"body": {
