@@ -1,7 +1,7 @@
-package iudx.file.server.database.utilities;
+package iudx.file.server.database.elasticDB.utilities;
 
 
-import static iudx.file.server.database.utilities.Constants.*;
+import static iudx.file.server.database.elasticDB.utilities.Constants.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.file.server.apiserver.utilities.HttpStatusCode;

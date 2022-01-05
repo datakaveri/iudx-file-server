@@ -57,7 +57,7 @@ import iudx.file.server.common.QueryType;
 import iudx.file.server.common.WebClientFactory;
 import iudx.file.server.common.service.CatalogueService;
 import iudx.file.server.common.service.impl.CatalogueServiceImpl;
-import iudx.file.server.database.DatabaseService;
+import iudx.file.server.database.elasticDB.DatabaseService;
 import iudx.file.server.auditing.AuditingService;
 
 /**

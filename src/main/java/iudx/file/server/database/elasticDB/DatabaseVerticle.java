@@ -1,6 +1,6 @@
-package iudx.file.server.database;
+package iudx.file.server.database.elasticDB;
 
-import static iudx.file.server.database.utilities.Constants.*;
+import static iudx.file.server.database.elasticDB.utilities.Constants.*;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;

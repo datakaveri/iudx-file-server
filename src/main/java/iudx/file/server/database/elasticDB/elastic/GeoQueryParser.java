@@ -1,6 +1,6 @@
-package iudx.file.server.database.elastic;
+package iudx.file.server.database.elasticDB.elastic;
 
-import static iudx.file.server.database.utilities.Constants.*;
+import static iudx.file.server.database.elasticDB.utilities.Constants.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.common.geo.ShapeRelation;

@@ -1,4 +1,4 @@
-package iudx.file.server.database.elastic;
+package iudx.file.server.database.elasticDB.elastic;
 
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import io.vertx.core.json.JsonObject;
