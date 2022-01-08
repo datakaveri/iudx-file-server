@@ -7,6 +7,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ServiceBinder;
+import iudx.file.server.cache.cacheImpl.CacheType;
 import iudx.file.server.database.postgres.PostgresService;
 
 public class CacheVerticle extends AbstractVerticle {
@@ -30,6 +31,7 @@ public class CacheVerticle extends AbstractVerticle {
 
     binder = new ServiceBinder(vertx);
     consumer = binder.setAddress(SERVICE_ADDRESS).register(CacheService.class, cacheService);
+
     LOGGER.info("Cache Verticle deployed.");
   }
 

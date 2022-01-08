@@ -1,4 +1,4 @@
-package iudx.file.server.database.elasticDB.utilities;
+package iudx.file.server.database.elasticdb.utilities;
 
 public class Constants extends iudx.file.server.common.Constants {
 

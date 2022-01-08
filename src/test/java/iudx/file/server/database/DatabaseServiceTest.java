@@ -36,6 +36,8 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.file.server.common.QueryType;
 import iudx.file.server.configuration.Configuration;
+import iudx.file.server.database.elasticdb.DatabaseService;
+import iudx.file.server.database.elasticdb.DatabaseServiceImpl;
 
 @Testcontainers
 @ExtendWith({VertxExtension.class})

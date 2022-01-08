@@ -1,6 +1,6 @@
-package iudx.file.server.database.elasticDB.elastic;
+package iudx.file.server.database.elasticdb.elastic;
 
-import static iudx.file.server.database.elasticDB.utilities.Constants.*;
+import static iudx.file.server.database.elasticdb.utilities.Constants.*;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import io.vertx.core.json.JsonObject;

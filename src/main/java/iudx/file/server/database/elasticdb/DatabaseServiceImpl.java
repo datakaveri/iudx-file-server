@@ -1,6 +1,6 @@
-package iudx.file.server.database.elasticDB;
+package iudx.file.server.database.elasticdb;
 
-import static iudx.file.server.database.elasticDB.utilities.Constants.*;
+import static iudx.file.server.database.elasticdb.utilities.Constants.*;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,9 +11,9 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import iudx.file.server.common.QueryType;
-import iudx.file.server.database.elasticDB.elastic.ElasticClient;
-import iudx.file.server.database.elasticDB.elastic.ElasticQueryGenerator;
-import iudx.file.server.database.elasticDB.utilities.ResponseBuilder;
+import iudx.file.server.database.elasticdb.elastic.ElasticClient;
+import iudx.file.server.database.elasticdb.elastic.ElasticQueryGenerator;
+import iudx.file.server.database.elasticdb.utilities.ResponseBuilder;
 
 public class DatabaseServiceImpl implements DatabaseService {
 

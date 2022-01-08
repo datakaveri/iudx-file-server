@@ -1,6 +1,6 @@
-package iudx.file.server.database.elasticDB.elastic;
+package iudx.file.server.database.elasticdb.elastic;
 
-import static iudx.file.server.database.elasticDB.utilities.Constants.*;
+import static iudx.file.server.database.elasticdb.utilities.Constants.*;
 import java.io.IOException;
 import java.util.UUID;
 import org.apache.http.HttpHost;
@@ -21,7 +21,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import iudx.file.server.database.elasticDB.utilities.ResponseBuilder;
+import iudx.file.server.database.elasticdb.utilities.ResponseBuilder;
 
 public class ElasticClient {
 
