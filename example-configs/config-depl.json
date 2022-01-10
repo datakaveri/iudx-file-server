@@ -1,61 +1,96 @@
 {
-    "version": "1.0",
-    "zookeepers": [
-        "zookeeper"
-    ],
-    "clusterId": "iudx-fs-cluster",
-    "host": "fs",
-    "modules": [
-        {
-            "id": "iudx.file.server.apiserver.FileServerVerticle",
+	"version": "1.0",
+	"zookeepers": [
+		"zookeeper"
+	],
+	"clusterId": "iudx-fs-cluster",
+	"host": "fs",
+	"modules": [
+		{
+			"id": "iudx.file.server.apiserver.FileServerVerticle",
+			"verticleInstances": 1,
+			"ssl": true,
+			"port": 8443,
+			"automaticRecoveryEnabled": true,
+			"catalogueHost": "",
+			"cataloguePort": 443,
+			"file-keystore": "secrets/keystore-file.jks",
+			"file-keystorePassword": "",
+			"tmp_dir": "temp-dir/",
+			"upload_dir": "upload-dir/",
+			"allowedContentType": {
+				"text/plain": "txt",
+				"text/csv": "csv",
+				"application/pdf": "pdf",
+				"video/mp4": "mp4",
+				"application/zip": "zip",
+				"application/x-7z-compressed": "7z",
+				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
+				"application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx"
+			}
+		},
+		{
+			"id": "iudx.file.server.authenticator.AuthenticationVerticle",
+			"verticleInstances": 1,
+			"catalogueHost": "",
+			"cataloguePort": 443,
+			"authHost": "",
+			"authPort": 443,
+			"file-keystore": "secrets/keystore-file.jks",
+			"file-keystorePassword": "",
+			"rs-keystore": "secrets/keystore-rs.jks",
+			"rs-keystorePassword": "",
+			"jwtIgnoreExpiry": false
+		},
+		{
+			"id": "iudx.file.server.database.elasticdb.DatabaseVerticle",
+			"verticleInstances": 1,
+			"databaseIP": "localhost",
+			"databasePort": 9200,
+			"databaseUser": "elastic",
+			"databasePassword": "elk@elastic.in",
+			"databaseUsed": ""
+		},
+		{
+			"id": "iudx.file.server.database.postgres.PostgresVerticle",
+			"verticleInstances": 1,
+			"databaseIp": "localhost",
+			"databasePort": 1234,
+			"databaseName": "",
+			"databaseUserName": "",
+			"databasePassword": "",
+			"poolSize": 25
+		},
+		{
+			"id": "iudx.file.server.cache.CacheVerticle",
+			"verticleInstances": 1
+		},
+		{
+			"id": "iudx.file.server.databroker.DataBrokerVerticle",
+			"verticleInstances": 1,
+			"dataBrokerIP": "localhost",
+			"dataBrokerPort": 123,
+			"dataBrokerVhost": "",
+			"dataBrokerUserName": "",
+			"dataBrokerPassword": "",
+			"dataBrokerManagementPort": 30042,
+			"connectionTimeout": 6000,
+			"requestedHeartbeat": 60,
+			"handshakeTimeout": 6000,
+			"requestedChannelMax": 5,
+			"networkRecoveryInterval": 500,
+			"automaticRecoveryEnabled": ""
+		},
+		{
+
+            "id": "iudx.file.server.auditing.AuditingVerticle",
             "verticleInstances": 1,
-            "ssl": true,
-            "port": 8443,
-            
-            "automaticRecoveryEnabled": true,
-            
-            "file-keystore": "secrets/keystore-file.jks",
-            "file-keystorePassword": "",
-            
-            "tmp_dir": "temp-dir/",
-            "upload_dir": "upload-dir/",
-            
-            "allowedContentType": {
-                "text/plain": "txt",
-                "text/csv": "csv",
-                "application/pdf": "pdf",
-                "video/mp4": "mp4",
-                "application/zip": "zip",
-                "application/x-7z-compressed": "7z",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx"
-            }
-        },
-        {
-            "id": "iudx.file.server.authenticator.AuthenticationVerticle",
-            "verticleInstances": 1,
-            
-            "catalogueHost": "",
-            "cataloguePort": 443,
-            
-            "authHost": "",
-            "authPort": 443,
-            
-            "file-keystore": "secrets/keystore-file.jks",
-            "file-keystorePassword": "",
-            
-            "rs-keystore": "secrets/keystore-rs.jks",
-            "rs-keystorePassword": "",
-	    "jwtIgnoreExpiry": false
-        },
-        {
-            "id": "iudx.file.server.database.DatabaseVerticle",
-            "verticleInstances": 1,
-            "databaseIP": "localhost",
-            "databasePort": 9200,
-            "databaseUser": "elastic",
-            "databasePassword": "elk@elastic.in",
-            "databaseUsed": ""
+            "auditingDatabaseIP": "",
+            "auditingDatabasePort": 32508,
+            "auditingDatabaseName": "",
+            "auditingDatabaseUserName": "",
+            "auditingDatabasePassword": "",
+            "auditingPoolSize": 25
         }
-    ]
+	]
 }
