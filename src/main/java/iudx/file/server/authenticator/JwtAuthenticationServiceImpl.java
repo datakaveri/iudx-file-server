@@ -9,7 +9,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import io.netty.util.concurrent.SucceededFuture;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -99,7 +98,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       if (completeHandler.succeeded()) {
         handler.handle(Future.succeededFuture(completeHandler.result()));
       } else {
-        LOGGER.error("error : " + completeHandler.cause().getMessage());
+        LOGGER.error("error : " + completeHandler.cause());
         handler.handle(Future.failedFuture(completeHandler.cause().getMessage()));
       }
     });
@@ -180,15 +179,18 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   }
 
   Future<Boolean> isRevokedClientToken(JwtData jwtData) {
+    LOGGER.debug("isRevokedClientToken started param : " + jwtData);
     Promise<Boolean> promise = Promise.promise();
     CacheType cacheType = CacheType.REVOKED_CLIENT;
     String subId = jwtData.getSub();
     JsonObject requestJson = new JsonObject().put("type", cacheType).put("key", subId);
 
+    LOGGER.debug("requestJson : " + requestJson);
     cache.get(requestJson, handler -> {
       if (handler.succeeded()) {
         JsonObject responseJson = handler.result();
-        String timestamp = responseJson.getString("value");
+        LOGGER.debug("responseJson : " + responseJson);
+        String timestamp = responseJson.getJsonArray("result").getJsonObject(0).getString("value");
 
         LocalDateTime revokedAt = LocalDateTime.parse(timestamp);
         LocalDateTime jwtIssuedAt = (LocalDateTime.ofInstant(
@@ -203,7 +205,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
         }
       } else {
         // since no value in cache, this means client_id is valie and not revoked
-        LOGGER.debug("cache call result : [fail] "+handler.cause());
+        LOGGER.debug("cache call result : [fail] " + handler.cause());
         promise.complete(true);
       }
     });

@@ -1,24 +1,29 @@
 package iudx.file.server.authenticator;
 
 import static iudx.file.server.authenticator.authorization.Api.UPLOAD;
-import static iudx.file.server.authenticator.authorization.Method.*;
+import static iudx.file.server.authenticator.authorization.Method.GET;
+import static iudx.file.server.authenticator.authorization.Method.POST;
 import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-
+import static org.mockito.Mockito.when;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
+import org.mockito.stubbing.Answer;
 import io.micrometer.core.ipc.http.HttpSender.Method;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -30,6 +35,7 @@ import io.vertx.junit5.VertxTestContext;
 import iudx.file.server.authenticator.authorization.Api;
 import iudx.file.server.authenticator.authorization.AuthorizationRequest;
 import iudx.file.server.authenticator.utilities.JwtData;
+import iudx.file.server.cache.CacheService;
 import iudx.file.server.common.WebClientFactory;
 import iudx.file.server.common.service.CatalogueService;
 import iudx.file.server.common.service.impl.CatalogueServiceImpl;
@@ -45,6 +51,7 @@ public class JwtAuthServiceTest {
   private static CatalogueService catalogueServiceMock;
   private static JwtAuthenticationServiceImpl jwtAuthImplSpy;
   private static WebClientFactory webClientFactory;
+  private static CacheService cacheServiceMock;
 
   private static String delegateJwt =
       "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJhMTNlYjk1NS1jNjkxLTRmZDMtYjIwMC1mMThiYzc4ODEwYjUiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoiZm9vYmFyLml1ZHguaW8iLCJleHAiOjE2MjgxODIzMjcsImlhdCI6MTYyODEzOTEyNywiaWlkIjoicmk6ZXhhbXBsZS5jb20vNzllN2JmYTYyZmFkNmM3NjViYWM2OTE1NGMyZjI0Yzk0Yzk1MjIwYS9yZXNvdXJjZS1ncm91cC9yZXNvdXJjZSIsInJvbGUiOiJkZWxlZ2F0ZSIsImNvbnMiOnsiYWNjZXNzIjpbImFwaSIsInN1YnMiLCJpbmdlc3QiLCJmaWxlIl19fQ.tUoO1L-tXByxNtjY_iK41neeshCiYrNr505wWn1hC1ACwoeL9frebABeFiCqJQGrsBsGOZ1-OACZdHBNcetwyw";
@@ -79,7 +86,8 @@ public class JwtAuthServiceTest {
     webClientFactory = new WebClientFactory(vertx, authConfig);
     // catalogueService = new CatalogueServiceImpl(vertx, webClientFactory, authConfig);
     catalogueServiceMock = mock(CatalogueServiceImpl.class);
-    jwtAuthenticationService = new JwtAuthenticationServiceImpl(vertx, jwtAuth, authConfig, catalogueServiceMock);
+    cacheServiceMock=mock(CacheService.class);
+    jwtAuthenticationService = new JwtAuthenticationServiceImpl(vertx, jwtAuth, authConfig, catalogueServiceMock,cacheServiceMock);
     jwtAuthImplSpy = spy(jwtAuthenticationService);
 
     LOGGER.info("Auth tests setup complete");
@@ -310,12 +318,69 @@ public class JwtAuthServiceTest {
 
     doAnswer(Answer -> Future.succeededFuture(true)).when(catalogueServiceMock).isItemExist(any());
     doAnswer(Answer -> Future.succeededFuture(true)).when(jwtAuthImplSpy).isValidAudienceValue(any());
+    
+    AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+    when(asyncResult.succeeded()).thenReturn(false);
+
+
+    Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+      @SuppressWarnings("unchecked")
+      @Override
+      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(asyncResult);
+        return null;
+      }
+    }).when(cacheServiceMock).get(any(), any());
 
     jwtAuthImplSpy.tokenInterospect(request, authInfo, handler -> {
       if (handler.succeeded()) {
         testContext.completeNow();
       } else {
         testContext.failNow("failed");
+      }
+    });
+  }
+  
+  @Test
+  @DisplayName("success - token interospection deny access[invalid client id]")
+  public void failureTokenInterospectRevokedClient(VertxTestContext testContext) {
+    JsonObject authInfo = new JsonObject();
+
+    authInfo.put("token", consumerJwt);
+    authInfo.put("id", "example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group");
+    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("method", Method.GET);
+
+    JsonObject request = new JsonObject();
+
+    doAnswer(Answer -> Future.succeededFuture(true)).when(catalogueServiceMock).isItemExist(any());
+    doAnswer(Answer -> Future.succeededFuture(true)).when(jwtAuthImplSpy).isValidAudienceValue(any());
+    
+    JsonObject cacheresponse = new JsonObject();
+    JsonArray responseArray = new JsonArray();
+    cacheresponse.put("value", "2019-10-19T14:20:00");
+    responseArray.add(cacheresponse);
+
+
+    AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+    when(asyncResult.succeeded()).thenReturn(true);
+    when(asyncResult.result()).thenReturn(new JsonObject().put("result", responseArray));
+
+
+    Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+      @SuppressWarnings("unchecked")
+      @Override
+      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(asyncResult);
+        return null;
+      }
+    }).when(cacheServiceMock).get(any(), any());
+
+    jwtAuthImplSpy.tokenInterospect(request, authInfo, handler -> {
+      if (handler.succeeded()) {
+        testContext.failNow("failed");
+      } else {
+        testContext.completeNow();
       }
     });
   }
@@ -366,6 +431,19 @@ public class JwtAuthServiceTest {
     doAnswer(Answer -> Future.succeededFuture(true))
         .when(jwtAuthImplSpy)
         .isValidAudienceValue(any());
+
+    AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+    when(asyncResult.succeeded()).thenReturn(false);
+
+
+    Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+      @SuppressWarnings("unchecked")
+      @Override
+      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(asyncResult);
+        return null;
+      }
+    }).when(cacheServiceMock).get(any(), any());
 
     jwtAuthImplSpy.tokenInterospect(request, authInfo, handler -> {
       if (handler.succeeded()) {
