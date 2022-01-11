@@ -13,7 +13,7 @@ services:
       - ./example-configs/:/usr/share/app/example-configs
       - ./src/:/usr/share/app/src
       - ${WORKSPACE}:/tmp/test
-    command: bash -c "docker/runTests.sh && cp -r target /tmp/test"
+    command: bash -c "docker/runTests.sh"
     networks: 
       - fs-net
 
