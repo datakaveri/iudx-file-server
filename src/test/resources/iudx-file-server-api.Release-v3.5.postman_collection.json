@@ -3,7 +3,7 @@
 		"_postman_id": "ac1b9286-dba7-4f93-a996-ae9544425069",
 		"name": "iudx-file-server-api Copy",
 		"description": "iudx-file-server-api",
-		"schema": "http://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -24,8 +24,8 @@
 							}
 						},
 						"url": {
-							"raw": "http://authdev.iudx.io/auth/v1/token",
-							"protocol": "http",
+							"raw": "https://authdev.iudx.io/auth/v1/token",
+							"protocol": "https",
 							"host": [
 								"authdev",
 								"iudx",
