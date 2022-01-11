@@ -83,7 +83,7 @@ pipeline {
                publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: '/var/lib/jenkins/iudx/fs/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: ''])
             }  
           }
-          node('slave1'){}
+          node('slave1'){
             script{
                sh 'docker-compose -f docker-compose.test.yml down --remove-orphans'
             }
