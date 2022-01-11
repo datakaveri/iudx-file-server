@@ -81,26 +81,16 @@ pipeline {
             script{
                archiveZap failHighAlerts: 1, failMediumAlerts: 1, failLowAlerts: 15 
                publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: '/var/lib/jenkins/iudx/fs/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: ''])
-               sh 'docker-compose -f docker-compose.test.yml down --remove-orphans'
             }  
           }
+          node('slave1'){}
+            script{
+               sh 'docker-compose -f docker-compose.test.yml down --remove-orphans'
+            }
+          }
         }
-        // failure{
-        //   node('slave') {
-        //     script{
-        //       sh 'docker-compose -f docker-compose.test.yml down --remove-orphans'
-        //       error "Test failure. Stopping pipeline execution!"
-        //     }
-        //   }
-        // }
       }
     }
-    
-    // stage('Clean up'){
-    //   steps{
-    //     sh 'docker-compose -f docker-compose.test.yml down --remove-orphans'
-    //   }
-    // }
 
     stage('Push Image') {
       when{
