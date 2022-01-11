@@ -10,6 +10,7 @@ services:
       - /home/ubuntu/configs/keystore-file.jks:/usr/share/app/secrets/keystore-file.jks
       - /home/ubuntu/configs/keystore-rs.jks:/usr/share/app/secrets/keystore-rs.jks      
       - ./docker/runTests.sh:/usr/share/app/docker/runTests.sh
+      - ./example-configs/:/usr/share/app/example-configs
       - ./src/:/usr/share/app/src
       - ${WORKSPACE}:/tmp/test
     command: bash -c "docker/runTests.sh && cp -r target /tmp/test"
