@@ -1,8 +1,7 @@
 version: '3.7'
 networks:
-  fs-net:
+  host:
     external: true
-    name: host
 services:
   test:
     image: ghcr.io/datakaveri/fs-test:latest
