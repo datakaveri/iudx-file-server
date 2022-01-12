@@ -17,7 +17,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     command: bash -c "docker/runTests.sh"
     networks: 
-      - fs-net
+      - host
 
   perfTest:
     image: ghcr.io/datakaveri/fs-test:latest
@@ -30,4 +30,4 @@ services:
     ports:
       - "8443:8080"
     networks: 
-      - fs-net
+      - host
