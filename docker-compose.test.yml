@@ -1,7 +1,7 @@
 version: '3.7'
 networks:
   fs-net:
-    driver: bridge
+    driver: host
 services:
   test:
     image: ghcr.io/datakaveri/fs-test:latest
