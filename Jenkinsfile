@@ -67,6 +67,7 @@ pipeline {
             sh 'docker-compose -f docker-compose.test.yml logs perfTest > fs-failure.log'
             sh 'scp fs-failure.log jenkins@jenkins-master:/var/lib/jenkins/userContent/'
           }
+          error "Failed to run server. Stopping pipeline execution. Check failure logs at jenkins-url/userContent"
         }
       }
     }
@@ -83,12 +84,6 @@ pipeline {
         }
       }
       post{
-        failure{
-          script{
-            sh 'docker-compose -f docker-compose.test.yml logs perfTest > fs-failure.log'
-            sh 'scp fs-failure.log jenkins@jenkins-master:/var/lib/jenkins/userContent/'
-          }
-        }
         always{
           node('master') {
             script{
@@ -97,7 +92,10 @@ pipeline {
             publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/fs/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: '', reportName: 'Integration Test Report'])
           }
           script{
-             sh 'docker-compose -f docker-compose.test.yml down --remove-orphans'
+            sh 'docker-compose -f docker-compose.test.yml logs perfTest > fs.log'
+            sh 'scp fs.log jenkins@jenkins-master:/var/lib/jenkins/userContent/'
+            echo 'container logs (fs.log) can be found at jenkins-url/userContent'
+            sh 'docker-compose -f docker-compose.test.yml down --remove-orphans'
           }
         }
       }
