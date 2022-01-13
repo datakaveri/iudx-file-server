@@ -1,7 +1,7 @@
 version: '3.7'
-# networks:
-#   host:
-#     external: true
+networks:
+  fs-net:
+    driver: bridge
 services:
   test:
     image: ghcr.io/datakaveri/fs-test:latest
@@ -28,4 +28,5 @@ services:
     command: bash -c "mvn clean compile exec:java@file-server"
     ports:
       - "8443:8080"
-    network_mode: host
+    networks:
+      - fs-net
