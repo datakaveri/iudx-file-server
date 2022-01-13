@@ -1,30 +1,22 @@
 package iudx.file.server.authenticator;
 
-import static iudx.file.server.authenticator.utilities.Constants.*;
-
-import java.util.Arrays;
+import static iudx.file.server.authenticator.utilities.Constants.CACHE_TIMEOUT;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.authentication.TokenCredentials;
 import io.vertx.ext.auth.jwt.JWTAuth;
-import io.vertx.ext.web.client.HttpResponse;
-import io.vertx.ext.web.client.WebClient;
-import io.vertx.ext.web.client.WebClientOptions;
-import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import iudx.file.server.authenticator.authorization.Api;
 import iudx.file.server.authenticator.authorization.AuthorizationContextFactory;
 import iudx.file.server.authenticator.authorization.AuthorizationRequest;
@@ -32,6 +24,8 @@ import iudx.file.server.authenticator.authorization.AuthorizationStrategy;
 import iudx.file.server.authenticator.authorization.JwtAuthorization;
 import iudx.file.server.authenticator.authorization.Method;
 import iudx.file.server.authenticator.utilities.JwtData;
+import iudx.file.server.cache.CacheService;
+import iudx.file.server.cache.cacheImpl.CacheType;
 import iudx.file.server.common.service.CatalogueService;
 
 
@@ -45,6 +39,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   final int port;;
   final String audience;
   final CatalogueService catalogueService;
+  final CacheService cache;
 
   // resourceGroupCache will contains ACL info about all resource group in a resource server
   private final Cache<String, String> resourceGroupCache = CacheBuilder
@@ -60,10 +55,11 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       .build();
 
   JwtAuthenticationServiceImpl(Vertx vertx, final JWTAuth jwtAuth, final JsonObject config,
-      final CatalogueService catalogueService) {
+      final CatalogueService catalogueService, final CacheService cacheService) {
     this.jwtAuth = jwtAuth;
     this.audience = config.getString("host");
     this.catalogueService = catalogueService;
+    this.cache = cacheService;
     host = config.getString("catalogueHost");
     port = config.getInteger("cataloguePort");
 
@@ -77,7 +73,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     String token = authenticationInfo.getString("token");
 
     Future<JwtData> jwtDecodeFuture = decodeJwt(token);
-    Future<Boolean> isItemExistFuture=catalogueService.isItemExist(id);
+    Future<Boolean> isItemExistFuture = catalogueService.isItemExist(id);
 
 
     ResultContainer result = new ResultContainer();
@@ -86,6 +82,12 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       result.jwtData = decodeHandler;
       return isValidAudienceValue(result.jwtData);
     }).compose(audienceHandler -> {
+      if (!result.jwtData.getIss().equals(result.jwtData.getSub())) {
+        return isRevokedClientToken(result.jwtData);
+      } else {
+        return Future.succeededFuture(true);
+      }
+    }).compose(revokeTokenHandler -> {
       return isItemExistFuture;
     }).compose(itemExistHandler -> {
       return isValidId(result.jwtData, id);
@@ -96,7 +98,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       if (completeHandler.succeeded()) {
         handler.handle(Future.succeededFuture(completeHandler.result()));
       } else {
-        LOGGER.error("error : " + completeHandler.cause().getMessage());
+        LOGGER.error("error : " + completeHandler.cause());
         handler.handle(Future.failedFuture(completeHandler.cause().getMessage()));
       }
     });
@@ -173,6 +175,40 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       promise.fail("Incorrect id value in jwt");
     }
 
+    return promise.future();
+  }
+
+  Future<Boolean> isRevokedClientToken(JwtData jwtData) {
+    LOGGER.debug("isRevokedClientToken started param : " + jwtData);
+    Promise<Boolean> promise = Promise.promise();
+    CacheType cacheType = CacheType.REVOKED_CLIENT;
+    String subId = jwtData.getSub();
+    JsonObject requestJson = new JsonObject().put("type", cacheType).put("key", subId);
+
+    LOGGER.debug("requestJson : " + requestJson);
+    cache.get(requestJson, handler -> {
+      if (handler.succeeded()) {
+        JsonObject responseJson = handler.result();
+        LOGGER.debug("responseJson : " + responseJson);
+        String timestamp = responseJson.getJsonArray("result").getJsonObject(0).getString("value");
+
+        LocalDateTime revokedAt = LocalDateTime.parse(timestamp);
+        LocalDateTime jwtIssuedAt = (LocalDateTime.ofInstant(
+            Instant.ofEpochSecond(jwtData.getIat()),
+            ZoneId.systemDefault()));
+        if (jwtIssuedAt.isBefore(revokedAt)) {
+          LOGGER.error("Privilages for client is revoked.");
+          JsonObject result = new JsonObject().put("401", "revoked token passes");
+          promise.fail(result.toString());
+        } else {
+          promise.complete(true);
+        }
+      } else {
+        // since no value in cache, this means client_id is valie and not revoked
+        LOGGER.debug("cache call result : [fail] " + handler.cause());
+        promise.complete(true);
+      }
+    });
     return promise.future();
   }
 
