@@ -80,7 +80,7 @@ pipeline {
             script{
               archiveZap failHighAlerts: 1, failMediumAlerts: 1, failLowAlerts: 15 
             }  
-            publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: '/var/lib/jenkins/iudx/fs/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: ''])
+            publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/fs/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: '', reportName: 'Integration Test Report'])
           }
           script{
              sh 'docker-compose -f docker-compose.test.yml down --remove-orphans'
