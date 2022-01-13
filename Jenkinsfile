@@ -61,6 +61,15 @@ pipeline {
             sh 'sleep 45'
         }
       }
+      post{
+        failure{
+          script{
+            sh 'docker-compose -f docker-compose.test.yml logs perfTest > fs-failure.log'
+            sh 'scp fs-failure.log jenkins@jenkins-master:/var/lib/jenkins/userContent/'
+          }
+          error "Failed to run server. Stopping pipeline execution. Check failure logs at jenkins-url/userContent"
+        }
+      }
     }
 
     stage('Integration tests & OWASP ZAP pen test'){
@@ -78,12 +87,15 @@ pipeline {
         always{
           node('master') {
             script{
-              archiveZap failHighAlerts: 1, failMediumAlerts: 1, failLowAlerts: 15 
+              archiveZap failHighAlerts: 1, failMediumAlerts: 1, failLowAlerts: 1
             }  
             publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/fs/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: '', reportName: 'Integration Test Report'])
           }
           script{
-             sh 'docker-compose -f docker-compose.test.yml down --remove-orphans'
+            sh 'docker-compose -f docker-compose.test.yml logs perfTest > fs.log'
+            sh 'scp fs.log jenkins@jenkins-master:/var/lib/jenkins/userContent/'
+            echo 'container logs (fs.log) can be found at jenkins-url/userContent'
+            sh 'docker-compose -f docker-compose.test.yml down --remove-orphans'
           }
         }
       }
