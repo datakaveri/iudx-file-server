@@ -61,6 +61,14 @@ pipeline {
             sh 'sleep 45'
         }
       }
+      post{
+        failure{
+          script{
+            sh 'docker-compose -f docker-compose.test.yml logs perfTest > fs-failure.log'
+            sh 'scp fs-failure.log jenkins@jenkins-master:/var/lib/jenkins/userContent/'
+          }
+        }
+      }
     }
 
     stage('Integration tests & OWASP ZAP pen test'){
@@ -75,10 +83,16 @@ pipeline {
         }
       }
       post{
+        failure{
+          script{
+            sh 'docker-compose -f docker-compose.test.yml logs perfTest > fs-failure.log'
+            sh 'scp fs-failure.log jenkins@jenkins-master:/var/lib/jenkins/userContent/'
+          }
+        }
         always{
           node('master') {
             script{
-              archiveZap failHighAlerts: 1, failMediumAlerts: 1, failLowAlerts: 15 
+              archiveZap failHighAlerts: 1, failMediumAlerts: 1, failLowAlerts: 1
             }  
             publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/fs/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: '', reportName: 'Integration Test Report'])
           }
