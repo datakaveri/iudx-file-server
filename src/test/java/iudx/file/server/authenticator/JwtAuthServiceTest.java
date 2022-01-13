@@ -156,8 +156,10 @@ public class JwtAuthServiceTest {
 
     JsonObject authInfo = new JsonObject();
 
+    String id = "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";
+
     authInfo.put("token", consumerJwt);
-    authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    authInfo.put("id", id);
     authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
     authInfo.put("method", Method.GET);
 
@@ -171,7 +173,7 @@ public class JwtAuthServiceTest {
     jwtData.setCons(new JsonObject().put("access", new JsonArray().add("file")));
 
 
-    jwtAuthenticationService.validateAccess(jwtData, authInfo).onComplete(handler -> {
+    jwtAuthenticationService.validateAccess(jwtData,true, authInfo).onComplete(handler -> {
       if (handler.succeeded()) {
         testContext.completeNow();
       } else {
@@ -202,7 +204,7 @@ public class JwtAuthServiceTest {
     jwtData.setCons(null);
 
 
-    jwtAuthenticationService.validateAccess(jwtData, authInfo).onComplete(handler -> {
+    jwtAuthenticationService.validateAccess(jwtData, false, authInfo).onComplete(handler -> {
       if (handler.succeeded()) {
         testContext.failNow("success for invalid access");
       } else {
@@ -233,7 +235,7 @@ public class JwtAuthServiceTest {
     jwtData.setCons(null);
 
 
-    jwtAuthenticationService.validateAccess(jwtData, authInfo).onComplete(handler -> {
+    jwtAuthenticationService.validateAccess(jwtData, false, authInfo).onComplete(handler -> {
       if (handler.succeeded()) {
         testContext.completeNow();
       } else {
@@ -265,7 +267,7 @@ public class JwtAuthServiceTest {
     jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api")));
 
 
-    jwtAuthenticationService.validateAccess(jwtData, authInfo).onComplete(handler -> {
+    jwtAuthenticationService.validateAccess(jwtData, false, authInfo).onComplete(handler -> {
       if (handler.succeeded()) {
         testContext.failNow("invalid access allowed");
       } else {
@@ -295,7 +297,7 @@ public class JwtAuthServiceTest {
     jwtData.setCons(new JsonObject().put("access", new JsonArray().add("file")));
 
 
-    jwtAuthenticationService.validateAccess(jwtData, authInfo).onComplete(handler -> {
+    jwtAuthenticationService.validateAccess(jwtData, false, authInfo).onComplete(handler -> {
       if (handler.succeeded()) {
         testContext.completeNow();
       } else {
@@ -512,6 +514,36 @@ public class JwtAuthServiceTest {
         testContext.completeNow();
       } else {
         testContext.failNow("failed for valid id");
+      }
+    });
+  }
+
+  @Test
+  @DisplayName("success - is open resource")
+  public void success4openResource(VertxTestContext testContext) {
+    JsonObject authInfo = new JsonObject();
+
+    String id = "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";
+
+    authInfo.put("token", consumerJwt);
+    authInfo.put("id", id);
+    authInfo.put("apiEndpoint", Api.SPATIAL.getApiEndpoint());
+    authInfo.put("method", Method.GET);
+
+    JwtData jwtData = new JwtData();
+    jwtData.setIss("auth.test.com");
+    jwtData.setAud("file.iudx.io");
+    jwtData.setExp(1627408865L);
+    jwtData.setIat(1627408865L);
+    jwtData.setIid("ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    jwtData.setRole("consumer");
+    jwtData.setCons(new JsonObject().put("access", new JsonArray().add("file")));
+
+    jwtAuthenticationService.isOpenResource(id).onComplete(openResourceHandler -> {
+      if(openResourceHandler.succeeded()) {
+        testContext.completeNow();
+      } else {
+        testContext.failNow("open resource validation failed");
       }
     });
   }
