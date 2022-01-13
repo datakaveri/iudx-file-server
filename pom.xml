@@ -205,12 +205,15 @@
 			<version>3.11.1</version>
 			<scope>test</scope>
 		</dependency>
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-pg-client</artifactId>
-            <version>4.0.3</version>
-        </dependency>
-    </dependencies>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-pg-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-rabbitmq-client</artifactId>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<plugins>

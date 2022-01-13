@@ -1,8 +1,8 @@
 package iudx.file.server.database.elastic;
 
-import static iudx.file.server.database.utilities.Constants.*;
-import static org.junit.jupiter.api.Assertions.*;
-
+import static iudx.file.server.database.elasticdb.utilities.Constants.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +13,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.file.server.common.QueryType;
+import iudx.file.server.database.elasticdb.elastic.ElasticQueryGenerator;
+import iudx.file.server.database.elasticdb.elastic.ListQueryParser;
+import iudx.file.server.database.elasticdb.elastic.QueryParser;
 
 @ExtendWith(VertxExtension.class)
 public class ElasticQueryGeneratorTest {

@@ -57,8 +57,10 @@ import iudx.file.server.common.QueryType;
 import iudx.file.server.common.WebClientFactory;
 import iudx.file.server.common.service.CatalogueService;
 import iudx.file.server.common.service.impl.CatalogueServiceImpl;
-import iudx.file.server.database.DatabaseService;
+import iudx.file.server.database.elasticdb.DatabaseService;
 import iudx.file.server.auditing.AuditingService;
+import iudx.file.server.cache.CacheService;
+import iudx.file.server.cache.cacheImpl.CacheType;
 
 /**
  * The File Server API Verticle.
@@ -102,7 +104,7 @@ public class FileServerVerticle extends AbstractVerticle {
   private WebClientFactory webClientFactory;
   private CatalogueService catalogueService;
   private String userId;
-
+  
   private final ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
 
   @Override
@@ -193,7 +195,7 @@ public class FileServerVerticle extends AbstractVerticle {
         .handler(geoQueryValidationHandler)
         .handler(AuthHandler.create(vertx))
         .handler(this::query).failureHandler(validationsFailureHandler);
-
+    
     router.get(API_API_SPECS).produces("application/json")
         .handler(routingContext -> {
           HttpServerResponse response = routingContext.response();
@@ -248,6 +250,7 @@ public class FileServerVerticle extends AbstractVerticle {
     fileService = new LocalStorageFileServiceImpl(vertx.fileSystem(), directory);
 
     auditingService = AuditingService.createProxy(vertx, AUDIT_SERVICE_ADDRESS);
+    
     // check upload dir exist or not.
     mkdirsIfNotExists(vertx.fileSystem(), directory, new Handler<AsyncResult<Void>>() {
       @Override
@@ -261,7 +264,7 @@ public class FileServerVerticle extends AbstractVerticle {
     });
     LOGGER.info("FileServerVerticle started successfully");
   }
-
+  
   /**
    * 
    * @param routingContext
