@@ -1,0 +1,32 @@
+version: '3.7'
+networks:
+  fs-net:
+    driver: bridge
+services:
+  test:
+    image: ghcr.io/datakaveri/fs-test:latest
+    volumes:
+      - /home/ubuntu/configs/fs-config-test.json:/usr/share/app/secrets/all-verticles-configs/config-dev.json
+      - /home/ubuntu/configs/keystore-file.jks:/usr/share/app/secrets/keystore-file.jks
+      - /home/ubuntu/configs/keystore-rs.jks:/usr/share/app/secrets/keystore-rs.jks      
+      - ./docker/runTests.sh:/usr/share/app/docker/runTests.sh
+      - ./example-configs/:/usr/share/app/example-configs
+      - ./src/:/usr/share/app/src
+      - ${WORKSPACE}:/tmp/test
+      - $PWD:$PWD -w $PWD 
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: bash -c "docker/runTests.sh"
+    network_mode: host
+
+  perfTest:
+    image: ghcr.io/datakaveri/fs-test:latest
+    volumes:
+      - /home/ubuntu/configs/fs-config-test.json:/usr/share/app/secrets/all-verticles-configs/config-dev.json
+      - /home/ubuntu/configs/keystore-file.jks:/usr/share/app/secrets/keystore-file.jks
+      - /home/ubuntu/configs/keystore-rs.jks:/usr/share/app/secrets/keystore-rs.jks
+      - ./src/:/usr/share/app/src
+    command: bash -c "mvn clean compile exec:java@file-server"
+    ports:
+      - "8443:8080"
+    networks:
+      - fs-net

@@ -136,6 +136,18 @@ public class FileServerVerticle extends AbstractVerticle {
     
     requestValidator = new RequestValidator();
     contentTypeValidator = new ContentTypeValidator(config().getJsonObject("allowedContentType"));
+    router
+        .route()
+        .handler(
+            requestHandler -> {
+              requestHandler
+                  .response()
+                  .putHeader("Cache-Control", "no-cache, no-store,  must-revalidate,max-age=0")
+                  .putHeader("Pragma", "no-cache")
+                  .putHeader("Expires", "0")
+                  .putHeader("X-Content-Type-Options", "nosniff");
+              requestHandler.next();
+            });
 
     webClientFactory = new WebClientFactory(vertx, config());
 

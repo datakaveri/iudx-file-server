@@ -92,11 +92,11 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "/home/pranavrd/Desktop/file.txt"
+									"src": "/home/ubuntu/configs/test.txt"
 								},
 								{
 									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
 									"type": "text"
 								},
 								{
@@ -107,10 +107,10 @@
 							]
 						},
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/upload",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/upload",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -169,11 +169,11 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "/home/pranavrd/Desktop/file.txt"
+									"src": "/home/ubuntu/configs/test.txt"
 								},
 								{
 									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
 									"type": "text"
 								},
 								{
@@ -184,10 +184,10 @@
 							]
 						},
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/upload",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/upload",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -246,11 +246,11 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "/home/pranavrd/Desktop/file.txt"
+									"src": "/home/ubuntu/configs/test.txt"
 								},
 								{
 									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information",
 									"type": "text"
 								},
 								{
@@ -261,10 +261,10 @@
 							]
 						},
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/upload",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/upload",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -323,11 +323,11 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "/home/pranavrd/Desktop/file.txt"
+									"src": "/home/ubuntu/configs/test.txt"
 								},
 								{
 									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information",
 									"type": "text"
 								},
 								{
@@ -338,10 +338,10 @@
 							]
 						},
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/upload",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/upload",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -385,12 +385,6 @@
 								"key": "token",
 								"type": "text",
 								"value": "{{resourceToken}}"
-							},
-							{
-								"key": "fileServerToken",
-								"type": "text",
-								"value": "fcff7e13-eb2d-4843-a2a2-99eedbf73c12",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -399,11 +393,11 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "/home/pranavrd/Desktop/file.txt"
+									"src": "/home/ubuntu/configs/test.txt"
 								},
 								{
 									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
 									"type": "text"
 								},
 								{
@@ -415,22 +409,6 @@
 									"key": "endTime",
 									"value": "2020-09-15T00:00:00Z",
 									"type": "text"
-								},
-								{
-									"key": "age",
-									"value": "10",
-									"type": "text"
-								},
-								{
-									"key": "area",
-									"value": "surat",
-									"type": "text"
-								},
-								{
-									"key": "invalid_metadatafield",
-									"value": "abc",
-									"type": "text",
-									"disabled": true
 								},
 								{
 									"key": "geometry",
@@ -445,10 +423,10 @@
 							]
 						},
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/upload",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/upload",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -493,12 +471,6 @@
 								"type": "text",
 								"value": "{{resourceToken}}",
 								"disabled": true
-							},
-							{
-								"key": "fileServerToken",
-								"type": "text",
-								"value": "fcff7e13-eb2d-4843-a2a2-99eedbf73c12",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -507,11 +479,11 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "/home/pranavrd/Desktop/file.txt"
+									"src": "/home/ubuntu/configs/test.txt"
 								},
 								{
 									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
 									"type": "text"
 								},
 								{
@@ -553,10 +525,10 @@
 							]
 						},
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/upload",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/upload",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -601,12 +573,6 @@
 								"key": "token",
 								"type": "text",
 								"value": "{{groupToken}}"
-							},
-							{
-								"key": "fileServerToken",
-								"type": "text",
-								"value": "fcff7e13-eb2d-4843-a2a2-99eedbf73c12",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -615,11 +581,11 @@
 								{
 									"key": "file1",
 									"type": "file",
-									"src": "/home/pranavrd/Desktop/file.txt"
+									"src": "/home/ubuntu/configs/test.txt"
 								},
 								{
 									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information",
 									"type": "text"
 								},
 								{
@@ -645,10 +611,10 @@
 							]
 						},
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/upload",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/upload",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -707,11 +673,11 @@
 								{
 									"key": "file1",
 									"type": "file",
-									"src": "/home/pranavrd/Desktop/file.txt"
+									"src": "/home/ubuntu/configs/test.txt"
 								},
 								{
 									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information",
 									"type": "text"
 								},
 								{
@@ -737,10 +703,10 @@
 							]
 						},
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/upload",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/upload",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -804,11 +770,11 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "/home/pranavrd/Desktop/file.txt"
+									"src": "/home/ubuntu/configs/test.txt"
 								},
 								{
 									"key": "id1",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
 									"type": "text"
 								},
 								{
@@ -819,10 +785,10 @@
 							]
 						},
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/upload",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/upload",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -885,11 +851,11 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "/home/pranavrd/Desktop/file.txt"
+									"src": "/home/ubuntu/configs/test.txt"
 								},
 								{
 									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
 									"type": "text"
 								},
 								{
@@ -900,10 +866,10 @@
 							]
 						},
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/upload",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/upload",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -939,10 +905,10 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/download?file-id={{rl_sample}}",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/download?file-id={{rl_sample}}",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -994,10 +960,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/download?file-id=_abced",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/download?file-id=_abced",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -1041,10 +1007,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/download?file-id={{gl_sample}}",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/download?file-id={{gl_sample}}",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -1087,10 +1053,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/5e79c456-d6cc-4f45-99c5-4656cbdd9196.txt",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/download?file-id={{rl_archive}}",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -1101,7 +1067,7 @@
 							"query": [
 								{
 									"key": "file-id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/5e79c456-d6cc-4f45-99c5-4656cbdd9196.txt"
+									"value": "{{rl_archive}}"
 								}
 							]
 						}
@@ -1144,10 +1110,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/5e79c456-d6cc-4f45-99c5-4656cbdd9196.txt",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/5e79c456-d6cc-4f45-99c5-4656cbdd9196.txt",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -1158,7 +1124,7 @@
 							"query": [
 								{
 									"key": "file-id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/5e79c456-d6cc-4f45-99c5-4656cbdd9196.txt"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/5e79c456-d6cc-4f45-99c5-4656cbdd9196.txt"
 								}
 							]
 						}
@@ -1200,10 +1166,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/5e79c456-d6cc-4f45-99c5-4656cbdd9196.txt",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/5e79c456-d6cc-4f45-99c5-4656cbdd9196.txt",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -1214,7 +1180,7 @@
 							"query": [
 								{
 									"key": "file-id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/5e79c456-d6cc-4f45-99c5-4656cbdd9196.txt"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/5e79c456-d6cc-4f45-99c5-4656cbdd9196.txt"
 								}
 							]
 						}
@@ -1256,10 +1222,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/8185010f-705d-4966-ac44-2050887c68f3_invalid.txt",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/8185010f-705d-4966-ac44-2050887c68f3_invalid.txt",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -1270,7 +1236,7 @@
 							"query": [
 								{
 									"key": "file-id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/8185010f-705d-4966-ac44-2050887c68f3_invalid.txt"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/8185010f-705d-4966-ac44-2050887c68f3_invalid.txt"
 								}
 							]
 						}
@@ -1302,10 +1268,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/f0db6e57-fabe-45de-9d4f-5f422fc7fd12.txt",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/download?file-id={{gl_archive}}",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -1316,7 +1282,7 @@
 							"query": [
 								{
 									"key": "file-id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/f0db6e57-fabe-45de-9d4f-5f422fc7fd12.txt"
+									"value": "{{gl_archive}}"
 								}
 							]
 						}
@@ -1359,10 +1325,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/f0db6e57-fabe-45de-9d4f-5f422fc7fd12.txt",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/f0db6e57-fabe-45de-9d4f-5f422fc7fd12.txt",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -1373,7 +1339,7 @@
 							"query": [
 								{
 									"key": "file-id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/f0db6e57-fabe-45de-9d4f-5f422fc7fd12.txt"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/f0db6e57-fabe-45de-9d4f-5f422fc7fd12.txt"
 								}
 							]
 						}
@@ -1414,10 +1380,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/0fad5b98-4e90-4c06-bd68-1fba01a5a6ab.txt",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/0fad5b98-4e90-4c06-bd68-1fba01a5a6ab.txt",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -1428,7 +1394,7 @@
 							"query": [
 								{
 									"key": "file-id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/0fad5b98-4e90-4c06-bd68-1fba01a5a6ab.txt"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/0fad5b98-4e90-4c06-bd68-1fba01a5a6ab.txt"
 								}
 							]
 						}
@@ -1473,10 +1439,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information&time=2020-09-10T00:00:00Z&endTime=2020-09-15T00:00:00Z&timerel=during",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information&time=2020-09-10T00:00:00Z&endTime=2020-09-15T00:00:00Z&timerel=during",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -1488,7 +1454,7 @@
 							"query": [
 								{
 									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information"
 								},
 								{
 									"key": "time",
@@ -1536,10 +1502,10 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "https://localhost:8443/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information&time=2020-09-10T00:00:00Z&endTime=2020-09-15T00:00:00Z&timerel=during",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information&time=2020-09-10T00:00:00Z&endTime=2020-09-15T00:00:00Z&timerel=during",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -1551,7 +1517,7 @@
 							"query": [
 								{
 									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information"
 								},
 								{
 									"key": "time",
@@ -1603,10 +1569,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&time=2020-09-10T00:00:00Z&endTime=2020-09-15T00:00:00Z&timerel=during",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&time=2020-09-10T00:00:00Z&endTime=2020-09-15T00:00:00Z&timerel=during",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -1618,7 +1584,7 @@
 							"query": [
 								{
 									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
 								},
 								{
 									"key": "time",
@@ -1673,10 +1639,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&time=2020-09-10T00:00:00Z&endTime=2020-09-15T00:00:00Z&timerel=during",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&time=2020-09-10T00:00:00Z&endTime=2020-09-15T00:00:00Z&timerel=during",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -1688,7 +1654,7 @@
 							"query": [
 								{
 									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
 								},
 								{
 									"key": "time",
@@ -1740,10 +1706,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&time=2020-09-10T00:00:00Z&endTime=2020-09-15T00:00:00Z&timerel=during&georel=near;maxDistance=10000&geometry=point&coordinates=[72.79,21.16]",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&time=2020-09-10T00:00:00Z&endTime=2020-09-15T00:00:00Z&timerel=during&georel=near;maxDistance=10000&geometry=point&coordinates=[72.79,21.16]",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -1755,7 +1721,7 @@
 							"query": [
 								{
 									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
 								},
 								{
 									"key": "time",
@@ -1822,10 +1788,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&time=2020-09-10T00:00:00Z&endTime=2020-09-15T00:00:00Z&timerel=during&georel=near;maxDistance=10000&geometry=point&coordinates=[72.79,21.16]",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&time=2020-09-10T00:00:00Z&endTime=2020-09-15T00:00:00Z&timerel=during&georel=near;maxDistance=10000&geometry=point&coordinates=[72.79,21.16]",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -1837,7 +1803,7 @@
 							"query": [
 								{
 									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
 								},
 								{
 									"key": "time",
@@ -1901,10 +1867,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/list?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/list?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -1915,7 +1881,7 @@
 							"query": [
 								{
 									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
 								}
 							]
 						}
@@ -1958,10 +1924,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/list?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/list?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -1972,7 +1938,7 @@
 							"query": [
 								{
 									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
 								}
 							]
 						}
@@ -2012,10 +1978,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&georel=near;maxDistance=10000&geometry=point&coordinates=[72.79,21.16]",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&georel=near;maxDistance=10000&geometry=point&coordinates=[72.79,21.16]",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -2026,7 +1992,7 @@
 							"query": [
 								{
 									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
 								},
 								{
 									"key": "georel",
@@ -2074,10 +2040,10 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "https://localhost:8443/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&georel=near;maxDistance=10000&geometry=point&coordinates=[72.79,21.16]",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&georel=near;maxDistance=10000&geometry=point&coordinates=[72.79,21.16]",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -2088,7 +2054,7 @@
 							"query": [
 								{
 									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
 								},
 								{
 									"key": "georel",
@@ -2149,10 +2115,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&georel=within&geometry=polygon&coordinates=[[[72.7815,21.1726],[72.7856,21.1519],[72.807,21.1527],[72.8170,21.1680],[72.800,21.1808],[72.7815,21.1726]]]",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&georel=within&geometry=polygon&coordinates=[[[72.7815,21.1726],[72.7856,21.1519],[72.807,21.1527],[72.8170,21.1680],[72.800,21.1808],[72.7815,21.1726]]]",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -2163,7 +2129,7 @@
 							"query": [
 								{
 									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
 								},
 								{
 									"key": "georel",
@@ -2225,10 +2191,10 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "https://localhost:8443/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&georel=within&geometry=polygon&coordinates=[[[72.7815,21.1726],[72.7856,21.1519],[72.807,21.1527],[72.8170,21.1680],[72.800,21.1808],[72.7815,21.1726]]]",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&georel=within&geometry=polygon&coordinates=[[[72.7815,21.1726],[72.7856,21.1519],[72.807,21.1527],[72.8170,21.1680],[72.800,21.1808],[72.7815,21.1726]]]",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -2239,7 +2205,7 @@
 							"query": [
 								{
 									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
 								},
 								{
 									"key": "georel",
@@ -2302,10 +2268,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/delete?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/992cad13-6725-42ab-bcee-e4e53fda0.csv",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/delete?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/992cad13-6725-42ab-bcee-e4e53fda0.csv",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -2316,7 +2282,7 @@
 							"query": [
 								{
 									"key": "file-id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/992cad13-6725-42ab-bcee-e4e53fda0.csv"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/992cad13-6725-42ab-bcee-e4e53fda0.csv"
 								}
 							]
 						}
@@ -2357,10 +2323,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/delete?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/992cad13-6725-42ab-bcee-e4e53fda0.csv",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/delete?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/992cad13-6725-42ab-bcee-e4e53fda0.csv",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -2371,7 +2337,7 @@
 							"query": [
 								{
 									"key": "file-id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/992cad13-6725-42ab-bcee-e4e53fda0.csv"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/992cad13-6725-42ab-bcee-e4e53fda0.csv"
 								}
 							]
 						}
@@ -2412,10 +2378,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/delete?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/bf7b00db-0b5f-489f-b33e-3ae901144.csv",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/delete?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/bf7b00db-0b5f-489f-b33e-3ae901144.csv",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -2426,7 +2392,7 @@
 							"query": [
 								{
 									"key": "file-id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/bf7b00db-0b5f-489f-b33e-3ae901144.csv"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/bf7b00db-0b5f-489f-b33e-3ae901144.csv"
 								}
 							]
 						}
@@ -2458,10 +2424,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/delete?file-id={{rl_sample}}",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/delete?file-id={{rl_sample}}",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -2504,10 +2470,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/delete?file-id={{gl_sample}}",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/delete?file-id={{gl_sample}}",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -2550,10 +2516,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/delete?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/3047b3bb-a9d2-4534-9f42-493c4748e728.txt",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/delete?file-id={{rl_archive}}",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -2564,7 +2530,7 @@
 							"query": [
 								{
 									"key": "file-id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/3047b3bb-a9d2-4534-9f42-493c4748e728.txt"
+									"value": "{{rl_archive}}"
 								}
 							]
 						}
@@ -2596,10 +2562,10 @@
 							}
 						],
 						"url": {
-							"raw": "https://localhost:8443/iudx/v1/delete?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/98512ead-4194-4a5e-8903-5dee5ff95ed2.txt",
-							"protocol": "https",
+							"raw": "{{base_url}}:8443/iudx/v1/delete?file-id={{gl_archive}}",
+							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
 							"port": "8443",
 							"path": [
@@ -2610,7 +2576,7 @@
 							"query": [
 								{
 									"key": "file-id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/98512ead-4194-4a5e-8903-5dee5ff95ed2.txt"
+									"value": "{{gl_archive}}"
 								}
 							]
 						}
