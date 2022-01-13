@@ -1,4 +1,4 @@
-package iudx.file.server.database;
+package iudx.file.server.database.elasticdb;
 
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
