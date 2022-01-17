@@ -13,7 +13,7 @@
         </Console>
     </Appenders>
     <Loggers>
-        <logger name="iudx.file.server" level="${env:LOG_LEVEL:-WARN}"
+        <logger name="iudx.file.server" level="${env:LOG_LEVEL:-INFO}"
             additivity="false">
             <appender-ref ref="ConsoleAppender" />
         </logger>
