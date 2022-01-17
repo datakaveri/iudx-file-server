@@ -1,6 +1,5 @@
 package iudx.file.server.auditing;
 
-import static iudx.file.server.auditing.util.Constants.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -101,7 +100,8 @@ public class AuditingServiceTest {
         response ->
           vertxTestContext.verify(
             () -> {
-              LOGGER.info("RESPONSE" + new JsonObject(response.getMessage()).getString(DETAIL));
+                  LOGGER
+                      .debug("RESPONSE" + new JsonObject(response.getMessage()).getString(DETAIL));
               assertEquals(DATA_NOT_FOUND, new JsonObject(response.getMessage()).getString(DETAIL));
               vertxTestContext.completeNow();
             })));
@@ -118,7 +118,8 @@ public class AuditingServiceTest {
         response ->
           vertxTestContext.verify(
             () -> {
-              LOGGER.info("RESPONSE" + new JsonObject(response.getMessage()).getString(DETAIL));
+                  LOGGER
+                      .debug("RESPONSE" + new JsonObject(response.getMessage()).getString(DETAIL));
               assertEquals(DATA_NOT_FOUND, new JsonObject(response.getMessage()).getString(DETAIL));
               vertxTestContext.completeNow();
             })));
@@ -135,7 +136,8 @@ public class AuditingServiceTest {
         response ->
           vertxTestContext.verify(
           () -> {
-            LOGGER.info("RESPONSE" + new JsonObject(response.getMessage()).getString(DETAIL));
+                  LOGGER
+                      .debug("RESPONSE" + new JsonObject(response.getMessage()).getString(DETAIL));
             assertEquals(DATA_NOT_FOUND, new JsonObject(response.getMessage()).getString(DETAIL));
             vertxTestContext.completeNow();
           })));

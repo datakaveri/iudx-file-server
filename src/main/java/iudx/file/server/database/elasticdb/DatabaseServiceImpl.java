@@ -47,9 +47,9 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     elasticQuery.put("query", boolQuery);
 
-    LOGGER.info(boolQuery);
+    LOGGER.debug(boolQuery);
     String index = getIndex(apiQuery);
-    LOGGER.info(index);
+    LOGGER.debug(index);
     final String searchIndexUrl = index.concat(SEARCH_REQ_PARAM);
     final String countIndexUrl = index.concat(COUNT_REQ_PARAM);
 
@@ -88,7 +88,7 @@ public class DatabaseServiceImpl implements DatabaseService {
       return this;
     }
     String index = getIndex(document);
-    LOGGER.info(index);
+    LOGGER.debug(index);
     client.insertAsync(index, document, insertHandler -> {
       if (insertHandler.succeeded()) {
         handler.handle(Future.succeededFuture(insertHandler.result()));

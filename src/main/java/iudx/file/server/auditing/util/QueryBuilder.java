@@ -27,7 +27,7 @@ public class QueryBuilder {
     String resourceID = request.getString(RESOURCE_ID);
     String providerID = request.getString(PROVIDER_ID);
     ZonedDateTime zst = ZonedDateTime.now();
-    LOGGER.info("TIME ZST: " + zst);
+    LOGGER.debug("TIME ZST: " + zst);
     long time = getEpochTime(zst);
 
     StringBuilder query =
@@ -40,7 +40,7 @@ public class QueryBuilder {
                             .replace("$5", resourceID)
                             .replace("$7", providerID)
                             .replace("$6", zst.toString()));
-    LOGGER.info("Info: Query: " + query);
+    LOGGER.debug("Info: Query: " + query);
     return new JsonObject().put(QUERY_KEY, query);
   }
 }

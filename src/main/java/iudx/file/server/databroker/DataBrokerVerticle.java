@@ -115,7 +115,7 @@ public class DataBrokerVerticle extends AbstractVerticle {
             JsonObject invalidClientJson = new JsonObject(body);
             String key = invalidClientJson.getString("sub");
             String value = invalidClientJson.getString("expiry");
-            LOGGER.info("message received from RMQ : " + invalidClientJson);
+            LOGGER.debug("message received from RMQ : " + invalidClientJson);
             JsonObject cacheJson = new JsonObject();
             cacheJson.put("type", CacheType.REVOKED_CLIENT);
             cacheJson.put("key", key);

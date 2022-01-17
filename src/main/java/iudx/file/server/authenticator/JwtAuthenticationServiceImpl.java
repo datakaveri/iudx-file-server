@@ -179,7 +179,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   }
 
   Future<Boolean> isRevokedClientToken(JwtData jwtData) {
-    LOGGER.debug("isRevokedClientToken started param : " + jwtData);
+    LOGGER.debug("isRevokedClientToken started");
     Promise<Boolean> promise = Promise.promise();
     CacheType cacheType = CacheType.REVOKED_CLIENT;
     String subId = jwtData.getSub();
