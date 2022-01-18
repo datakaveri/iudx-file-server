@@ -10,7 +10,8 @@ import static org.mockito.Mockito.verify;
 
 import java.util.HashSet;
 import java.util.Set;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,7 @@ import net.bytebuddy.implementation.bytecode.assign.primitive.VoidAwareAssigner;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class LocalFileStorageTest {
-
+  private static final Logger LOGGER = LogManager.getLogger(LocalFileStorageTest.class);
   static LocalStorageFileServiceImpl fileService;
   static FileUpload file;
   static FileSystem fs;
@@ -72,7 +73,7 @@ public class LocalFileStorageTest {
     lenient().when(asyncResult.succeeded()).thenReturn(true);
     lenient().when(asyncResult.result()).thenReturn(new JsonObject().put("fileName", file.fileName()));
 
-    System.out.println(file.uploadedFileName());
+    LOGGER.debug(file.uploadedFileName());
     Set<FileUpload> set = new HashSet<>();
     set.add(file);
 
@@ -110,7 +111,7 @@ public class LocalFileStorageTest {
     }).when(fs).move(any(), any(), any(), any());
     lenient().when(asyncResult.failed()).thenReturn(true);
 
-    System.out.println(file.uploadedFileName());
+    LOGGER.debug(file.uploadedFileName());
     Set<FileUpload> set = new HashSet<>();
     set.add(file);
 
