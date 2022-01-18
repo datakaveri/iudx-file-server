@@ -450,11 +450,11 @@ public class FileServerVerticle extends AbstractVerticle {
     // extract the file-uuid from supplied id, since position of file-id in id will be different for
     // group level(pos:5) and resource level(pos:4)
     String fileUUID = fileIdComponent.length >= 6 ? fileIdComponent[5] : fileIdComponent[4];
-    LOGGER.info(fileUUID);
+    LOGGER.debug(fileUUID);
     if (fileUUID.contains("sample") && fileIdComponent.length >= 6) {
       uploadDir.append("/" + fileIdComponent[4]);
     }
-    LOGGER.info(uploadDir);
+    LOGGER.debug(uploadDir);
     fileService.download(fileUUID, uploadDir.toString(), response)
         .onComplete(handler -> {
           if (handler.failed()) {
@@ -545,7 +545,7 @@ public class FileServerVerticle extends AbstractVerticle {
     // extract the file-uuid from supplied id, since position of file-id in id will be different for
     // group level(pos:5) and resource level(pos:4)
     String fileUUID = fileIdComponent.length >= 6 ? fileIdComponent[5] : fileIdComponent[4];
-    LOGGER.info(fileUUID);
+    LOGGER.debug(fileUUID);
     boolean isArchiveFile = true;
     if (fileUUID.contains("sample")) {
       isArchiveFile = false;
@@ -553,8 +553,8 @@ public class FileServerVerticle extends AbstractVerticle {
         uploadDir.append("/" + fileIdComponent[4]);
       }
     }
-    LOGGER.info(uploadDir);
-    LOGGER.info("is archieve : " + isArchiveFile);
+    LOGGER.debug(uploadDir);
+    LOGGER.debug("is archieve : " + isArchiveFile);
     if (isArchiveFile) {
       deleteArchiveFile(response, id, fileUUID, uploadDir.toString(), auditParams);
     } else {
@@ -724,7 +724,7 @@ public class FileServerVerticle extends AbstractVerticle {
 
   private boolean isValidFileContentType(Set<FileUpload> files) {
     for (FileUpload file : files) {
-      LOGGER.info(file.contentType());
+      LOGGER.debug(file.contentType());
       if (!contentTypeValidator.isValid(file.contentType())) {
         return false;
       }

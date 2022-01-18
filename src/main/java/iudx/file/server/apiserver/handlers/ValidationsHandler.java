@@ -39,7 +39,7 @@ public class ValidationsHandler implements Handler<RoutingContext> {
     for (Validator validator : Optional.ofNullable(validations).orElse(Collections.emptyList())) {
       LOGGER.debug("validator :" + validator.getClass().getName());
       if (!validator.isValid()) {
-        System.out.println("false");
+        LOGGER.debug("false");
         error(context);
         return;
       }

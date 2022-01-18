@@ -132,7 +132,7 @@ public class ElasticClient {
       public void onSuccess(Response response) {
         try {
           JsonObject responseJson = new JsonObject(EntityUtils.toString(response.getEntity()));
-          LOGGER.info("response :" + responseJson);
+          LOGGER.debug("response :" + responseJson);
           if (!responseJson.containsKey("result")) {
             responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
                 .setMessage("Error while inserting.");

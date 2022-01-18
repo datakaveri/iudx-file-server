@@ -57,7 +57,7 @@ public class LocalStorageFileServiceImpl implements FileService {
       fileSystem.move(fileUpload.uploadedFileName(), fileUploadPath, copyOptions,
           fileMoveHandler -> {
             if (fileMoveHandler.succeeded()) {
-              System.out.println("uploaded");
+              LOGGER.debug("uploaded");
               metadata.put("fileName", fileUpload.fileName());
               metadata.put("content-type", fileUpload.contentType());
               metadata.put("content-transfer-encoding", fileUpload.contentTransferEncoding());
@@ -67,8 +67,7 @@ public class LocalStorageFileServiceImpl implements FileService {
               metadata.put("file-id", uuid + "." + fileExtension);
               promise.complete(metadata);
             } else {
-              System.out.println("failed uploading");
-              LOGGER.debug("failed :" + fileMoveHandler.cause());
+              LOGGER.debug("failed uploading :" + fileMoveHandler.cause());
               finalResponse.put("type", HttpStatusCode.INTERNAL_SERVER_ERROR.getUrn());
               finalResponse.put("title", "failed to upload file.");
               finalResponse.put("details", fileMoveHandler.cause());

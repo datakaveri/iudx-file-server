@@ -38,7 +38,6 @@ public class AuthenticationVerticle extends AbstractVerticle {
 
     webClientFactory = new WebClientFactory(vertx, config());
     catalogueService = new CatalogueServiceImpl(vertx, webClientFactory, config());
-    LOGGER.debug("config is " + config());
     getJwtPublicKey(vertx, config()).onSuccess(handler -> {
       String cert = handler;
       LOGGER.debug("cert : " + cert);
