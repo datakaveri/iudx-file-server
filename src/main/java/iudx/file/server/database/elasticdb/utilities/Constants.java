@@ -5,6 +5,7 @@ public class Constants extends iudx.file.server.common.Constants {
   public static final String ERROR = "Error";
   public static final String COUNT = "count";
   public static final String DETAIL = "details";
+  public static final String ERROR_MESSAGE = "errorMessage";
   public static final String ERROR_TYPE = "type";
   public static final String FAILED = "Failed";
   public static final String INDEX_NOT_FOUND = "index_not_found_exception";
