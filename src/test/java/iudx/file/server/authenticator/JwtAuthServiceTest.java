@@ -312,7 +312,7 @@ public class JwtAuthServiceTest {
     JsonObject authInfo = new JsonObject();
 
     authInfo.put("token", consumerJwt);
-    authInfo.put("id", "example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group");
+    authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
     authInfo.put("method", Method.GET);
 
@@ -553,7 +553,7 @@ public class JwtAuthServiceTest {
   public void failure4openResource(VertxTestContext testContext) {
     JsonObject authInfo = new JsonObject();
 
-    String id = "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood-abc/FWR053";
+    String id = "example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group";
 
     authInfo.put("token", consumerJwt);
     authInfo.put("id", id);
@@ -565,7 +565,7 @@ public class JwtAuthServiceTest {
     jwtData.setAud("file.iudx.io");
     jwtData.setExp(1627408865L);
     jwtData.setIat(1627408865L);
-    jwtData.setIid("ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood-abc/FWR053");
+    jwtData.setIid("ri:example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group");
     jwtData.setRole("consumer");
     jwtData.setCons(new JsonObject().put("access", new JsonArray().add("file")));
 

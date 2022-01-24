@@ -170,6 +170,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       String[] idComponents = id.split("/");
       if (idComponents.length < 4) {
         promise.fail("Not Found " + id);
+        return promise.future();
       }
       String groupId =
           (idComponents.length == 4)
