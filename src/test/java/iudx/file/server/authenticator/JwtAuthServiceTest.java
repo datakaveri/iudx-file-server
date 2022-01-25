@@ -541,7 +541,9 @@ public class JwtAuthServiceTest {
     jwtData.setRole("consumer");
     jwtData.setCons(new JsonObject().put("access", new JsonArray().add("file")));
 
-    jwtAuthenticationService.isOpenResource(id).onComplete(openResourceHandler -> {
+    doAnswer(Answer -> Future.succeededFuture("OPEN")).when(jwtAuthImplSpy).isOpenResource(any());
+    
+    jwtAuthImplSpy.isOpenResource(id).onComplete(openResourceHandler -> {
       if(openResourceHandler.succeeded() && openResourceHandler.result().equals("OPEN")) {
         testContext.completeNow();
       } else {
