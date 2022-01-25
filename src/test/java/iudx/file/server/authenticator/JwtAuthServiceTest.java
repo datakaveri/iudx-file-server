@@ -320,6 +320,8 @@ public class JwtAuthServiceTest {
 
     doAnswer(Answer -> Future.succeededFuture(true)).when(catalogueServiceMock).isItemExist(any());
     doAnswer(Answer -> Future.succeededFuture(true)).when(jwtAuthImplSpy).isValidAudienceValue(any());
+    doAnswer(Answer -> Future.succeededFuture("OPEN")).when(jwtAuthImplSpy).isOpenResource(any());
+
     
     AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
     when(asyncResult.succeeded()).thenReturn(false);
