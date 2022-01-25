@@ -5,6 +5,21 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.concurrent.TimeUnit;
+import static iudx.file.server.authenticator.utilities.Constants.*;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+
+import io.vertx.core.buffer.Buffer;
+import io.vertx.ext.web.client.HttpResponse;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
+import io.vertx.ext.web.client.predicate.ResponsePredicate;
+import iudx.file.server.authenticator.utilities.Constants;
+import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.google.common.cache.Cache;
@@ -35,9 +50,11 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
 
   final JWTAuth jwtAuth;
+  final WebClient catWebClient;
   final String host;
   final int port;;
   final String audience;
+  final String path;
   final CatalogueService catalogueService;
   final CacheService cache;
 
@@ -62,7 +79,11 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     this.cache = cacheService;
     host = config.getString("catalogueHost");
     port = config.getInteger("cataloguePort");
+    this.path = Constants.CAT_RSG_PATH;
 
+    WebClientOptions options = new WebClientOptions();
+    options.setTrustAll(true).setVerifyHost(false).setSsl(true);
+    catWebClient = WebClient.create(vertx, options);
   }
 
   @Override
@@ -71,6 +92,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     LOGGER.debug("token interospect called");
     String id = authenticationInfo.getString("id");;
     String token = authenticationInfo.getString("token");
+    String endPoint = authenticationInfo.getString("apiEndpoint");
 
     Future<JwtData> jwtDecodeFuture = decodeJwt(token);
     Future<Boolean> isItemExistFuture = catalogueService.isItemExist(id);
@@ -90,9 +112,37 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     }).compose(revokeTokenHandler -> {
       return isItemExistFuture;
     }).compose(itemExistHandler -> {
-      return isValidId(result.jwtData, id);
+      if (!result.jwtData.getIss().equals(result.jwtData.getSub())) {
+        return isOpenResource(id);
+      } else {
+        return Future.succeededFuture("OPEN");
+      }
+    }).compose(openResourceHandler -> {
+      result.isOpen = openResourceHandler.equalsIgnoreCase("OPEN");
+      if(result.isOpen && OPEN_ENDPOINTS.contains(endPoint)) {
+        JsonObject json = new JsonObject()
+                .put(JSON_USERID, result.jwtData.getSub());
+        return Future.succeededFuture(true);
+      } else if(!result.isOpen) {
+        return isValidId(result.jwtData, id);
+      } else {
+        return Future.succeededFuture(true);
+      }
     }).compose(validIdHandler -> {
-      return validateAccess(result.jwtData, authenticationInfo);
+      if (result.jwtData.getIss().equals(result.jwtData.getSub())) {
+        JsonObject jsonResponse = new JsonObject();
+        jsonResponse.put(JSON_USERID, result.jwtData.getSub());
+        LOGGER.info("jwt : " + result.jwtData);
+        jsonResponse.put(
+                JSON_EXPIRY,
+                (LocalDateTime.ofInstant(
+                        Instant.ofEpochSecond(Long.parseLong(String.valueOf(result.jwtData.getExp()))),
+                        ZoneId.systemDefault()))
+                        .toString());
+        return Future.succeededFuture(jsonResponse);
+      } else {
+        return validateAccess(result.jwtData, result.isOpen, authenticationInfo);
+      }
     }).onComplete(completeHandler -> {
       LOGGER.debug("completion handler");
       if (completeHandler.succeeded()) {
@@ -104,6 +154,142 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     });
 
     return this;
+  }
+
+  public Future<String> isOpenResource(String id) {
+    LOGGER.trace("isOpenResource() started");
+    Promise<String> promise = Promise.promise();
+
+    String ACL = resourceIdCache.getIfPresent(id);
+    if (ACL != null) {
+      LOGGER.debug("Cache Hit");
+      promise.complete(ACL);
+    } else {
+      // cache miss
+      LOGGER.debug("Cache miss calling cat server");
+      String[] idComponents = id.split("/");
+      if (idComponents.length < 4) {
+        promise.fail("Not Found " + id);
+        return promise.future();
+      }
+      String groupId =
+          (idComponents.length == 4)
+              ? id
+              : String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
+
+      // 1. check group accessPolicy.
+      // 2. check resource exist, if exist set accessPolicy to group accessPolicy. else fail
+      Future<String> groupACLFuture = getGroupAccessPolicy(groupId);
+      groupACLFuture
+          .compose(
+              groupACLResult -> {
+                String groupPolicy = groupACLResult;
+                return isResourceExist(id, groupPolicy);
+              })
+          .onSuccess(
+              handler -> {
+                promise.complete(resourceIdCache.getIfPresent(id));
+              })
+          .onFailure(
+              handler -> {
+                LOGGER.error("cat response failed for Id : (" + id + ")" + handler.getCause());
+                promise.fail("Not Found " + id);
+              });
+    }
+    return promise.future();
+  }
+
+  private Future<Boolean> isResourceExist(String id, String groupACL) {
+    LOGGER.trace("isResourceExist() started");
+    Promise<Boolean> promise = Promise.promise();
+    String resourceExist = resourceIdCache.getIfPresent(id);
+    if (resourceExist != null) {
+      LOGGER.debug("Info : cache Hit");
+      promise.complete(true);
+    } else {
+      LOGGER.debug("Info : Cache miss : call cat server");
+      catWebClient
+          .get(port, host, path)
+          .addQueryParam("property", "[id]")
+          .addQueryParam("value", "[[" + id + "]]")
+          .addQueryParam("filter", "[id]")
+          .expect(ResponsePredicate.JSON)
+          .send(
+              responseHandler -> {
+                if (responseHandler.failed()) {
+                  promise.fail("false");
+                }
+                HttpResponse<Buffer> response = responseHandler.result();
+                JsonObject responseBody = response.bodyAsJsonObject();
+                if (response.statusCode() != HttpStatus.SC_OK) {
+                  promise.fail("false");
+                } else if (!responseBody.getString("type").equals("urn:dx:cat:Success")) {
+                  promise.fail("Not Found");
+                } else if (responseBody.getInteger("totalHits") == 0) {
+                  LOGGER.debug("Info: Resource ID invalid : Catalogue item Not Found");
+                  promise.fail("Not Found");
+                } else {
+                  LOGGER.debug("is Exist response : " + responseBody);
+                  resourceIdCache.put(id, groupACL);
+                  promise.complete(true);
+                }
+              });
+    }
+    return promise.future();
+  }
+
+  private Future<String> getGroupAccessPolicy(String groupId) {
+
+    LOGGER.trace("getGroupAccessPolicy() started");
+    Promise<String> promise = Promise.promise();
+    String groupACL = resourceGroupCache.getIfPresent(groupId);
+
+    if (groupACL != null) {
+      LOGGER.debug("Info : cache Hit");
+      promise.complete(groupACL);
+    } else {
+      LOGGER.debug("Info : cache miss");
+      catWebClient
+          .get(port, host, path)
+          .addQueryParam("property", "[id]")
+          .addQueryParam("value", "[[" + groupId + "]]")
+          .addQueryParam("filter", "[accessPolicy]")
+          .expect(ResponsePredicate.JSON)
+          .send(
+              httpResponseAsyncResult -> {
+                if (httpResponseAsyncResult.failed()) {
+                  LOGGER.error(httpResponseAsyncResult.cause());
+                  promise.fail("Resource not found");
+                  return;
+                }
+                HttpResponse<Buffer> response = httpResponseAsyncResult.result();
+                if (response.statusCode() != HttpStatus.SC_OK) {
+                  promise.fail("Resource not found");
+                  return;
+                }
+                JsonObject responseBody = response.bodyAsJsonObject();
+                if (!responseBody.getString("type").equals("urn:dx:cat:Success")) {
+                  promise.fail("Resource not found");
+                  return;
+                }
+                String resourceACL = "SECURE";
+                try {
+                  resourceACL =
+                      responseBody
+                          .getJsonArray("results")
+                          .getJsonObject(0)
+                          .getString("accessPolicy");
+                  resourceGroupCache.put(groupId, resourceACL);
+                  LOGGER.debug("Info: Group ID valid : Catalogue item Found");
+                  promise.complete(resourceACL);
+                } catch (Exception ignored) {
+                  LOGGER.error(ignored.getMessage());
+                  LOGGER.debug("Info: Group ID invalid : Empty response in results from Catalogue");
+                  promise.fail("Resource not found");
+                }
+              });
+    }
+    return promise.future();
   }
 
   // class to contain intermeddiate data for token interospection
@@ -130,9 +316,18 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     return promise.future();
   }
 
-  public Future<JsonObject> validateAccess(JwtData jwtData, JsonObject authInfo) {
+  public Future<JsonObject> validateAccess(JwtData jwtData, boolean openResource, JsonObject authInfo) {
     LOGGER.trace("validateAccess() started");
     Promise<JsonObject> promise = Promise.promise();
+    String jwtId = jwtData.getIid().split(":")[1];
+
+    if (openResource && OPEN_ENDPOINTS.contains(authInfo.getString("apiEndpoint"))) {
+      LOGGER.info("User access is allowed.");
+      JsonObject jsonResponse = new JsonObject();
+      jsonResponse.put(JSON_IID, jwtId);
+      jsonResponse.put(JSON_USERID, jwtData.getSub());
+      return Future.succeededFuture(jsonResponse);
+    }
 
     Method method = Method.valueOf(authInfo.getString("method"));
     Api api = Api.fromEndpoint(authInfo.getString("apiEndpoint"));
