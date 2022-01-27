@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import iudx.file.server.apiserver.response.ResponseType;
 import org.apache.http.HttpStatus;
@@ -276,6 +277,7 @@ public class FileServerVerticle extends AbstractVerticle {
     MultiMap formParam = request.formAttributes();
     String id = formParam.get("id");
     Boolean isSample = Boolean.valueOf(formParam.get("isSample"));
+    Boolean isExternalStorage = Boolean.parseBoolean(request.getHeader("externalStorage"));
     response.putHeader("content-type", "application/json");
     LOGGER.debug("id :" + id);
 
@@ -283,6 +285,23 @@ public class FileServerVerticle extends AbstractVerticle {
             .put("api", request.path())
             .put("userID", routingContext.data().get("AuthResult"))
             .put("resourceID", id);
+
+    if(isExternalStorage) {
+      JsonObject responseJson = new JsonObject();
+      String fileId = id + "/" + UUID.randomUUID();
+      Future<Boolean> saveRecordFuture = saveFileRecord(formParam, fileId);
+
+      saveRecordFuture.onComplete(saveRecordHandler -> {
+        if(saveRecordHandler.succeeded()) {
+          responseJson.put("fileId", fileId);
+          handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
+          updateAuditTable(auditParams);
+        } else {
+          processResponse(response, saveRecordHandler.cause().getMessage());
+        }
+      });
+      return;
+    }
 
     String fileIdComponent[] = getFileIdComponents(id);
     StringBuilder uploadPath = new StringBuilder();
@@ -310,7 +329,7 @@ public class FileServerVerticle extends AbstractVerticle {
 
   /**
    * Helper method to upload a sample file.
-   * 
+   *
    * @param response
    * @param files
    * @param fileName

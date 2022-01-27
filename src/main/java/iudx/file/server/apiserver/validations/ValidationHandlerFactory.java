@@ -59,7 +59,7 @@ public class ValidationHandlerFactory {
 
     // external storage
     validators.add(new StorageTypeValidator(headers.get(HEADER_EXTERNAL_STORAGE),false));
-    validators.add(new StorageURLValidator(headers.get(PARAM_FILE_URL),false));
+    validators.add(new StorageURLValidator(parameters.get(PARAM_FILE_URL), Boolean.parseBoolean(headers.get(HEADER_EXTERNAL_STORAGE))));
 
     return validators;
   }

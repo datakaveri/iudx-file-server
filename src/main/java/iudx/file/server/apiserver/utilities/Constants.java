@@ -23,7 +23,7 @@ public class Constants extends iudx.file.server.common.Constants{
   public static final String HEADER_REFERER = "Referer";
   public static final String HEADER_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
   public static final String HEADER_OPTIONS = "options";
-  public static final String HEADER_EXTERNAL_STORAGE = "external-storage";
+  public static final String HEADER_EXTERNAL_STORAGE = "externalStorage";
 
 
   public static final String CONTENT_TYPE = "content-type";
@@ -50,7 +50,7 @@ public class Constants extends iudx.file.server.common.Constants{
   public static final String PARAM_GEOMETRY="geometry";
   public static final String PARAM_COORDINATES="coordinates";
   public static final String PARAM_GEOPROPERTY="geoproperty";
-  public static final String PARAM_FILE_URL="file-url";
+  public static final String PARAM_FILE_URL="file-download-url";
 
    public static final String MSG_BAD_QUERY = "Bad query";
 

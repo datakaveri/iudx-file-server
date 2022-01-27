@@ -7,13 +7,9 @@ import org.apache.logging.log4j.Logger;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
 
 public class StorageURLValidator implements Validator {
   private static final Logger LOGGER = LogManager.getLogger(GeomTypeValidator.class);
-
-  private List<Object> allowedHosts =
-          List.of("drive.google.com"); // TODO: add more apt URLs
 
   private final String value;
   private final boolean required;
@@ -53,10 +49,6 @@ public class StorageURLValidator implements Validator {
 
     try {
       URL url = new URL(value);
-      String host = url.getHost();
-      if(!allowedHosts.contains(host)) {
-        return false;
-      }
     } catch (MalformedURLException e) {
       LOGGER.error("MalformedURL : [ " + value + " ]");
       return false;
