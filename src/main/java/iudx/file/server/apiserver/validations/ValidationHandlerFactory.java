@@ -82,6 +82,9 @@ public class ValidationHandlerFactory {
     validators.add(new FileIdTypeValidator(parameters.get(PARAM_FILE_ID), true));
     validators.add(new TokenTypeValidator(headers.get(HEADER_TOKEN), true));
 
+    // external storage
+    validators.add(new StorageTypeValidator(headers.get(HEADER_EXTERNAL_STORAGE),false));
+
     return validators;
   }
 

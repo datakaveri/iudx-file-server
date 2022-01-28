@@ -552,11 +552,24 @@ public class FileServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     response.putHeader("content-type", "application/json");
     String id = request.getParam("file-id");
+    Boolean isExternalStorage = Boolean.parseBoolean(request.getHeader("externalStorage"));
 
     JsonObject auditParams = new JsonObject()
             .put("api", request.path())
             .put("userID", routingContext.data().get("AuthResult"))
             .put("resourceID", id);
+
+    if(isExternalStorage) {
+      database.delete(id, dbDeleteHandler -> {
+        if(dbDeleteHandler.succeeded()) {
+          handleResponse(response, HttpStatusCode.SUCCESS, SUCCESS, ("File with id : " + id + " deleted successfully"));
+          updateAuditTable(auditParams);
+        } else {
+          handleResponse(response, HttpStatusCode.NOT_FOUND, dbDeleteHandler.cause().getMessage());
+        }
+      });
+      return;
+    }
 
     String fileIdComponent[] = getFileIdComponents(id);
     StringBuilder uploadDir = new StringBuilder();
