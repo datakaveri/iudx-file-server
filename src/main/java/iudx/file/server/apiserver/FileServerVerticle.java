@@ -562,8 +562,18 @@ public class FileServerVerticle extends AbstractVerticle {
     if(isExternalStorage) {
       database.delete(id, dbDeleteHandler -> {
         if(dbDeleteHandler.succeeded()) {
-          handleResponse(response, HttpStatusCode.SUCCESS, SUCCESS, ("File with id : " + id + " deleted successfully"));
-          updateAuditTable(auditParams);
+          JsonObject dbHandlerResult = dbDeleteHandler.result();
+          String resultTitle = dbHandlerResult.getString("title");
+          int resultType = dbHandlerResult.getInteger("type");
+          HttpStatusCode code = HttpStatusCode.getByValue(resultType);
+          ResponseUrn urn = ResponseUrn.fromCode(resultTitle);
+          if(urn.equals(SUCCESS)) {
+            handleResponse(response, code, urn, ("File with id : " + id + " deleted successfully"));
+            updateAuditTable(auditParams);
+          } else if(urn.equals(RESOURCE_NOT_FOUND)) {
+            String resultDetails = dbHandlerResult.getString("details");
+            handleResponse(response, code, urn, resultDetails);
+          }
         } else {
           handleResponse(response, HttpStatusCode.NOT_FOUND, dbDeleteHandler.cause().getMessage());
         }

@@ -198,7 +198,8 @@ public class ElasticClient {
           if(deletedDocs == 0) {
             responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(404)
                     .setMessage("File does not exist");
-            deletetHandler.handle(Future.failedFuture("File does not exist"));
+            deletetHandler.handle(Future.succeededFuture(responseBuilder.getResponse()));
+            return;
           }
           JsonArray failures = responseJson.getJsonArray("failures");
           if (failures != null && failures.size() > 0) {
