@@ -22,7 +22,7 @@ public class StorageURLValidator implements Validator {
   @Override
   public boolean isValid() {
     if(required && (value == null || value.isBlank())) {
-      throw new DxRuntimeException(failureCode(), ResponseUrn.YET_NOT_IMPLEMENTED, "Validation error: field is empty");
+      throw new DxRuntimeException(failureCode(), ResponseUrn.INVALID_ATTR_VALUE, "Validation error: field is empty");
     } else {
       if(value == null || value.isBlank()) {
         return true;
