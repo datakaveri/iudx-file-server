@@ -17,7 +17,7 @@ public enum HttpStatusCode {
   UNAUTHORIZED(401, "Not Authorized", "urn:dx:rs:notAuthorized"),
   PAYMENT_REQUIRED(402, "Payment Required", "urn:dx:rs:paymentRequired"),
   FORBIDDEN(403, "Forbidden", "urn:dx:rs:forbidden"),
-  NOT_FOUND(404, "Not Found", "urn:dx:rs:notFound"),
+  NOT_FOUND(404, "Not Found", "urn:dx:rs:resourceNotFound"),
   METHOD_NOT_ALLOWED(405, "Method Not Allowed", "urn:dx:rs:methodNotAllowed"),
   NOT_ACCEPTABLE(406, "Not Acceptable", "urn:dx:rs:notAcceptable"),
   PROXY_AUTHENTICATION_REQUIRED(407, "Proxy Authentication Required", "urn:dx:rs:proxyAuthenticationRequired"),

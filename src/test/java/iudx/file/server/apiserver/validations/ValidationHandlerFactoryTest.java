@@ -4,8 +4,12 @@ import static iudx.file.server.apiserver.utilities.Constants.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
+import iudx.file.server.auditing.AuditingServiceTest;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,6 +24,7 @@ import iudx.file.server.apiserver.validations.types.Validator;
 @ExtendWith(VertxExtension.class)
 public class ValidationHandlerFactoryTest {
 
+  private static final Logger LOGGER = LogManager.getLogger(ValidationHandlerFactoryTest.class);
   static ValidationHandlerFactory validationFactory;
 
   @BeforeAll
@@ -41,11 +46,13 @@ public class ValidationHandlerFactoryTest {
     params.set(PARAM_SAMPLE, "true");
     params.set(PARAM_GEOMETRY, "point");
     params.set(PARAM_COORDINATES, "[23,75]");
+    params.set(PARAM_FILE_URL,"example.com/doc/abc123");
 
     headers.set(HEADER_TOKEN, "asdasd");
+    headers.set(HEADER_EXTERNAL_STORAGE,"true");
 
     List<Validator> validators = validationFactory.create(RequestType.UPLOAD, params, headers);
-    assertEquals(7, validators.size());
+    assertEquals(9, validators.size());
   }
 
 
@@ -63,16 +70,17 @@ public class ValidationHandlerFactoryTest {
   }
 
   @Test
-  @DisplayName("download request validations")
+  @DisplayName("delete request validations")
   public void getDeleteRequestValidations() {
     MultiMap params = MultiMap.caseInsensitiveMultiMap();
     MultiMap headers = MultiMap.caseInsensitiveMultiMap();
 
     params.set(PARAM_FILE_ID, "asda/asd/aasd/d");
     headers.set(HEADER_TOKEN, "asd.asd.asd");
+    headers.set(HEADER_EXTERNAL_STORAGE,"true");
 
     List<Validator> validators = validationFactory.create(RequestType.DELETE, params, headers);
-    assertEquals(2, validators.size());
+    assertEquals(3, validators.size());
   }
 
   @Test

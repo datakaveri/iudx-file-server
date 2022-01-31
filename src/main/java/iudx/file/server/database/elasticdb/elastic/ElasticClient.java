@@ -194,6 +194,13 @@ public class ElasticClient {
       public void onSuccess(Response response) {
         try {
           JsonObject responseJson = new JsonObject(EntityUtils.toString(response.getEntity()));
+          int deletedDocs = responseJson.getInteger("deleted");
+          if(deletedDocs == 0) {
+            responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(404)
+                    .setMessage("File does not exist");
+            deletetHandler.handle(Future.succeededFuture(responseBuilder.getResponse()));
+            return;
+          }
           JsonArray failures = responseJson.getJsonArray("failures");
           if (failures != null && failures.size() > 0) {
             responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
