@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import iudx.file.server.apiserver.response.ResponseType;
 import org.apache.http.HttpStatus;
@@ -104,14 +105,14 @@ public class FileServerVerticle extends AbstractVerticle {
   private WebClientFactory webClientFactory;
   private CatalogueService catalogueService;
   private String userId;
-  
+
   private final ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
 
   @Override
   public void start() throws Exception {
     int port;
     boolean isSSL;
-    
+
     Set<String> allowedHeaders = new HashSet<>();
     allowedHeaders.add(HEADER_ACCEPT);
     allowedHeaders.add(HEADER_TOKEN);
@@ -129,11 +130,11 @@ public class FileServerVerticle extends AbstractVerticle {
     allowedMethods.add(HttpMethod.DELETE);
     allowedMethods.add(HttpMethod.PATCH);
     allowedMethods.add(HttpMethod.PUT);
-    
+
     router = Router.router(vertx);
     router.route().handler(
-            CorsHandler.create("*").allowedHeaders(allowedHeaders).allowedMethods(allowedMethods));
-    
+        CorsHandler.create("*").allowedHeaders(allowedHeaders).allowedMethods(allowedMethods));
+
     requestValidator = new RequestValidator();
     contentTypeValidator = new ContentTypeValidator(config().getJsonObject("allowedContentType"));
     router
@@ -195,7 +196,7 @@ public class FileServerVerticle extends AbstractVerticle {
         .handler(geoQueryValidationHandler)
         .handler(AuthHandler.create(vertx))
         .handler(this::query).failureHandler(validationsFailureHandler);
-    
+
     router.get(API_API_SPECS).produces("application/json")
         .handler(routingContext -> {
           HttpServerResponse response = routingContext.response();
@@ -250,7 +251,7 @@ public class FileServerVerticle extends AbstractVerticle {
     fileService = new LocalStorageFileServiceImpl(vertx.fileSystem(), directory);
 
     auditingService = AuditingService.createProxy(vertx, AUDIT_SERVICE_ADDRESS);
-    
+
     // check upload dir exist or not.
     mkdirsIfNotExists(vertx.fileSystem(), directory, new Handler<AsyncResult<Void>>() {
       @Override
@@ -264,7 +265,7 @@ public class FileServerVerticle extends AbstractVerticle {
     });
     LOGGER.info("FileServerVerticle started successfully");
   }
-  
+
   /**
    * 
    * @param routingContext
@@ -276,21 +277,22 @@ public class FileServerVerticle extends AbstractVerticle {
     MultiMap formParam = request.formAttributes();
     String id = formParam.get("id");
     Boolean isSample = Boolean.valueOf(formParam.get("isSample"));
+    Boolean isExternalStorage = Boolean.parseBoolean(request.getHeader("externalStorage"));
     response.putHeader("content-type", "application/json");
     LOGGER.debug("id :" + id);
 
     JsonObject auditParams = new JsonObject()
-            .put("api", request.path())
-            .put("userID", routingContext.data().get("AuthResult"))
-            .put("resourceID", id);
+        .put("api", request.path())
+        .put("userID", routingContext.data().get("AuthResult"))
+        .put("resourceID", id);
 
     String fileIdComponent[] = getFileIdComponents(id);
     StringBuilder uploadPath = new StringBuilder();
     uploadPath.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
 
     Set<FileUpload> files = routingContext.fileUploads();
-    if (files.size() == 0 || !isValidFileContentType(files)) {
-      handleResponse(response,HttpStatusCode.BAD_REQUEST);
+    if (!isExternalStorage && (files.size() == 0 || !isValidFileContentType(files))) {
+      handleResponse(response, HttpStatusCode.BAD_REQUEST);
       String message = new RestResponse.Builder()
           .type(String.valueOf(400))
           .title(HttpStatusCode.BAD_REQUEST.getUrn())
@@ -299,7 +301,21 @@ public class FileServerVerticle extends AbstractVerticle {
       processResponse(response, message);
       return;
     }
-    if (isSample) {
+    if (isExternalStorage) {
+      JsonObject responseJson = new JsonObject();
+      String fileId = id + "/" + UUID.randomUUID();
+      Future<Boolean> saveRecordFuture = saveFileRecord(formParam, fileId);
+
+      saveRecordFuture.onComplete(saveRecordHandler -> {
+        if (saveRecordHandler.succeeded()) {
+          responseJson.put("fileId", fileId);
+          handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
+          updateAuditTable(auditParams);
+        } else {
+          processResponse(response, saveRecordHandler.cause().getMessage());
+        }
+      });
+    } else if (isSample) {
       if (fileIdComponent.length >= 5)
         uploadPath.append("/" + fileIdComponent[4]);
       sampleFileUpload(response, files, "sample", uploadPath.toString(), id, auditParams);
@@ -310,7 +326,7 @@ public class FileServerVerticle extends AbstractVerticle {
 
   /**
    * Helper method to upload a sample file.
-   * 
+   *
    * @param response
    * @param files
    * @param fileName
@@ -440,9 +456,9 @@ public class FileServerVerticle extends AbstractVerticle {
     String id = request.getParam("file-id");
 
     JsonObject auditParams = new JsonObject()
-            .put("api", request.path())
-            .put("userID", routingContext.data().get("AuthResult"))
-            .put("resourceID", id);
+        .put("api", request.path())
+        .put("userID", routingContext.data().get("AuthResult"))
+        .put("resourceID", id);
 
     String fileIdComponent[] = getFileIdComponents(id);
     StringBuilder uploadDir = new StringBuilder();
@@ -482,9 +498,9 @@ public class FileServerVerticle extends AbstractVerticle {
     QueryType type = getQueryType(params);
 
     JsonObject auditParams = new JsonObject()
-            .put("resourceID", query.getString("id"))
-            .put("api", context.request().path())
-            .put("userID", context.data().get("AuthResult"));
+        .put("resourceID", query.getString("id"))
+        .put("api", context.request().path())
+        .put("userID", context.data().get("AuthResult"));
 
     queryParamsValidator.compose(paramsValidator -> {
       return allowedFilters;
@@ -504,7 +520,8 @@ public class FileServerVerticle extends AbstractVerticle {
         if (isValidFilters) {
           executeSearch(JsonObject.mapFrom(params), type, response, auditParams);
         } else {
-          handleResponse(response, HttpStatusCode.BAD_REQUEST, "Either geo or temporal parameter is not allowed for resource" );
+          handleResponse(response, HttpStatusCode.BAD_REQUEST,
+              "Either geo or temporal parameter is not allowed for resource");
         }
       } else {
         LOGGER.error(handler.cause().getMessage());
@@ -513,7 +530,8 @@ public class FileServerVerticle extends AbstractVerticle {
     });
   }
 
-  private void executeSearch(JsonObject json, QueryType type, HttpServerResponse response, JsonObject auditParams) {
+  private void executeSearch(JsonObject json, QueryType type, HttpServerResponse response,
+      JsonObject auditParams) {
     database.search(json, type, queryHandler -> {
       if (queryHandler.succeeded()) {
         handleResponse(response, HttpStatusCode.SUCCESS, queryHandler.result());
@@ -533,11 +551,12 @@ public class FileServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     response.putHeader("content-type", "application/json");
     String id = request.getParam("file-id");
+    Boolean isExternalStorage = Boolean.parseBoolean(request.getHeader("externalStorage"));
 
     JsonObject auditParams = new JsonObject()
-            .put("api", request.path())
-            .put("userID", routingContext.data().get("AuthResult"))
-            .put("resourceID", id);
+        .put("api", request.path())
+        .put("userID", routingContext.data().get("AuthResult"))
+        .put("resourceID", id);
 
     String fileIdComponent[] = getFileIdComponents(id);
     StringBuilder uploadDir = new StringBuilder();
@@ -555,7 +574,27 @@ public class FileServerVerticle extends AbstractVerticle {
     }
     LOGGER.debug(uploadDir);
     LOGGER.debug("is archieve : " + isArchiveFile);
-    if (isArchiveFile) {
+
+    if (isExternalStorage) {
+      database.delete(id, dbDeleteHandler -> {
+        if (dbDeleteHandler.succeeded()) {
+          JsonObject dbHandlerResult = dbDeleteHandler.result();
+          String resultTitle = dbHandlerResult.getString("title");
+          int resultType = dbHandlerResult.getInteger("type");
+          HttpStatusCode code = HttpStatusCode.getByValue(resultType);
+          ResponseUrn urn = ResponseUrn.fromCode(resultTitle);
+          if (urn.equals(SUCCESS)) {
+            handleResponse(response, code, urn, ("File with id : " + id + " deleted successfully"));
+            updateAuditTable(auditParams);
+          } else if (urn.equals(RESOURCE_NOT_FOUND)) {
+            String resultDetails = dbHandlerResult.getString("details");
+            handleResponse(response, code, urn, resultDetails);
+          }
+        } else {
+          handleResponse(response, HttpStatusCode.NOT_FOUND, dbDeleteHandler.cause().getMessage());
+        }
+      });
+    } else if (isArchiveFile) {
       deleteArchiveFile(response, id, fileUUID, uploadDir.toString(), auditParams);
     } else {
       deleteSampleFile(response, id, fileUUID, uploadDir.toString(), auditParams);
@@ -568,9 +607,9 @@ public class FileServerVerticle extends AbstractVerticle {
     String id = request.getParam("id");
     JsonObject query = new JsonObject().put("id", id);
     JsonObject auditParams = new JsonObject()
-            .put("api",request.path())
-            .put("userID", context.data().get("AuthResult"))
-            .put("resourceID",id);
+        .put("api", request.path())
+        .put("userID", context.data().get("AuthResult"))
+        .put("resourceID", id);
 
     database.search(query, QueryType.LIST, queryHandler -> {
       if (queryHandler.succeeded()) {
@@ -591,7 +630,8 @@ public class FileServerVerticle extends AbstractVerticle {
           if (handler.succeeded()) {
             JsonObject deleteResult = handler.result();
             ResponseUrn urn = ResponseUrn.fromCode(deleteResult.getString("title"));
-            handleResponse(response, HttpStatusCode.SUCCESS, urn, ("File with id : " + id + " deleted successfully"));
+            handleResponse(response, HttpStatusCode.SUCCESS, urn,
+                ("File with id : " + id + " deleted successfully"));
             updateAuditTable(auditParams);
           } else {
             processResponse(response, handler.cause().getMessage());
@@ -608,7 +648,8 @@ public class FileServerVerticle extends AbstractVerticle {
             JsonObject deleteResult = handler.result();
             ResponseUrn urn = ResponseUrn.fromCode(deleteResult.getString("title"));
             LOGGER.info(deleteResult);
-            handleResponse(response, HttpStatusCode.SUCCESS, urn,("File with id : " + id + " deleted successfully"));
+            handleResponse(response, HttpStatusCode.SUCCESS, urn,
+                ("File with id : " + id + " deleted successfully"));
             updateAuditTable(auditParams);
           } else {
             processResponse(response, handler.cause().getMessage());
@@ -660,7 +701,7 @@ public class FileServerVerticle extends AbstractVerticle {
       HttpStatusCode status = HttpStatusCode.getByValue(type);
       String urnTitle = json.getString(JSON_TITLE);
       ResponseUrn urn;
-      if(urnTitle != null) {
+      if (urnTitle != null) {
         urn = ResponseUrn.fromCode(urnTitle);
       } else {
         urn = ResponseUrn.fromCode(type + "");
@@ -671,9 +712,9 @@ public class FileServerVerticle extends AbstractVerticle {
           .setStatusCode(type);
 
       if (message == null || message.isEmpty()) {
-        response.end(generateResponse(status,urn).toString());
+        response.end(generateResponse(status, urn).toString());
       } else {
-        response.end(generateResponse(status,urn, message).toString());
+        response.end(generateResponse(status, urn, message).toString());
       }
     } catch (DecodeException ex) {
       LOGGER.error("ERROR : Expecting Json received else from backend service");
@@ -684,8 +725,8 @@ public class FileServerVerticle extends AbstractVerticle {
 
   private void handleResponse(HttpServerResponse response, HttpStatusCode code, JsonObject result) {
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .setStatusCode(code.getValue())
-            .end(result.toString());
+        .setStatusCode(code.getValue())
+        .end(result.toString());
   }
 
   private void handleResponse(HttpServerResponse response, HttpStatusCode code, ResponseUrn urn) {
@@ -702,10 +743,11 @@ public class FileServerVerticle extends AbstractVerticle {
     handleResponse(response, code, urn, message);
   }
 
-  private void handleResponse(HttpServerResponse response, HttpStatusCode code, ResponseUrn urn, String message) {
+  private void handleResponse(HttpServerResponse response, HttpStatusCode code, ResponseUrn urn,
+      String message) {
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .setStatusCode(code.getValue())
-            .end(generateResponse(code, urn, message).toString());
+        .setStatusCode(code.getValue())
+        .end(generateResponse(code, urn, message).toString());
   }
 
   private JsonObject generateResponse(HttpStatusCode code, ResponseUrn urn) {
@@ -715,10 +757,10 @@ public class FileServerVerticle extends AbstractVerticle {
   private JsonObject generateResponse(HttpStatusCode code, ResponseUrn urn, String message) {
     String type = urn != null ? urn.getUrn() : code.getUrn();
     return new RestResponse.Builder()
-            .type(type)
-            .title(code.getDescription())
-            .details(message)
-            .build().toJson();
+        .type(type)
+        .title(code.getDescription())
+        .details(message)
+        .build().toJson();
   }
 
 
@@ -763,11 +805,12 @@ public class FileServerVerticle extends AbstractVerticle {
 
     /* getting provider id from the resource id */
     String resourceID = auditInfo.getString("resourceID");
-    String providerID = resourceID.substring(0,resourceID.indexOf('/',resourceID.indexOf('/')+1));
-    auditInfo.put("providerID",providerID);
+    String providerID =
+        resourceID.substring(0, resourceID.indexOf('/', resourceID.indexOf('/') + 1));
+    auditInfo.put("providerID", providerID);
 
     auditingService.executeWriteQuery(auditInfo, auditHandler -> {
-      if(auditHandler.succeeded()) {
+      if (auditHandler.succeeded()) {
         LOGGER.info("audit table updated");
       } else {
         LOGGER.error("failed to update audit table");

@@ -4,21 +4,11 @@ package iudx.file.server.apiserver.validations;
 import static iudx.file.server.apiserver.utilities.Constants.*;
 import java.util.ArrayList;
 import java.util.List;
+
+import iudx.file.server.apiserver.validations.types.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.MultiMap;
-import iudx.file.server.apiserver.validations.types.CoordinatesTypeValidator;
-import iudx.file.server.apiserver.validations.types.DateTypeValidator;
-import iudx.file.server.apiserver.validations.types.FileIdTypeValidator;
-import iudx.file.server.apiserver.validations.types.GeoRelationTypeValidator;
-import iudx.file.server.apiserver.validations.types.GeomTypeValidator;
-import iudx.file.server.apiserver.validations.types.IDTypeValidator;
-import iudx.file.server.apiserver.validations.types.PaginationOffsetTypeValidator;
-import iudx.file.server.apiserver.validations.types.PaginationLimitTypeValidator;
-import iudx.file.server.apiserver.validations.types.SampleTypeValidator;
-import iudx.file.server.apiserver.validations.types.TemporalRelTypeValidator;
-import iudx.file.server.apiserver.validations.types.TokenTypeValidator;
-import iudx.file.server.apiserver.validations.types.Validator;
 
 public class ValidationHandlerFactory {
 
@@ -67,6 +57,10 @@ public class ValidationHandlerFactory {
     validators.add(new GeomTypeValidator(parameters.get(PARAM_GEOMETRY), false));
     validators.add(new CoordinatesTypeValidator(parameters.get(PARAM_COORDINATES), false));
 
+    // external storage
+    validators.add(new StorageTypeValidator(headers.get(HEADER_EXTERNAL_STORAGE),false));
+    validators.add(new StorageURLValidator(parameters.get(PARAM_FILE_URL), Boolean.parseBoolean(headers.get(HEADER_EXTERNAL_STORAGE))));
+
     return validators;
   }
 
@@ -87,6 +81,9 @@ public class ValidationHandlerFactory {
 
     validators.add(new FileIdTypeValidator(parameters.get(PARAM_FILE_ID), true));
     validators.add(new TokenTypeValidator(headers.get(HEADER_TOKEN), true));
+
+    // external storage
+    validators.add(new StorageTypeValidator(headers.get(HEADER_EXTERNAL_STORAGE),false));
 
     return validators;
   }

@@ -19,12 +19,9 @@ public class ResponseBuilder {
   }
 
   public ResponseBuilder setTypeAndTitle(int statusCode) {
-    response.put(ERROR_TYPE, HttpStatusCode.getByValue(statusCode).getUrn());
-    if (SUCCESS.equalsIgnoreCase(status)) {
-      response.put(TITLE, SUCCESS);
-    } else if (FAILED.equalsIgnoreCase(status)) {
-      response.put(TITLE, FAILED);
-    }
+    response.put(ERROR_TYPE, HttpStatusCode.getByValue(statusCode).getValue());
+    response.put(TITLE, HttpStatusCode.getByValue(statusCode).getUrn());
+
     return this;
   }
 
@@ -46,9 +43,9 @@ public class ResponseBuilder {
     int statusCode = error.getInteger(STATUS);
     String type = error.getJsonObject(ERROR.toLowerCase()).getString(TYPE_KEY);
     if (statusCode == 404 && INDEX_NOT_FOUND.equalsIgnoreCase(type)) {
-      response.put(DETAIL, INVALID_RESOURCE_ID);
+      response.put(ERROR_MESSAGE, INVALID_RESOURCE_ID);
     } else {
-      response.put(DETAIL,
+      response.put(ERROR_MESSAGE,
           error.getJsonObject(ERROR.toLowerCase()).getJsonArray(ROOT_CAUSE).getJsonObject(0)
               .getString(REASON));
     }
