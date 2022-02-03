@@ -25,49 +25,33 @@ pipeline {
       }
     }
 
-    stage('Run Unit Tests and CodeCoverage test'){
+    stage('Unit Tests and CodeCoverage Test'){
       steps{
         script{
           sh 'docker-compose -f docker-compose.test.yml up test'
         }
-      }
-    }
-
-    stage('Capture Unit Test results'){
-      steps{
         xunit (
           thresholds: [ skipped(failureThreshold: '1'), failed(failureThreshold: '0') ],
           tools: [ JUnit(pattern: 'target/surefire-reports/*.xml') ]
         )
+        jacoco classPattern: 'target/classes', execPattern: 'target/jacoco.exec', sourcePattern: 'src/main/java'
       }
       post{
         failure{
+          script{
+            sh 'docker-compose down -f docker-compose.test.yml --remove-orphans'
+          }
           error "Test failure. Stopping pipeline execution!"
         }
       }
     }
 
-    stage('Capture Code Coverage'){
-      steps{
-        jacoco classPattern: 'target/classes', execPattern: 'target/jacoco.exec', sourcePattern: 'src/main/java'
-      }
-    }
-
-    stage('Run File server for API Tests'){
+    stage('Start File server for Integration Tests'){
       steps{
         script{
             sh 'scp src/test/resources/iudx-file-server-api.Release-v3.5.postman_collection.json jenkins@jenkins-master:/var/lib/jenkins/iudx/fs/Newman/'
-            sh 'docker-compose -f docker-compose.test.yml up -d perfTest'
+            sh 'docker-compose -f docker-compose.test.yml up -d integTest'
             sh 'sleep 45'
-        }
-      }
-      post{
-        failure{
-          script{
-            sh 'docker-compose -f docker-compose.test.yml logs perfTest > fs-failure.log'
-            sh 'scp fs-failure.log jenkins@jenkins-master:/var/lib/jenkins/userContent/'
-          }
-          error "Failed to run server. Stopping pipeline execution. Check failure logs at jenkins-url/userContent"
         }
       }
     }
@@ -89,14 +73,16 @@ pipeline {
             script{
               archiveZap failHighAlerts: 1, failMediumAlerts: 1, failLowAlerts: 1
             }  
-            publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/fs/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: '', reportName: 'Integration Test Report'])
+            publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/fs/Newman/report/', reportFiles: 'report.html', reportTitles: '', reportName: 'Integration Test Report'])
           }
+        }
+        failure{
+          error "Test failure. Stopping pipeline execution!"
+        }
+        cleanup{
           script{
-            sh 'docker-compose -f docker-compose.test.yml logs perfTest > fs.log'
-            sh 'scp fs.log jenkins@jenkins-master:/var/lib/jenkins/userContent/'
-            echo 'container logs (fs.log) can be found at jenkins-url/userContent'
-            sh 'docker-compose -f docker-compose.test.yml down --remove-orphans'
-          }
+            sh 'docker-compose down -f docker-compose.test.yml --remove-orphans'
+          } 
         }
       }
     }
