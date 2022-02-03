@@ -20,7 +20,7 @@ services:
     command: bash -c "docker/runTests.sh"
     network_mode: host
 
-  perfTest:
+  integTest:
     image: ghcr.io/datakaveri/fs-test:latest
     environment:
       - LOG_LEVEL=INFO
@@ -31,6 +31,6 @@ services:
       - ./src/:/usr/share/app/src
     command: bash -c "mvn clean compile exec:java@file-server"
     ports:
-      - "8443:8080"
+      - "8443:8443"
     networks:
       - fs-net
