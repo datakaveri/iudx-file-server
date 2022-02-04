@@ -39,7 +39,7 @@ pipeline {
       post{
         failure{
           script{
-            sh 'docker-compose down -f docker-compose.test.yml --remove-orphans'
+            sh 'docker-compose -f docker-compose.test.yml down --remove-orphans'
           }
           error "Test failure. Stopping pipeline execution!"
         }
@@ -81,7 +81,7 @@ pipeline {
         }
         cleanup{
           script{
-            sh 'docker-compose down -f docker-compose.test.yml --remove-orphans'
+            sh 'docker-compose -f docker-compose.test.yml down --remove-orphans'
           } 
         }
       }
