@@ -4,7 +4,6 @@
 		"zookeeper"
 	],
 	"clusterId": "iudx-fs-cluster",
-	"host": "fs",
 	"modules": [
 		{
 			"id": "iudx.file.server.apiserver.FileServerVerticle",
@@ -32,6 +31,7 @@
 		{
 			"id": "iudx.file.server.authenticator.AuthenticationVerticle",
 			"verticleInstances": 1,
+			"audience": "rs.iudx.io",
 			"catalogueHost": "",
 			"cataloguePort": 443,
 			"authHost": "",

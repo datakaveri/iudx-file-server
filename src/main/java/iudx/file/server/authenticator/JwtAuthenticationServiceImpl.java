@@ -74,7 +74,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   JwtAuthenticationServiceImpl(Vertx vertx, final JWTAuth jwtAuth, final JsonObject config,
       final CatalogueService catalogueService, final CacheService cacheService) {
     this.jwtAuth = jwtAuth;
-    this.audience = config.getString("host");
+    this.audience = config.getString("audience");
     this.catalogueService = catalogueService;
     this.cache = cacheService;
     host = config.getString("catalogueHost");

@@ -110,6 +110,56 @@ The consumers can query the metadata and download files from the file server usi
    ```sh
    mvn clean compile  exec:java@file-server -Dconfig-dev.file=config-x.json
    ```
+
+### JAR based
+1. Install java 11 and maven
+2. Set Environment variables
+```
+export FS_URL=https://<fs-domain-name>
+export LOG_LEVEL=INFO
+```
+3. Use maven to package the application as a JAR
+   `mvn clean package -Dmaven.test.skip=true`
+4. 2 JAR files would be generated in the `target/` directory
+   - `iudx.file.server-cluster-0.0.1-SNAPSHOT-fat.jar` - clustered vert.x containing micrometer metrics
+   - `iudx.file.server-dev-0.0.1-SNAPSHOT-fat.jar` - non-clustered vert.x and does not contain micrometer metrics
+
+#### Running the clustered JAR
+
+**Note**: The clustered JAR requires Zookeeper to be installed. Refer [here](https://zookeeper.apache.org/doc/r3.3.3/zookeeperStarted.html) to learn more about how to set up Zookeeper. Additionally, the `zookeepers` key in the config being used needs to be updated with the IP address/domain of the system running Zookeeper.
+
+The JAR requires 3 runtime arguments when running:
+
+* --config/-c : path to the config file
+* --hostname/-i : the hostname for clustering
+* --modules/-m : comma separated list of module names to deploy
+
+e.g. `java -jar ./fatjar.jar  --host $(hostname) -c configs/config.json -m iudx.file.server.apiserver.FileServerVerticle,iudx.file.server.authenticator.AuthenticationVerticle
+,iudx.file.server.database.elasticdb.DatabaseVerticle,iudx.file.server.auditing.AuditingVerticle`
+
+Use the `--help/-h` argument for more information. You may additionally append an `FS_JAVA_OPTS` environment variable containing any Java options to pass to the application.
+
+e.g.
+```
+$ export FS_JAVA_OPTS="-Xmx4096m"
+$ java $FS_JAVA_OPTS -jar target/iudx.file.server-cluster-0.0.1-SNAPSHOT-fat.jar ...
+```
+
+#### Running the non-clustered JAR
+The JAR requires 1 runtime argument when running:
+
+* --config/-c : path to the config file
+
+e.g. `java -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.Log4j2LogDelegateFactory -jar target/iudx.file.server-dev-0.0.1-SNAPSHOT-fat.jar -c configs/config.json`
+
+Use the `--help/-h` argument for more information. You may additionally append an `RS_JAVA_OPTS` environment variable containing any Java options to pass to the application.
+
+e.g.
+```
+$ export FS_JAVA_OPTS="-Xmx1024m"
+$ java $FS_JAVA_OPTS -jar target/iudx.file.server-dev-0.0.1-SNAPSHOT-fat.jar ...
+```
+
 ### Testing
 
 ### Unit tests
