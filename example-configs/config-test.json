@@ -37,6 +37,7 @@
         {
             "id": "iudx.file.server.authenticator.AuthenticationVerticle",
             "verticleInstances": 1,
+            "audience": "rs.iudx.io",
             
             "catalogueHost": "",
             "cataloguePort": 443,
