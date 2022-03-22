@@ -58,11 +58,8 @@ The consumers can query the metadata and download files from the file server usi
 1. Install docker and docker-compose (one time setup)
 2. Create following docker volumes (one time setup) using the commands:
 	```sh
-	# Creates fs-upload-volume
-	docker volume create fs-upload-volume
-	
-	# Create fs-temp-volume
-	docker volume create fs-temp-volume
+	# Creates fs-volume
+	docker volume create fs-volume
 	```
 3. Build the images 
    ```sh

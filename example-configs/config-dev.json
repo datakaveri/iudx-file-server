@@ -15,8 +15,8 @@
 			"cataloguePort": 443,
 			"file-keystore": "secrets/keystore-file.jks",
 			"file-keystorePassword": "",
-			"tmp_dir": "temp-dir/",
-			"upload_dir": "upload-dir/",
+			"tmp_dir": "storage/temp-dir/",
+			"upload_dir": "storage/upload-dir/",
 			"allowedContentType": {
 				"text/plain": "txt",
 				"text/csv": "csv",

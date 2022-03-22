@@ -4,18 +4,9 @@ services:
     env_file:
       - ./.file-server.env
     volumes:
-      - ./secrets/keystore-file.jks:/usr/share/app/secrets/keystore-file.jks
-      - ./secrets/keystore-rs.jks:/usr/share/app/secrets/keystore-rs.jks
       - type: volume
-        source: fs-upload-volume
-        target: /usr/share/app/upload-dir/
-        volume:
-          nocopy: true
-      - type: volume
-        source: fs-temp-volume
-        target: /usr/share/app/temp-dir/
-        volume:
-          nocopy: true
+        source: fs-volume
+        target: /usr/share/app/storage
     restart: always
     logging:
        driver: "json-file"
@@ -25,7 +16,5 @@ services:
     command: bash -c "exec java $$FS_JAVA_OPTS  -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.Log4j2LogDelegateFactory -jar ./fatjar.jar  --host $$(hostname) -c secrets/all-verticles-configs/config.json"
 
 volumes:
-  fs-upload-volume:
-    external: true
-  fs-temp-volume:
+  fs-volume:
     external: true
