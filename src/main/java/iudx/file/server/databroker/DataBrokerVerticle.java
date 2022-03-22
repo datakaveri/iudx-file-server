@@ -1,7 +1,6 @@
 package iudx.file.server.databroker;
 
-import static iudx.file.server.common.Constants.CACHE_SERVICE_ADDRESS;
-import static iudx.file.server.common.Constants.DATABROKER_SERVICE_ADDRESS;
+import static iudx.file.server.common.Constants.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.AbstractVerticle;
@@ -17,6 +16,7 @@ import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.serviceproxy.ServiceBinder;
 import iudx.file.server.cache.CacheService;
 import iudx.file.server.cache.cacheImpl.CacheType;
+import iudx.file.server.common.VHosts;
 
 public class DataBrokerVerticle extends AbstractVerticle {
 
@@ -47,7 +47,11 @@ public class DataBrokerVerticle extends AbstractVerticle {
     dataBrokerIP = config().getString("dataBrokerIP");
     dataBrokerPort = config().getInteger("dataBrokerPort");
     dataBrokerManagementPort = config().getInteger("dataBrokerManagementPort");
-    dataBrokerVhost = config().getString("dataBrokerVhost");
+    /*
+     * since file server only use internal vhost currently, so using internal vhost directly for
+     * client
+     */
+    dataBrokerVhost = config().getString(VHosts.IUDX_INTERNAL.value);
     dataBrokerUserName = config().getString("dataBrokerUserName");
     dataBrokerPassword = config().getString("dataBrokerPassword");
     connectionTimeout = config().getInteger("connectionTimeout");
@@ -106,7 +110,7 @@ public class DataBrokerVerticle extends AbstractVerticle {
           .setKeepMostRecent(true);
 
   private void startRevokedClientListener(CacheService cacheService) {
-    client.basicConsumer("invalid-tokens", options, revokedTokenReceivedHandler -> {
+    client.basicConsumer(INVALID_SUB_Q, options, revokedTokenReceivedHandler -> {
       if (revokedTokenReceivedHandler.succeeded()) {
         RabbitMQConsumer mqConsumer = revokedTokenReceivedHandler.result();
         mqConsumer.handler(message -> {

@@ -9,7 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class StorageURLValidator implements Validator {
-  private static final Logger LOGGER = LogManager.getLogger(GeomTypeValidator.class);
+  private static final Logger LOGGER = LogManager.getLogger(StorageURLValidator.class);
 
   private final String value;
   private final boolean required;
