@@ -15,6 +15,16 @@ import io.vertx.core.cli.Option;
 import io.vertx.core.eventbus.EventBusOptions;
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Deploys non-clustered vert.x instance of the server. As a JAR, the application requires 1 runtime
+ * argument:
+ *
+ * <ul>
+ *   <li>--config/-c : path to the config file
+ * </ul>
+ *
+ * e.g. <i>java -jar ./fatjar.jar -c configs/config.json</i>
+ */
 public class DeployerDev {
   private static final Logger LOGGER = LogManager.getLogger(DeployerDev.class);
 
