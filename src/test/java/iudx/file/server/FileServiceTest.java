@@ -67,7 +67,7 @@ public class FileServiceTest {
     token = config.getString("testToken");
     fileUtil = new FileCheckUtil(vertx, config.getString("upload_dir"));
     host=config.getString("host");
-    port=config.getInteger("port");
+    port = config.getInteger("httpPort");
     testContext.completeNow();
   }
 

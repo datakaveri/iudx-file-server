@@ -10,15 +10,15 @@
             "id": "iudx.file.server.apiserver.FileServerVerticle",
             "verticleInstances": 1,
             "ssl": true,
-            "port": 8443,
+            "httpPort": 8443,
             
             "automaticRecoveryEnabled": true,
             
             "catalogueHost": "",
             "cataloguePort": 443,
             
-            "file-keystore": "secrets/keystore-file.jks",
-            "file-keystorePassword": "",
+            "keystore": "secrets/keystore-file.jks",
+            "keystorePassword": "",
             
             "tmp_dir": "storage/temp-dir/",
             "upload_dir": "storage/upload-dir/",
@@ -45,11 +45,6 @@
             "authHost": "",
             "authPort": 443,
             
-            "file-keystore": "secrets/keystore-file.jks",
-            "file-keystorePassword": "",
-            
-            "rs-keystore": "secrets/keystore-rs.jks",
-            "rs-keystorePassword": "",
 	       "jwtIgnoreExpiry": true
         },
         {

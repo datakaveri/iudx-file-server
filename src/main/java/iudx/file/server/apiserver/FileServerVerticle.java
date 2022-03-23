@@ -95,7 +95,6 @@ public class FileServerVerticle extends AbstractVerticle {
   private FileService fileService;
   private DatabaseService database;
   private AuditingService auditingService;
-  private String truststore, truststorePassword;
 
   private String directory;
   private String temp_directory;
@@ -104,7 +103,6 @@ public class FileServerVerticle extends AbstractVerticle {
   private ContentTypeValidator contentTypeValidator;
   private WebClientFactory webClientFactory;
   private CatalogueService catalogueService;
-  private String userId;
 
   private final ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
 
@@ -212,27 +210,27 @@ public class FileServerVerticle extends AbstractVerticle {
 
 
 
-    /* Read the configuration and set the HTTPs server properties. */
-    truststore = config().getString("file-keystore");
-    truststorePassword = config().getString("file-keystorePassword");
-
     LOGGER.info("starting server");
     /* Read ssl configuration. */
     isSSL = config().getBoolean("ssl");
-    port = config().getInteger("port");
     HttpServerOptions serverOptions = new HttpServerOptions();
-    if (isSSL) {
-      LOGGER.debug("Info: Starting HTTPs server");
 
+    if (isSSL) {
       /* Read the configuration and set the HTTPs server properties. */
 
-      keystore = config().getString("file-keystore");
-      keystorePassword = config().getString("file-keystorePassword");
+      keystore = config().getString("keystore");
+      keystorePassword = config().getString("keystorePassword");
+
+      /*
+       * Default port when ssl is enabled is 8443. If set through config, then that value is taken
+       */
+      port = config().getInteger("httpPort") == null ? 8443 : config().getInteger("httpPort");
 
       /* Setup the HTTPs server properties, APIs and port. */
 
       serverOptions.setSsl(true)
           .setKeyStoreOptions(new JksOptions().setPath(keystore).setPassword(keystorePassword));
+      LOGGER.info("Info: Starting HTTPs server at port " + port);
 
     } else {
       LOGGER.debug("Info: Starting HTTP server");
@@ -240,9 +238,16 @@ public class FileServerVerticle extends AbstractVerticle {
       /* Setup the HTTP server properties, APIs and port. */
 
       serverOptions.setSsl(false);
+      /*
+       * Default port when ssl is disabled is 8080. If set through config, then that value is taken
+       */
+      port = config().getInteger("httpPort") == null ? 8080 : config().getInteger("httpPort");
+      LOGGER.info("Info: Starting HTTP server at port " + port);
+
     }
-    server = vertx.createHttpServer(serverOptions.setTrustStoreOptions(
-        new JksOptions().setPath(truststore).setPassword(truststorePassword)));
+
+
+    server = vertx.createHttpServer(serverOptions);
 
     server.requestHandler(router).listen(port);
 
