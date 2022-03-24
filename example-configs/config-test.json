@@ -75,7 +75,11 @@
             "verticleInstances": 1,
             "dataBrokerIP": "localhost",
             "dataBrokerPort": 123,
-            "dataBrokerVhost": "",
+            
+            "prodVhost":"IUDX", 
+            "internalVhost": "IUDX-INTERNAL",
+            "externalVhost":"IUDX-EXTERNAL",
+            
             "dataBrokerUserName": "",
             "dataBrokerPassword": "",
             "dataBrokerManagementPort": 30042,

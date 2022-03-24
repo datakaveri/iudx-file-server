@@ -27,4 +27,8 @@ public class Constants {
   // pagination parameters
   public static final String PARAM_OFFSET = "offset";
   public static final String PARAM_LIMIT = "limit";
+  
+  
+  //RMQ queues and exchanges.
+  public static String INVALID_SUB_Q="fs-invalid-sub";
 }
