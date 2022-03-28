@@ -8,7 +8,7 @@ of the external modules of each Verticle in IUDX FIle Server.
 <img src="./docs/file_server_overview.png">
 </p>
 
-The File Server connects wiith various externa; dependencies namely
+The File Server connects with various external dependencies namely
 - `ELK` stack : used to capture and query files of temporal and spatial data
 - `PostgreSQL` : used to query data related to Token Invalidation.
 - `RabbitMQ` : used to receive token invalidation info
@@ -133,4 +133,76 @@ CREATE TABLE IF NOT EXISTS rsauditingtable
     providerid varchar NOT NULL,
     CONSTRAINT metering_pk PRIMARY KEY (id)
 );
+```
+
+
+## Connecting with DX Catalogue Server
+
+In order to connect to the DX catalogue server, required information such as catServerHost,catServerPort etc. should be updated in the AuthenticationVerticle and FileServerVerticle modules availabe in [config-example.json](configs/config-example.json).
+
+**AuthenticationVerticle**
+```
+{
+    "id": "iudx.file.server.authenticator.AuthenticationVerticle",
+    "verticleInstances": <number-of-verticle-instances,
+    "audience": <resource-server-host>,
+    "catalogueHost": <catalogue-server-host>,
+    "cataloguePort": <catalogue-server-port>,
+    "file-keystore": <path/to/keystore-file.jks>,
+    "file-keystorePassword": <password-for-file-keystore>,
+    "rs-keystore": <path/to/keystore-rs.jks>,
+    "rs-keystorePassword": <password-for-rs-keystore>,
+    "authHost": <auth-server-host>,
+    "authPort": <auth-server-port>,
+    "jwtIgnoreExpiry": <true | false>
+}
+```
+
+**FileServerVerticle**
+```
+{
+    "id": "iudx.file.server.apiserver.FileServerVerticle",
+    "verticleInstances": <number-of-verticle-instances>,
+    "ssl": true,
+    "port": <port-to-listen>,
+    "automaticRecoveryEnabled": true,
+    "catalogueHost": <catalogue-server-host>,
+    "cataloguePort": <catalogue-server-port>,
+    "file-keystore": <path/to/keystore-file.jks>,
+    "file-keystorePassword": <password-for-file-keystore>,
+    "tmp_dir": <path/to/temp-dir/>,
+    "upload_dir": <path/to/upload-dir/>,
+    "allowedContentType": {
+        "text/plain": "txt",
+        "text/csv": "csv",
+        "application/pdf": "pdf",
+        "video/mp4": "mp4",
+        "application/zip": "zip",
+        "application/x-7z-compressed": "7z",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx"
+    }
+}
+```
+
+## Connecting with DX Authorization Server
+
+In order to connect to the DX authorization server, required information such as authHost, authPort should be updated in the AuthenticationVerticle module availabe in [config-example.json](configs/config-example.json).
+
+**AuthenticationVerticle**
+```
+{
+    "id": "iudx.file.server.authenticator.AuthenticationVerticle",
+    "verticleInstances": <number-of-verticle-instances,
+    "audience": <resource-server-host>,
+    "catalogueHost": <catalogue-server-host>,
+    "cataloguePort": <catalogue-server-port>,
+    "file-keystore": <path/to/keystore-file.jks>,
+    "file-keystorePassword": <password-for-file-keystore>,
+    "rs-keystore": <path/to/keystore-rs.jks>,
+    "rs-keystorePassword": <password-for-rs-keystore>,
+    "authHost": <auth-server-host>,
+    "authPort": <auth-server-port>,
+    "jwtIgnoreExpiry": <true | false>
+}
 ```
