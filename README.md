@@ -27,9 +27,9 @@ The consumers can query the metadata and download files from the file server usi
 - Scalable, service mesh architecture based implementation using open source components: Vert.X API framework, Elasticsearch for database
 - Hazelcast and Zookeeper based cluster management and service discovery
 
-## Get Started
 
-### Prerequisite - Make configuration
+## Prerequisite 
+###Make configuration
 1. Clone this repo and change directory:
    ```sh 
    git clone https://github.com/datakaveri/iudx-file-server.git && cd iudx-file-server
@@ -50,10 +50,23 @@ The consumers can query the metadata and download files from the file server usi
       └── one-verticle-configs/ (directory, needed for clustered vertx in multi-container)
       ``` 
 3. Populate `.file-server-api.env` environment file based on template in `example-configs/example-evironment-file(.file-server-api.env)` in the present directory
-#### Note
-1. DO NOT ADD actual config with credentials to `example-configs/` directory (even in your local git clone!). 
-2. If you would like to add your own config with different name than config-dev.json and config-depl.json, place in the `secrets/all-verticles-configs/` and follow the note sections of docker based and maven based setup.
-3. Update all appropriate configs in `example-configs/` ONLY when there is addition of new config parameter options.
+
+>**Note** : 
+>1. DO NOT ADD actual config with credentials to `example-configs/` directory (even in your local git clone!). 
+>2. If you would like to add your own config with different name than config-dev.json and config-depl.json, place in the `secrets/all-verticles-configs/` and follow the instructions in [SETUP.md](SETUP.md)
+
+### External Dependencies Installation
+
+The File Server connects with various external dependencies namely
+- ELK stack
+- PostgreSQL 
+- RabbitMQ
+- ImmuDB
+
+Find the installations of the above along with the configurations to modify the database url, port and associated credentials in the appropriate sections
+[here](SETUP.md)
+
+## Get Started
 ### Docker based
 1. Install docker and docker-compose (one time setup)
 2. Create following docker volumes (one time setup) using the commands:
