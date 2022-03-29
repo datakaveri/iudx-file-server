@@ -8,7 +8,6 @@
 ![IUDX](./docs/iudx.png)
 
 # iudx-file-server
-![build](https://github.com/datakaveri/iudx-file-server/actions/workflows/build.yml/badge.svg)
 
 The file server is [IUDX](https://iudx.org.in) archival, sample file data store which allows users to discovery, download and upload files.
 It allows data providers to upload and manage archives of data *resources* and its associated meta-data documents through APIs. It also allows data consumers to query the meta-data and download files as per the consent of the providers.
@@ -29,7 +28,7 @@ The consumers can query the metadata and download files from the file server usi
 
 
 ## Prerequisite 
-###Make configuration
+### Make configuration
 1. Clone this repo and change directory:
    ```sh 
    git clone https://github.com/datakaveri/iudx-file-server.git && cd iudx-file-server
