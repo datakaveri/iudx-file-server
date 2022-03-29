@@ -44,8 +44,7 @@ The consumers can query the metadata and download files from the file server usi
       │   ├── config-depl.json (needed for clustered vertx all verticles  in one container)
       │   ├── config-dev.json (needed for non-clustered vertx all verticles in one container/maven based setup)
       │  
-      ├── keystore-file.jks (file-server cert in jks format)
-      ├── keystore-rs.jks   (rs-server cert in jks format)
+      ├── keystore-file.jks (file-server cert in jks format if tls is required at vertx server)
       └── one-verticle-configs/ (directory, needed for clustered vertx in multi-container)
       ``` 
 3. Populate `.file-server-api.env` environment file based on template in `example-configs/example-evironment-file(.file-server-api.env)` in the present directory
