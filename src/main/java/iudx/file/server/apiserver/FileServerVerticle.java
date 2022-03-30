@@ -272,7 +272,7 @@ public class FileServerVerticle extends AbstractVerticle {
   }
 
   /**
-   * 
+   *
    * @param routingContext
    */
   public void upload(RoutingContext routingContext) {
@@ -313,7 +313,10 @@ public class FileServerVerticle extends AbstractVerticle {
 
       saveRecordFuture.onComplete(saveRecordHandler -> {
         if (saveRecordHandler.succeeded()) {
-          responseJson.put("fileId", fileId);
+          responseJson
+              .put("type", SUCCESS.getUrn())
+              .put("title", "Success")
+              .put("fileId", fileId);
           handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
           updateAuditTable(auditParams);
         } else {
@@ -349,7 +352,10 @@ public class FileServerVerticle extends AbstractVerticle {
         JsonObject uploadResult = uploadHandler.result();
         JsonObject responseJson = new JsonObject();
         String fileId = id + "/" + uploadResult.getString("file-id");
-        responseJson.put("fileId", fileId);
+        responseJson
+            .put("type", SUCCESS.getUrn())
+            .put("title", "Success")
+            .put("fileId", fileId);
         // insertFileRecord(params, fileId); no need to insert in DB
         handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
         updateAuditTable(auditParams);
@@ -361,7 +367,7 @@ public class FileServerVerticle extends AbstractVerticle {
 
   /**
    * Helper method to upload a archieve file.
-   * 
+   *
    * @param response
    * @param files
    * @param filePath
@@ -390,7 +396,10 @@ public class FileServerVerticle extends AbstractVerticle {
       return saveFileRecord(params, uploadJson.getString("fileId"));
     }).onComplete(handler -> {
       if (handler.succeeded()) {
-        responseJson.put("fileId", uploadJson.getString("fileId"));
+        responseJson
+            .put("type", SUCCESS.getUrn())
+            .put("title", "Success")
+            .put("fileId", uploadJson.getString("fileId"));
         handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
         updateAuditTable(auditParams);
       } else {
@@ -668,7 +677,7 @@ public class FileServerVerticle extends AbstractVerticle {
 
   /**
    * Helper method to check/create initial directory structure
-   * 
+   *
    * @param fileSystem vert.x FileSystem
    * @param basePath base derfault directory structure
    * @param handler Async handler

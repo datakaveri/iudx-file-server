@@ -16,7 +16,7 @@ info:
   title: "IUDX File Server APIs"
   version: 3.0.0
   description: |
-  
+    
     # Introduction
     The File Server is IUDX File store which allows upload, download and discovery of Files.
     For Upload it allows uploading Files with group id or resource item id, it also allow user to attach additional metadata fields to the uploaded file.
@@ -33,42 +33,48 @@ info:
     additional parameters to be used:
       - <b>offset</b> : The from parameter defines the offset from the first result you want to fetch,  ( <i>default : 0</i> ,<i>minValue: 0</i>, <i>maxValue: 49999</i> )
       - <b>limit</b> : The size parameter allows you to configure the maximum results to be returned  ( <i>default: 5000</i> ,<i>minValue: 0</i>, <i>maxValue: 5000</i> )
-      
-      
+    
+    
     # Tokens
     All the <b>*upload, download and delete*</b> for archival calls to the file server should now contain a valid IUDX auth token presented in the query header. 
-    To upload, download and delete for archival files a consumer must get a token along with the associated constraints from the IUDX Auth Server. 
+    To upload, download and delete for archival files a consumer must get a token along with the associated constraints from the IUDX Auth Server.
   contact:
     name: For support contact IUDX Team at
     email: support@iudx.org.in
 
 tags:
--  name: Files
-   x-displayName: Files
-   description: APIs to upload, download and delete Files from file Server
+  -  name: Files
+     x-displayName: Files
+     description: APIs to upload, download and delete Files from file Server
 
--  name: Discovery
-   x-displayName: Discovery
-   description: Search APIs to discover files or metadata. 
-     
+  -  name: Discovery
+     x-displayName: Discovery
+     description: Search APIs to discover files or metadata.
+
 paths:
   /iudx/v1/upload:
     post:
       tags:
-      - Files
+        - Files
       summary: Upload a File
       operationId: upload-document
       description: Allows user to upload documents to IUDX system, it also allows user to attach additional metadata fields using form-parameters.
       parameters:
-      - name: token
-        in: header
-        description: A valid <b> IUDX Auth token </b> to process the requests.
-        required: true
-        schema:
-          type: string
-          format: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+        - name: token
+          in: header
+          description: A valid <b> IUDX Auth token </b> to process the requests.
+          required: true
+          schema:
+            type: string
+            format: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+        - name: externalStorage
+          in: header
+          description: A boolean value to determine whether a file being uploaded is stored externally or is attached in the request body.
+          required: false
+          schema:
+            type: boolean
       requestBody:
         content:
           multipart/form-data:
@@ -85,21 +91,24 @@ paths:
                 startTime:
                   type: string
                   description: Specifies the start time for the data within the document (`ISO8601`) `*not required for sample file upload`
-                  
+
                 endTime:
                   type: string
                   description: Specifies the end time for the data within the document (`ISO8601`) `*not required for sample file upload`
-                geometry: 
+                geometry:
                   type: string
                   enum : [Point (or) point, Polygon (or) polygon, LineString (or) linestring, bbox]
                   description: The geometry type, this should be one from the available options in the Enum list.
-                coordinates: 
+                coordinates:
                   type: array
                   minItems: 2
                   maxItems: 10
-                  Items: 
+                  Items:
                     type: number
                   description: 'The coordinates for a specific geometry. <br/> This parameter accepts both <b> one dimentional array and multi dimentional arrays </b> based on the <b> geometry</b> type. <br/> For e.g, [longitude-1,latitude-1] should be used for geometry <b>point</b>.  <br/>[[[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]]] should be used for geometry <b>polygon</b>. <br/> [[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]] should be used for geometry <b>bbox and linestring </b>. <br/> Maximum of 10 latitude, longitude pairs can be used for geometry <b>polygon, bbox and linestring </b>. <br/> Note: The data-type of this field is a string, therefore the coordinates are a string encoded multidimensional array. <br/> Maximum precision allowed is upto 6 decimal places.'
+                file-download-url:
+                  type: string
+                  description: a url to the externally stored file `*not required when a file is attached for upload`
       responses:
         '200':
           description: 'Successfully uploaded a file'
@@ -119,31 +128,31 @@ paths:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
           description: 'Unauthorized'
-          
-          
+
+
   /iudx/v1/download/{file-id}:
     get:
       tags:
-      - Files
+        - Files
       summary: Download a file
       operationId: download-file
       parameters:
-      - name: token
-        in: header
-        description: A valid <b> IUDX Auth token </b> to process the requests. token is mandatory to download archive files, for sample file a token is not required.
-        schema:
-          type: string
-          format: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'
-      - name: 'file-id'
-        in: path
-        description: valid IUDX uploaded file name
-        required: true
-        schema:
-          type: string
-          maxLength: 512
-      responses:  
+        - name: token
+          in: header
+          description: A valid <b> IUDX Auth token </b> to process the requests. token is mandatory to download archive files, for sample file a token is not required.
+          schema:
+            type: string
+            format: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+        - name: 'file-id'
+          in: path
+          description: valid IUDX uploaded file name
+          required: true
+          schema:
+            type: string
+            maxLength: 512
+      responses:
         '200':
           description: 'Successfully downloaded a file'
           content:
@@ -168,32 +177,32 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardFileNotFoundErrorResponse"
-          description: 'File not found'  
-        
+          description: 'File not found'
+
   /iudx/v1/delete/{file-id}:
     delete:
       tags:
-      - Files
+        - Files
       summary: Delete a file
       operationId: delete-file
       parameters:
-      - name: token
-        in: header
-        description: A valid <b> IUDX Auth token </b> to process the requests.
-        required: true
-        schema:
-          type: string
-          format: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'
-      - name: 'file-id'
-        in: path
-        description: valid IUDX uploaded file name
-        required: true
-        schema:
-          type: string
-          maxLength: 512
-      responses:  
+        - name: token
+          in: header
+          description: A valid <b> IUDX Auth token </b> to process the requests.
+          required: true
+          schema:
+            type: string
+            format: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+        - name: 'file-id'
+          in: path
+          description: valid IUDX uploaded file name
+          required: true
+          schema:
+            type: string
+            maxLength: 512
+      responses:
         '200':
           description: 'Successfully deleted a file'
           content:
@@ -218,69 +227,69 @@ paths:
               schema:
                 "$ref": "#/components/schemas/standardFileNotFoundErrorResponse"
           description: 'File not found'
-  
+
   /ngsi-ld/v1/temporal/entities:
     get:
       tags:
-      - Discovery
+        - Discovery
       summary: search for files
       operationId: search-file
       parameters:
-      - name: id
-        in: query
-        description: valid IUDX group or resource id
-        required: true
-        schema:
-          type: string
-          maxLength: 512
-      - name: time
-        in: query
-        description: start time in `ISO8601`
-        required: true
-        schema:
-          type: string
-      - name: endTime
-        in: query
-        description: end time in `ISO8601`
-        required: true
-        schema:
-          type: string
-      - name: timerel
-        in: query
-        description: The temporal relation type of timerel to be performed
-        required: true
-        schema:
-          type: string
-          enum: [during]
-      - name: geoproperty
-        in: query
-        description: 'Name of the <b> geospatial </b> property in the <b> IUDX data descriptor </b>. <br /> The current version of the API <b> mandates </b> it to be equal to `location`'
-        schema:
-          type: string
-          enum: [location]
-      - name: georel
-        in: query
-        description: 'The relation type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> The relation <b> near </b> should be always accomodated with a <b> maxdistance </b> property. <br/> Apart from <b> maxdistance</b> , all other fields in the Enum list are <b> case sensitive </b> fields. <br/> The relation <b> near;maxdistance </b> is applicable only for a <b> point </b>.  <br/> The relation <b> within </b> and  <b> intersects </b> are applicable only for <b> bbox, polygon and linestring</b>.'
-        schema:
-          type: string
-          enum: [near;maxdistance=<distance_in_meters>, within, intersects]
-      - name: geometry
-        in: query
-        description: 'The geometry type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/>The list is <b>case sensitive</b> '
-        schema:
-          type: string
-          enum: [Point (or) point, Polygon (or) polygon, LineString (or) linestring, bbox]
-      - name: coordinates
-        in: query
-        description: 'The coordinates for a specific geometry query type. <br/> This parameter accepts both <b> one dimentional array and multi dimentional arrays </b> based on the <b> geometry</b> type. <br/> For e.g, [longitude-1,latitude-1] should be used for geometry <b>point</b>.  <br/>[[[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]]] should be used for geometry <b>polygon</b>. <br/> [[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]] should be used for geometry <b>bbox and linestring </b>. <br/> Maximum of 10 latitude, longitude pairs can be used for geometry <b>polygon, bbox and linestring </b>. <br/> Note: The data-type of this field is a string, therefore the coordinates are a string encoded multidimensional array.<br/> Maximum precision allowed is upto 6 decimal places.'
-        schema:
-          type: array
-          minItems: 2
-          maxItems: 10
-          items:
-            type: number
-          format: double
-      responses:  
+        - name: id
+          in: query
+          description: valid IUDX group or resource id
+          required: true
+          schema:
+            type: string
+            maxLength: 512
+        - name: time
+          in: query
+          description: start time in `ISO8601`
+          required: true
+          schema:
+            type: string
+        - name: endTime
+          in: query
+          description: end time in `ISO8601`
+          required: true
+          schema:
+            type: string
+        - name: timerel
+          in: query
+          description: The temporal relation type of timerel to be performed
+          required: true
+          schema:
+            type: string
+            enum: [during]
+        - name: geoproperty
+          in: query
+          description: 'Name of the <b> geospatial </b> property in the <b> IUDX data descriptor </b>. <br /> The current version of the API <b> mandates </b> it to be equal to `location`'
+          schema:
+            type: string
+            enum: [location]
+        - name: georel
+          in: query
+          description: 'The relation type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> The relation <b> near </b> should be always accomodated with a <b> maxdistance </b> property. <br/> Apart from <b> maxdistance</b> , all other fields in the Enum list are <b> case sensitive </b> fields. <br/> The relation <b> near;maxdistance </b> is applicable only for a <b> point </b>.  <br/> The relation <b> within </b> and  <b> intersects </b> are applicable only for <b> bbox, polygon and linestring</b>.'
+          schema:
+            type: string
+            enum: [near;maxdistance=<distance_in_meters>, within, intersects]
+        - name: geometry
+          in: query
+          description: 'The geometry type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/>The list is <b>case sensitive</b> '
+          schema:
+            type: string
+            enum: [Point (or) point, Polygon (or) polygon, LineString (or) linestring, bbox]
+        - name: coordinates
+          in: query
+          description: 'The coordinates for a specific geometry query type. <br/> This parameter accepts both <b> one dimentional array and multi dimentional arrays </b> based on the <b> geometry</b> type. <br/> For e.g, [longitude-1,latitude-1] should be used for geometry <b>point</b>.  <br/>[[[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]]] should be used for geometry <b>polygon</b>. <br/> [[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]] should be used for geometry <b>bbox and linestring </b>. <br/> Maximum of 10 latitude, longitude pairs can be used for geometry <b>polygon, bbox and linestring </b>. <br/> Note: The data-type of this field is a string, therefore the coordinates are a string encoded multidimensional array.<br/> Maximum precision allowed is upto 6 decimal places.'
+          schema:
+            type: array
+            minItems: 2
+            maxItems: 10
+            items:
+              type: number
+            format: double
+      responses:
         '200':
           description: 'Query result'
           content:
@@ -299,22 +308,22 @@ paths:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
           description: 'Unauthorized'
-          
+
   /ngsi-ld/v1/list:
     get:
       tags:
-      - Discovery
+        - Discovery
       summary: list metadata
       operationId: list-metadata
       parameters:
-      - name: id
-        in: query
-        description: valid IUDX group or resource id
-        required: true
-        schema:
-          type: string
-          maxLength: 512
-      responses:  
+        - name: id
+          in: query
+          description: valid IUDX group or resource id
+          required: true
+          schema:
+            type: string
+            maxLength: 512
+      responses:
         '200':
           description: 'Query result'
           content:
@@ -333,7 +342,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
           description: 'Unauthorized'
-          
+
 components:
   schemas:
     standardBadRequestErrorResponse:
@@ -351,12 +360,20 @@ components:
         detail: Bad query
     fileUploadResponse:
       title: fileUploadSuccessResponse
-      required:
-      - fileId
-      type: object
       properties:
-        fileId:
+        type:
           type: string
+        title:
+          type: string
+        results:
+          type: object
+      type: object
+      example:
+        type: urn:dx:rs:success
+        title: Success
+        results: [{
+          "fileId": "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta/sample.txt"
+        }]
     standardInvalidTokenErrorResponse:
       title: standardInvalidTokenErrorResponse
       properties:
@@ -394,7 +411,7 @@ components:
           type: object
         limit:
           type: string
-        offset: 
+        offset:
           type: string
         totalHits:
           type: string
