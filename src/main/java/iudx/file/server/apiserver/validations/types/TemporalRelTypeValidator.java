@@ -12,7 +12,7 @@ public class TemporalRelTypeValidator implements Validator {
 
   private static final Logger LOGGER = LogManager.getLogger(TemporalRelTypeValidator.class);
 
-  private final List<String> allowedTimeRel = Arrays.asList("after", "before", "during");
+  private final List<String> allowedTimeRel = Arrays.asList("after", "before", "during", "between");
 
   private String value;
   private boolean required;
