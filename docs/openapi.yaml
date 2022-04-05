@@ -14,7 +14,7 @@ consumes:
 
 info:
   title: "IUDX File Server APIs"
-  version: 3.0.0
+  version: 3.5.0
   description: |
     
     # Introduction
@@ -260,7 +260,7 @@ paths:
           required: true
           schema:
             type: string
-            enum: [during]
+            enum: [between]
         - name: geoproperty
           in: query
           description: 'Name of the <b> geospatial </b> property in the <b> IUDX data descriptor </b>. <br /> The current version of the API <b> mandates </b> it to be equal to `location`'

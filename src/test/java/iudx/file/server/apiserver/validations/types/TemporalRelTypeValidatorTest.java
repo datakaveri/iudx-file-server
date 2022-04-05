@@ -30,9 +30,11 @@ public class TemporalRelTypeValidatorTest {
         Arguments.of("after", true),
         Arguments.of("before", true),
         Arguments.of("during", true),
+        Arguments.of("between",true),
         Arguments.of("after", false),
         Arguments.of("before", false),
         Arguments.of("during", false),
+        Arguments.of("between",false),
         Arguments.of(null, false),
         Arguments.of(" ", false));
   }
