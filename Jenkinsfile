@@ -101,8 +101,8 @@ pipeline {
       steps{
         script {
           docker.withRegistry( registryUri, registryCredential ) {
-            devImage.push("3.0-${env.GIT_HASH}")
-            deplImage.push("3.0-${env.GIT_HASH}")
+            devImage.push("4.0-alpha-${env.GIT_HASH}")
+            deplImage.push("4.0-alpha-${env.GIT_HASH}")
           }
         }
       }
