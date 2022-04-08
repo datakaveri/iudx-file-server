@@ -485,15 +485,20 @@ public class FileServerVerticle extends AbstractVerticle {
       uploadDir.append("/" + fileIdComponent[4]);
     }
     LOGGER.debug(uploadDir);
-    fileService.download(fileUUID, uploadDir.toString(), response)
-        .onComplete(handler -> {
-          if (handler.failed()) {
-            processResponse(response, handler.cause().getMessage());
-          } else {
-            updateAuditTable(auditParams);
-          }
-          // do nothing response is already written and file is served using content-disposition.
-        });
+    fileService
+        .download(fileUUID, uploadDir.toString(), response)
+        .onComplete(
+            handler -> {
+              if (handler.failed()) {
+                processResponse(response, handler.cause().getMessage());
+              } else {
+                if (!fileUUID.contains("sample")) {
+                  updateAuditTable(auditParams);
+                }
+              }
+              // do nothing response is already written and file is served using
+              // content-disposition.
+            });
   }
 
 
