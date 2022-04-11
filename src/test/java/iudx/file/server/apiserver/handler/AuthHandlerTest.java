@@ -140,24 +140,4 @@ public class AuthHandlerTest {
 
   }
 
-
-  @Test
-  @DisplayName("success - auth handler [sample file]")
-  public void successAuthHandlerSampleFileTest(Vertx vertx) {
-
-    AuthenticationService authService = mock(AuthenticationService.class);
-
-    doReturn("/iudx/v1/upload").when(request).path();
-    doReturn("asdasds.asdasd.adasd").when(request).getHeader("token");
-    doReturn(HttpMethod.GET).when(request).method();
-    doReturn("asdas/asdasd/sample.txt").when(request).getParam("file-id");
-
-
-    new AuthHandler(authService).handle(event);
-
-    verify(event, times(1)).next();
-
-  }
-
-
 }
