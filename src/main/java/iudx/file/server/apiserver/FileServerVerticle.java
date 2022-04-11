@@ -492,9 +492,7 @@ public class FileServerVerticle extends AbstractVerticle {
               if (handler.failed()) {
                 processResponse(response, handler.cause().getMessage());
               } else {
-                if (!fileUUID.contains("sample")) {
-                  updateAuditTable(auditParams);
-                }
+                updateAuditTable(auditParams);
               }
               // do nothing response is already written and file is served using
               // content-disposition.
