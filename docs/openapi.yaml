@@ -140,6 +140,7 @@ paths:
         - name: token
           in: header
           description: A valid <b> IUDX Auth token </b> to process the requests. token is mandatory to download archive files, for sample file a token is not required.
+          required: true
           schema:
             type: string
             format: string
