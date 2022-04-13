@@ -87,8 +87,8 @@ Find the installations of the above along with the configurations to modify the 
          ```
    2. Clustered setup with all verticles running in a single container: 
       - This needs following things:
-         - Docker swarm and overlay network having a name 'overlay-net'. Refer [here](https://github.com/datakaveri/iudx-deployment/tree/v3.5.0/docs/swarm-setup.md)
-         - Zookeeper running in 'overlay-net' named overlay network. Refer [here](https://github.com/datakaveri/iudx-deployment/tree/v3.5.0/single-node/zookeeper)
+         - Docker swarm and overlay network having a name 'overlay-net'. Refer [here](https://github.com/datakaveri/iudx-deployment/tree/master/docs/swarm-setup.md)
+         - Zookeeper running in 'overlay-net' named overlay network. Refer [here](https://github.com/datakaveri/iudx-deployment/tree/master/single-node/zookeeper)
       - This makes use of iudx/fs-depl:latest image and config-depl.json present at `secrets/all-verticles-configs/config-depl.json`
          ```sh 
          # Command to bring up the clustered one file-server container
