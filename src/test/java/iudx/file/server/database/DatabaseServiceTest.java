@@ -16,12 +16,8 @@ import org.apache.logging.log4j.Logger;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -39,6 +35,7 @@ import iudx.file.server.configuration.Configuration;
 import iudx.file.server.database.elasticdb.DatabaseService;
 import iudx.file.server.database.elasticdb.DatabaseServiceImpl;
 
+@Disabled
 @Testcontainers
 @ExtendWith({VertxExtension.class})
 @TestMethodOrder(OrderAnnotation.class)

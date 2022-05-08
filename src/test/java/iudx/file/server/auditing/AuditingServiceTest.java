@@ -1,7 +1,7 @@
 package iudx.file.server.auditing;
 
 import static iudx.file.server.auditing.util.Constants.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -41,7 +41,7 @@ import iudx.file.server.configuration.Configuration;
 import java.util.function.Function;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
-@Disabled
+
 public class AuditingServiceTest {
 
   private static final Logger LOGGER = LogManager.getLogger(AuditingServiceTest.class);
@@ -56,9 +56,10 @@ public class AuditingServiceTest {
   private static Integer databasePort;
   private static String databaseName;
   private static String databaseUserName;
+  private static JsonObject dummyJSON;
   private static String databasePassword;
   private static Integer databasePoolSize;
-  private static 
+  private static
   @Mock
   PgPool pgPool;
   @InjectMocks
@@ -89,6 +90,7 @@ public class AuditingServiceTest {
     return jsonObject;
   }
 
+  @Disabled
   @Test
   @DisplayName("Testing write query w/o endpoint")
   void writeForMissingEndpoint(VertxTestContext vertxTestContext){
@@ -108,6 +110,7 @@ public class AuditingServiceTest {
             })));
   }
 
+  @Disabled
   @Test
   @DisplayName("Testing write query w/o user ID")
   void writeForMissingUserID(VertxTestContext vertxTestContext){
@@ -126,6 +129,7 @@ public class AuditingServiceTest {
             })));
   }
 
+  @Disabled
   @Test
   @DisplayName("Testing write query w/o RESOURCE ID")
   void writeForMissingResourceid(VertxTestContext vertxTestContext){
@@ -144,30 +148,31 @@ public class AuditingServiceTest {
           })));
   }
 
+  @Disabled
   @Test
   @DisplayName("Testing write query w/o PROVIDER ID")
   void writeForMissingProviderid(VertxTestContext vertxTestContext){
     JsonObject request = writeRequest();
     request.remove(PROVIDER_ID);
-    
+
     AuditingService auditingService = mock(AuditingService.class);
     AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
     ResponseBuilder responseBuilder = mock(ResponseBuilder.class);
     JsonObject jsonObject = mock(JsonObject.class);
-    
+
     when(asyncResult.succeeded()).thenReturn(false);
     when(asyncResult.cause()).thenReturn(new Throwable("fail"));
-    
+
     when(queryBuilder.buildWriteQuery(any())).thenReturn(new JsonObject().put(ERROR,"error"));
-    
+
     when(responseBuilder.setTypeAndTitle(anyInt())).thenReturn(responseBuilder);
     when(responseBuilder.setMessage(anyString())).thenReturn(responseBuilder);
     when(responseBuilder.getResponse()).thenReturn(new JsonObject());
-    
+
     doReturn(jsonObject).when(responseBuilder).getResponse();
     doReturn("fail").when(jsonObject).toString();
-    
-    
+
+
     Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
       @Override
       public AsyncResult<JsonObject> answer(InvocationOnMock invocationOnMock) throws Throwable {
@@ -182,6 +187,7 @@ public class AuditingServiceTest {
     verify(responseBuilder, times(1)).setMessage(any());
   }
 
+  @Disabled
   @Test
   @DisplayName("Testing Write Query")
   void writeData(VertxTestContext vertxTestContext) {
@@ -202,7 +208,31 @@ public class AuditingServiceTest {
 
     auditingService.executeWriteQuery(request, any());
 
-   verify(responseBuilder, times(0)).setTypeAndTitle(anyInt());
-   verify(responseBuilder, times(0)).setMessage(any());
+      verify(responseBuilder, times(0)).setTypeAndTitle(anyInt());
+      verify(responseBuilder, times(0)).setMessage(any());
   }
+
+    @Test
+    @DisplayName("Testing executeWriteQuery method with valid query here")
+    public void testExecuteWriteQuery(VertxTestContext vertxTestContext) {
+        JsonObject request = writeRequest();
+        AuditingServiceImpl auditingService2 = new AuditingServiceImpl(dbConfig, vertxObj);
+        assertNotNull(auditingService2.executeWriteQuery(request, AsyncResult::succeeded));
+        vertxTestContext.completeNow();
+    }
+
+    @DisplayName("Test query containing error in executeWriteQuery")
+    @Test
+    public void testQueryErrorInExecuteWriteQuery(VertxTestContext vertxTestContext)
+    {
+        dummyJSON = new JsonObject();
+        dummyJSON.put("username", "ABC");
+        dummyJSON.put("password", "ABC");
+
+        AuditingServiceImpl auditingService = new AuditingServiceImpl(dbConfig, vertxObj);
+        AuditingService res =  auditingService.executeWriteQuery(dummyJSON, AsyncResult::succeeded);
+        assertNull(res);
+        vertxTestContext.completeNow();
+    }
+
 }
