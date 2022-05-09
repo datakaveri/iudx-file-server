@@ -54,6 +54,7 @@ public class AuditingServiceTest {
   private static JsonObject dbConfig;
   private static String databaseIP;
   private static Integer databasePort;
+  private static JsonObject dummyJSON; 
   private static String databaseName;
   private static String databaseUserName;
   private static String databasePassword;
@@ -205,4 +206,27 @@ public class AuditingServiceTest {
    verify(responseBuilder, times(0)).setTypeAndTitle(anyInt());
    verify(responseBuilder, times(0)).setMessage(any());
   }
+
+   @Test
+    @DisplayName("Testing executeWriteQuery method with valid query here")
+    public void testExecuteWriteQuery(VertxTestContext vertxTestContext) {
+        JsonObject request = writeRequest();
+        AuditingServiceImpl auditingService2 = new AuditingServiceImpl(dbConfig, vertxObj);
+        assertNotNull(auditingService2.executeWriteQuery(request, AsyncResult::succeeded));
+        vertxTestContext.completeNow();
+    }
+
+    @DisplayName("Test query containing error in executeWriteQuery")
+    @Test
+    public void testQueryErrorInExecuteWriteQuery(VertxTestContext vertxTestContext)
+    {
+        dummyJSON = new JsonObject();
+        dummyJSON.put("username", "ABC");
+        dummyJSON.put("password", "ABC");
+
+        AuditingServiceImpl auditingService = new AuditingServiceImpl(dbConfig, vertxObj);
+        AuditingService res =  auditingService.executeWriteQuery(dummyJSON, AsyncResult::succeeded);
+        assertNull(res);
+        vertxTestContext.completeNow();
+    }
 }
