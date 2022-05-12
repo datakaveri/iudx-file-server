@@ -52,6 +52,7 @@ public class AuditingServiceTest {
 
   private static final Logger LOGGER = LogManager.getLogger(AuditingServiceTest.class);
   private static AuditingService auditingService;
+  private AuditingServiceImpl testAuditingService;
   // @Mock
   // private ResponseBuilder responseBuilder;
   @Mock
