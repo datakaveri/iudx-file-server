@@ -21,11 +21,11 @@ public class StorageURLValidatorTest {
 
     public static Stream<Arguments> validValues() {
         return Stream.of(
-                Arguments.of(null, false, true),
-                Arguments.of("", false, true),
+                Arguments.of(null, false),
+                Arguments.of("", false),
                 Arguments.of(
                         "https://rs.iudx.org.in/ngsi-ld/v1/entities/suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta",
-                        true, true));
+                        true));
     }
 
     public static Stream<Arguments> inValidValues() {
@@ -37,13 +37,12 @@ public class StorageURLValidatorTest {
         );
     }
 
-    @ParameterizedTest(name = "{index}) value = {0}, required = {1}, expected = {2}")
+    @ParameterizedTest(name = "{index}) value = {0}, required = {1}")
     @DisplayName("Test isValid method with valid values")
     @MethodSource("validValues")
-    public void testIsValidWithValidValues(String value, boolean required, boolean expected,
-            VertxTestContext vertxTestContext) {
+    public void testIsValidWithValidValues(String value, boolean required, VertxTestContext vertxTestContext) {
         storageURLValidator = new StorageURLValidator(value, required);
-        assertEquals(expected, storageURLValidator.isValid());
+        assertTrue(storageURLValidator.isValid());
         vertxTestContext.completeNow();
 
     }
