@@ -668,7 +668,6 @@ public class JwtAuthServiceTest {
     jsonObject2.put("accessPolicy", "Dummy Access Policy");
     JsonArray jsonArray = new JsonArray();
     jsonArray.add(0,jsonObject2);
-
     JsonObject jsonObject = new JsonObject();
     jsonObject.put("type", "urn:dx:cat:Success");
     jsonObject.put("totalHits", 0);
@@ -681,7 +680,6 @@ public class JwtAuthServiceTest {
     when(httpRequestMock.expect(any())).thenReturn(httpRequestMock);
     when(asyncResultMock.result()).thenReturn(httpResponseMock);
     when(httpResponseMock.statusCode()).thenReturn(200);
-
     when(httpResponseMock.bodyAsJsonObject()).thenReturn(jsonObject);
 
     doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>(){
