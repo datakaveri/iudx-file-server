@@ -201,6 +201,28 @@ public class DatabaseServiceTest {
   }
 
   @Test
+  @Order(4)
+  public void testQueryFailure(Vertx vertx, VertxTestContext testContext) {
+    assertTrue(elasticContainer.isRunning());
+    JsonObject temporalQuery = new JsonObject("{\n" +
+        "    \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/123\",\n"
+        +
+        "    \"timerel\": \"during\",\n" +
+        "    \"time\": \"2020-09-10T00:00:00Z\",\n" +
+        "    \"endTime\": \"2020-09-15T00:00:00Z\"\n" +
+        "}");
+
+    dbService.search(temporalQuery, QueryType.TEMPORAL, handler -> {
+      if (handler.succeeded()) {
+        testContext.failNow("passing for invalid index");
+      } else {
+        System.out.println(handler.cause());
+        testContext.completeNow();
+      }
+    });
+  }
+
+  @Test
   @Order(5)
   public void testTemporalQuery(Vertx vertx, VertxTestContext testContext) {
     assertTrue(elasticContainer.isRunning());
@@ -417,7 +439,7 @@ public class DatabaseServiceTest {
     });
   }
 
- 
+
 
   @Test
   @Order(10)
@@ -467,6 +489,34 @@ public class DatabaseServiceTest {
     elasticContainer.close();
     testContext.completeNow();
   }
+
+
+  @Test
+  @Order(12)
+  public void test4NetworkIssues(Vertx vertx, VertxTestContext testContext) {
+    JsonObject temporalQuery = new JsonObject("{\n" +
+        "    \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\",\n"
+        +
+        "    \"timerel\": \"during\",\n" +
+        "    \"time\": \"2020-09-10T00:00:00Z\",\n" +
+        "    \"endTime\": \"2020-09-15T00:00:00Z\"\n" +
+        "}");
+
+    dbService.search(temporalQuery, QueryType.TEMPORAL, handler -> {
+      if (handler.succeeded()) {
+        testContext.failNow(handler.cause().getMessage());
+      } else {
+        System.out.println(handler.result());
+        System.out.println(handler.cause());
+        JsonObject failureMessage=new JsonObject(handler.cause().getMessage());
+        assertTrue(failureMessage.containsKey("type"));
+        assertTrue(failureMessage.containsKey("title"));
+        assertTrue(failureMessage.containsKey("details"));
+        testContext.completeNow();
+      }
+    });
+  }
+
 
 
   // @Test

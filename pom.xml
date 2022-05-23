@@ -19,6 +19,7 @@
 		<junit-jupiter-engine.version>5.7.2</junit-jupiter-engine.version>
 		<testcontainers.version>1.15.3</testcontainers.version>
 		<testcontainer-elastic.version>1.15.3</testcontainer-elastic.version>
+		<testcontainer-postgres.version>1.16.3</testcontainer-postgres.version>
 		<log4j2.version>2.17.1</log4j2.version>
 		<disruptor.version>3.4.4</disruptor.version>
 		<junit-jupiter.version>1.15.3</junit-jupiter.version>
@@ -50,7 +51,8 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-			<!--  log4j2 bom to keep org.apache.logging.log4j artifacts version in sync -->
+			<!-- log4j2 bom to keep org.apache.logging.log4j artifacts version in 
+				sync -->
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-bom</artifactId>
@@ -114,7 +116,7 @@
 			<artifactId>vertx-unit</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<!-- log4j2 logging dependencies-->
+		<!-- log4j2 logging dependencies -->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
@@ -128,7 +130,7 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j-impl</artifactId>
 		</dependency>
-		<!--LMAX Disruptor for enabling Asynchronous log4j2 Logging  -->
+		<!--LMAX Disruptor for enabling Asynchronous log4j2 Logging -->
 		<dependency>
 			<groupId>com.lmax</groupId>
 			<artifactId>disruptor</artifactId>
@@ -173,6 +175,18 @@
 			<groupId>org.testcontainers</groupId>
 			<artifactId>elasticsearch</artifactId>
 			<version>${testcontainer-elastic.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>${testcontainer-postgres.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>42.3.5</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -267,13 +281,17 @@
 						<exclude>iudx/file/server/apiserver/FileServerVerticle**</exclude>
 						<!-- service proxy interfaces -->
 						<exclude>iudx/file/server/authenticator/AuthenticationService.class</exclude>
-						<exclude>iudx/file/server/database/DatabaseService.class</exclude>
+						<exclude>iudx/file/server/database/elasticdb/DatabaseService.class</exclude>
+						<exclude>iudx/file/server/database/postgres/PostgresService.class</exclude>
+						<exclude>iudx/file/server/auditing/AuditingService.class</exclude>
+						<exclude>iudx/file/server/databroker/DataBrokerService.class</exclude>
 						<!-- generated classes -->
 						<exclude>**/JwtDataConverter.class</exclude>
 						<exclude>**/*VertxEBProxy.class</exclude>
 						<exclude>**/Constants.class</exclude>
 						<exclude>**/*VertxProxyHandler.class</exclude>
 						<exclude>**/*Verticle.class</exclude>
+						<!-- deployers -->
 						<exclude>iudx/file/server/deploy/**</exclude>
 					</excludes>
 					<limits>
