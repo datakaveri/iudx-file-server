@@ -64,7 +64,6 @@ public final class PostgresServiceImpl implements PostgresService {
       Handler<AsyncResult<JsonObject>> handler) {
 
     List<Object> params = new ArrayList<Object>(queryParams.getMap().values());
-
     Tuple tuple = Tuple.from(params);
 
     Collector<Row, ?, List<JsonObject>> rowCollector =
