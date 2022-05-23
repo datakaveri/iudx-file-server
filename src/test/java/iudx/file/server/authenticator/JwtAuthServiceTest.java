@@ -4,18 +4,26 @@ import static iudx.file.server.authenticator.authorization.Api.UPLOAD;
 import static iudx.file.server.authenticator.authorization.Method.GET;
 import static iudx.file.server.authenticator.authorization.Method.POST;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
+
+import io.vertx.core.buffer.Buffer;
+import io.vertx.ext.web.client.HttpRequest;
+import io.vertx.ext.web.client.HttpResponse;
+import io.vertx.ext.web.client.WebClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -52,6 +60,10 @@ public class JwtAuthServiceTest {
   private static JwtAuthenticationServiceImpl jwtAuthImplSpy;
   private static WebClientFactory webClientFactory;
   private static CacheService cacheServiceMock;
+  @Mock
+  HttpRequest<Buffer> httpRequestMock;
+  @Mock
+  HttpResponse<Buffer> httpResponseMock;
 
   private static String delegateJwt =
       "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJhMTNlYjk1NS1jNjkxLTRmZDMtYjIwMC1mMThiYzc4ODEwYjUiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoiZm9vYmFyLml1ZHguaW8iLCJleHAiOjE2MjgxODIzMjcsImlhdCI6MTYyODEzOTEyNywiaWlkIjoicmk6ZXhhbXBsZS5jb20vNzllN2JmYTYyZmFkNmM3NjViYWM2OTE1NGMyZjI0Yzk0Yzk1MjIwYS9yZXNvdXJjZS1ncm91cC9yZXNvdXJjZSIsInJvbGUiOiJkZWxlZ2F0ZSIsImNvbnMiOnsiYWNjZXNzIjpbImFwaSIsInN1YnMiLCJpbmdlc3QiLCJmaWxlIl19fQ.tUoO1L-tXByxNtjY_iK41neeshCiYrNr505wWn1hC1ACwoeL9frebABeFiCqJQGrsBsGOZ1-OACZdHBNcetwyw";
@@ -63,6 +75,7 @@ public class JwtAuthServiceTest {
   private static String closedResourceToken =
       "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJhMTNlYjk1NS1jNjkxLTRmZDMtYjIwMC1mMThiYzc4ODEwYjUiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoicnMuaXVkeC5pbyIsImV4cCI6MTYyODYxMjg5MCwiaWF0IjoxNjI4NTY5NjkwLCJpaWQiOiJyZzppaXNjLmFjLmluLzg5YTM2MjczZDc3ZGFjNGNmMzgxMTRmY2ExYmJlNjQzOTI1NDdmODYvcnMuaXVkeC5pby9zdXJhdC1pdG1zLXJlYWx0aW1lLWluZm9ybWF0aW9uL3N1cmF0LWl0bXMtbGl2ZS1ldGEiLCJyb2xlIjoiY29uc3VtZXIiLCJjb25zIjp7ImFjY2VzcyI6WyJhcGkiLCJzdWJzIiwiaW5nZXN0IiwiZmlsZSJdfX0.OBJZUc15s8gDA6PB5IK3KkUGmjvJQWr7RvByhMXmmrCULmPGgtesFmNDVG2gqD4WXZob5OsjxZ1vxRmgMBgLxw";
 
+  private String id = "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";
 
   @BeforeAll
   @DisplayName("Initialize Vertx and deploy Auth Verticle")
@@ -598,6 +611,93 @@ public class JwtAuthServiceTest {
     assertEquals(authR1.hashCode(), authR2.hashCode());
   }
 
+  @Test
+  @DisplayName("Test isOpenResource method for Cache miss for Valid Group ID")
+  public void testIsOpenResource(VertxTestContext vertxTestContext)
+  {
 
+    AsyncResult<HttpResponse<Buffer>> asyncResultMock = mock(AsyncResult.class);
+
+    JsonObject jsonObject2 = new JsonObject();
+    jsonObject2.put("accessPolicy", "Dummy Access Policy");
+    JsonArray jsonArray = new JsonArray();
+    jsonArray.add(0,jsonObject2);
+
+    JsonObject jsonObject = new JsonObject();
+    jsonObject.put("type", "urn:dx:cat:Success");
+    jsonObject.put("totalHits", 3);
+    jsonObject.put("results",jsonArray);
+
+    jwtAuthenticationService.catWebClient = mock(WebClient.class);
+
+    when(jwtAuthenticationService.catWebClient.get(anyInt(),anyString(),anyString())).thenReturn(httpRequestMock);
+    when(httpRequestMock.addQueryParam(anyString(),anyString())).thenReturn(httpRequestMock);
+    when(httpRequestMock.expect(any())).thenReturn(httpRequestMock);
+    when(asyncResultMock.result()).thenReturn(httpResponseMock);
+    when(httpResponseMock.statusCode()).thenReturn(200);
+
+    when(httpResponseMock.bodyAsJsonObject()).thenReturn(jsonObject);
+    doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>(){
+      @Override
+      public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable{
+        (  (Handler<AsyncResult<HttpResponse<Buffer>>>)arg0.getArgument(0)).handle(asyncResultMock);
+        return null;
+      }
+    }).when(httpRequestMock).send(any());
+
+    jwtAuthenticationService.isOpenResource(id).onComplete(openResourceHandler -> {
+      if(openResourceHandler.succeeded()) {
+        assertEquals("Dummy Access Policy",openResourceHandler.result());
+        vertxTestContext.completeNow();
+      } else {
+        vertxTestContext.failNow("open resource validation failed : " + openResourceHandler.cause());
+
+      }
+    });
+  }
+
+
+  @Test
+  @DisplayName("Test isOpenResource method for Cache miss with 0 total hits")
+  public void testIsOpenResourceWith0TotalHits(VertxTestContext vertxTestContext)
+  {
+
+    AsyncResult<HttpResponse<Buffer>> asyncResultMock = mock(AsyncResult.class);
+
+    JsonObject jsonObject2 = new JsonObject();
+    jsonObject2.put("accessPolicy", "Dummy Access Policy");
+    JsonArray jsonArray = new JsonArray();
+    jsonArray.add(0,jsonObject2);
+    JsonObject jsonObject = new JsonObject();
+    jsonObject.put("type", "urn:dx:cat:Success");
+    jsonObject.put("totalHits", 0);
+    jsonObject.put("results",jsonArray);
+
+    jwtAuthenticationService.catWebClient = mock(WebClient.class);
+
+    when(jwtAuthenticationService.catWebClient.get(anyInt(),anyString(),anyString())).thenReturn(httpRequestMock);
+    when(httpRequestMock.addQueryParam(anyString(),anyString())).thenReturn(httpRequestMock);
+    when(httpRequestMock.expect(any())).thenReturn(httpRequestMock);
+    when(asyncResultMock.result()).thenReturn(httpResponseMock);
+    when(httpResponseMock.statusCode()).thenReturn(200);
+    when(httpResponseMock.bodyAsJsonObject()).thenReturn(jsonObject);
+
+    doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>(){
+      @Override
+      public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable{
+        (  (Handler<AsyncResult<HttpResponse<Buffer>>>)arg0.getArgument(0)).handle(asyncResultMock);
+        return null;
+      }
+    }).when(httpRequestMock).send(any());
+
+    jwtAuthenticationService.isOpenResource(id).onComplete(openResourceHandler -> {
+      if(openResourceHandler.succeeded()) {
+        vertxTestContext.failNow("open resource validation failed : " + openResourceHandler.cause());
+      } else {
+        assertNull(openResourceHandler.result());
+        vertxTestContext.completeNow();
+      }
+    });
+  }
 
 }

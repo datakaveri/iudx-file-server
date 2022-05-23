@@ -50,7 +50,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
 
   final JWTAuth jwtAuth;
-  final WebClient catWebClient;
+   WebClient catWebClient;
   final String host;
   final int port;;
   final String audience;
