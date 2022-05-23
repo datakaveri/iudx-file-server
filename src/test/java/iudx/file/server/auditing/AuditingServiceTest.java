@@ -47,7 +47,6 @@ import java.sql.SQLException;
 import java.util.function.Function;
 
 @ExtendWith({ VertxExtension.class, MockitoExtension.class })
-@Disabled
 public class AuditingServiceTest {
 
   private static final Logger LOGGER = LogManager.getLogger(AuditingServiceTest.class);
