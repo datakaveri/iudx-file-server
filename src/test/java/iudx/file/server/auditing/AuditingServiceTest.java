@@ -208,14 +208,6 @@ public class AuditingServiceTest {
     verify(responseBuilder, times(0)).setMessage(any());
   }
 
-  @Test
-  @DisplayName("Testing executeWriteQuery method with valid query here")
-  public void testExecuteWriteQuery(VertxTestContext vertxTestContext) {
-    JsonObject request = writeRequest();
-    AuditingServiceImpl auditingService2 = new AuditingServiceImpl(dbConfig, vertxObj);
-    assertNotNull(auditingService2.executeWriteQuery(request, AsyncResult::succeeded));
-    vertxTestContext.completeNow();
-  }
 
   @DisplayName("Test query containing error in executeWriteQuery")
   @Test
@@ -230,57 +222,91 @@ public class AuditingServiceTest {
     vertxTestContext.completeNow();
   }
 
-  @DisplayName("Tests rows succeeded or failed in writeInDatabase method")
+
+  @DisplayName("Test executeWriteQuery Success")
   @Test
-  public void testCanWriteInDatabase(VertxTestContext vertxTestContext) throws SQLException {
+  public void testExecuteWriteQuerySuccess(VertxTestContext vertxTestContext)
+  {
+
     JsonObject request = writeRequest();
-    testAuditingService = new AuditingServiceImpl(dbConfig, vertxObj);
-    testAuditingService.writeInDatabase(queryBuilder.buildWriteQuery(request));
-    PgPool poolMock = mock(PgPool.class);
-    Future<RowSet<Row>> rowSetFutureMock = mock(Future.class);
-    Query<RowSet<Row>> queryRowSetRowMock = mock(Query.class);
-    // Query<RowSet<Row>> castRowSetFutureMock = (Query<RowSet<Row>>)
-    // mock(rowSetFutureMock.getClass());
-    JsonObject query = queryBuilder.buildWriteQuery(request);
+    AuditingServiceImpl auditingServiceImpl = new AuditingServiceImpl(dbConfig,vertxObj);
     Future<SqlConnection> sqlConnectionFuture = mock(Future.class);
-    SqlConnection sqlConnectionMock = mock(SqlConnection.class);
-    AsyncResult<RowSet<Row>> futureAsyncRowSet_Compose = mock(AsyncResult.class);
-    AsyncResult<io.vertx.sqlclient.RowSet<io.vertx.sqlclient.Row>> row = mock(AsyncResult.class);
-    /**
-     * JoinRowSet joinRowSetMock = mock(JoinRowSet.class);
-     * Future joinRowSetMockFuture = (Future) mock(joinRowSetMock.getClass());
-     **/
-    // when(poolMock.getConnection()).thenReturn(Future.succeededFuture());
-    lenient().when(poolMock.getConnection()).thenReturn(sqlConnectionFuture);
-    // lenient().when(sqlConnectionMock.query(anyString())).thenReturn(queryRowSetRowMock);
-    lenient().when(sqlConnectionMock.query(anyString())).thenReturn(queryRowSetRowMock);
-    // when(sqlConnectionFuture.compose(any())).thenReturn(AsyncResult<RowSet<Row>>::succeeded);
-    // doReturn(rowSetFutureMock.map("")).when(sqlConnectionFuture.compose(any()));
-    // when(sqlConnectionFuture.compose(any())).thenReturn();
-    Future mocks = mock(rowSetFutureMock.getClass());
+    Future<Object> objectFuture = mock(Future.class);
+    AsyncResult<RowSet<Row>> asyncResultMock = mock(AsyncResult.class);
 
-    when(sqlConnectionFuture.compose(any())).thenReturn(mocks);
+    auditingServiceImpl.pool = mock(PgPool.class);
 
-    // lenient().when(sqlConnectionFuture.compose(any())).thenReturn((Future<Object>)
-    // row.result());
-    // when(mocks.onComplete(any())).thenReturn(); ---> I shouldn't return anything
-    // here
-    // it should go inside onComplete
-    System.out.println(sqlConnectionFuture.result());
-    // assertEquals(" ", sqlConnectionMock.query(anyString()));
-    // assertEquals(" ", poolMock.getConnection());
-    // assertEquals(" ", sqlConnectionFuture.compose(connection ->
-    // connection.query(query.getString(QUERY_KEY)).execute()));
-    // assertEquals("", poolMock.getConnection().compose(any()));
-    // assertEquals(" ", sqlConnectionFuture.compose(connection ->
-    // connection.query(query.getString(QUERY_KEY)).execute()));
-    assertEquals(null, sqlConnectionFuture.compose(connection -> connection.query(query.getString(QUERY_KEY)).execute())
-        .onComplete(handler -> {
-          System.out.println("I'm here !!");
-        }));
+    when(auditingServiceImpl.pool.getConnection()).thenReturn(sqlConnectionFuture);
+    when(sqlConnectionFuture.compose(any())).thenReturn(objectFuture);
+    when(asyncResultMock.succeeded()).thenReturn(true);
 
-    System.out.println(sqlConnectionFuture.compose(connection -> connection.query(query.getString(QUERY_KEY)).execute())
-        .isComplete());
-    vertxTestContext.completeNow();
+    doAnswer(new Answer<AsyncResult<RowSet<Row>>>() {
+      @Override
+      public AsyncResult<RowSet<Row>> answer(InvocationOnMock arg0) throws Throwable{
+        ((Handler<AsyncResult<RowSet<Row>>>)arg0.getArgument(0)).handle(asyncResultMock);
+        return null;
+      }
+    }).when(objectFuture).onComplete(any());
+
+    JsonObject expected = new JsonObject();
+    expected.put("type",200);
+    expected.put("title","Success");
+    expected.put("detail","Table Updated Successfully");
+
+    auditingServiceImpl.executeWriteQuery(request,handler -> {
+      if(handler.succeeded())
+      {
+        assertEquals(expected,handler.result());
+        vertxTestContext.completeNow();
+      }
+      else
+      {
+        vertxTestContext.failNow(handler.cause());
+      }
+    });
+
+  }
+
+  @DisplayName("Test executeWriteQuery Failure")
+  @Test
+  public void testExecuteWriteQueryFailure(VertxTestContext vertxTestContext)
+  {
+
+    AuditingServiceImpl auditingServiceImpl = new AuditingServiceImpl(dbConfig,vertxObj);
+    JsonObject request = writeRequest();
+    Future<SqlConnection> sqlConnectionFuture = mock(Future.class);
+    Future<Object> objectFutureMock = mock(Future.class);
+    AsyncResult<RowSet<Row>> asyncResultMock = mock(AsyncResult.class);
+    Throwable throwableMock = mock(Throwable.class);
+
+    auditingServiceImpl.pool = mock(PgPool.class);
+
+    when(auditingServiceImpl.pool.getConnection()).thenReturn(sqlConnectionFuture);
+    when(sqlConnectionFuture.compose(any())).thenReturn(objectFutureMock);
+    when(asyncResultMock.failed()).thenReturn(true);
+    when(asyncResultMock.cause()).thenReturn(throwableMock);
+    when(throwableMock.getMessage()).thenReturn("Dummy Failure Message");
+    doAnswer(new Answer<AsyncResult<RowSet<Row>>>() {
+      @Override
+      public AsyncResult<RowSet<Row>> answer(InvocationOnMock arg0) throws Throwable{
+        ((Handler<AsyncResult<RowSet<Row>>>)arg0.getArgument(0)).handle(asyncResultMock);
+        return null;
+      }
+    }).when(objectFutureMock).onComplete(any());
+
+
+    auditingServiceImpl.executeWriteQuery(request,handler -> {
+      if(handler.succeeded())
+      {
+        vertxTestContext.failNow("Succeeded while there is failure in fetching rows ");
+      }
+      else
+      {
+        assertNull(handler.result());
+        String expected = "io.vertx.core.impl.NoStackTraceThrowable: {\"type\":400,\"title\":\"Failed\",\"detail\":\"Dummy Failure Message\"}";
+        assertEquals(expected,handler.cause().toString());
+        vertxTestContext.completeNow();
+      }
+    });
   }
 }
