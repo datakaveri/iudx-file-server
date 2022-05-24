@@ -47,7 +47,7 @@ import java.sql.SQLException;
 import java.util.function.Function;
 
 @ExtendWith({ VertxExtension.class, MockitoExtension.class })
-@Disabled
+
 public class AuditingServiceTest {
 
   private static final Logger LOGGER = LogManager.getLogger(AuditingServiceTest.class);
@@ -96,6 +96,7 @@ public class AuditingServiceTest {
     return jsonObject;
   }
 
+  @Disabled
   @Test
   @DisplayName("Testing write query w/o endpoint")
   void writeForMissingEndpoint(VertxTestContext vertxTestContext) {
@@ -114,6 +115,7 @@ public class AuditingServiceTest {
                 })));
   }
 
+  @Disabled
   @Test
   @DisplayName("Testing write query w/o user ID")
   void writeForMissingUserID(VertxTestContext vertxTestContext) {
@@ -131,6 +133,7 @@ public class AuditingServiceTest {
                 })));
   }
 
+  @Disabled
   @Test
   @DisplayName("Testing write query w/o RESOURCE ID")
   void writeForMissingResourceid(VertxTestContext vertxTestContext) {
@@ -147,7 +150,8 @@ public class AuditingServiceTest {
                   vertxTestContext.completeNow();
                 })));
   }
-
+  
+  @Disabled
   @Test
   @DisplayName("Testing write query w/o PROVIDER ID")
   void writeForMissingProviderid(VertxTestContext vertxTestContext) {
@@ -184,7 +188,8 @@ public class AuditingServiceTest {
     verify(responseBuilder, times(1)).setTypeAndTitle(anyInt());
     verify(responseBuilder, times(1)).setMessage(any());
   }
-
+  
+  @Disabled
   @Test
   @DisplayName("Testing Write Query")
   void writeData(VertxTestContext vertxTestContext) {
