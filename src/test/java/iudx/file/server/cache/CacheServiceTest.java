@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -297,6 +298,26 @@ public class CacheServiceTest {
       }
     });
     testContext.completeNow();
+  }
+  @DisplayName("Test refresh method for illegal argument: request")
+  @Test
+  public void testRefreshForInvalidRequest(VertxTestContext vertxTestContext)
+  {
+    PostgresService postgresServiceMock = mock(PostgresService.class);
+    CacheServiceImpl cacheServiceImpl = new CacheServiceImpl(postgresServiceMock);
+    JsonObject requestMock = mock(JsonObject.class);
+    when(requestMock.getString(anyString())).thenReturn("Dummy String");
+
+    cacheServiceImpl.refresh(requestMock,handler -> {
+      if(handler.succeeded())
+      {
+        vertxTestContext.failNow("Succeeded for invalid request");
+      }
+      else
+      {
+        vertxTestContext.completeNow();
+      }
+    });
   }
 
 }
