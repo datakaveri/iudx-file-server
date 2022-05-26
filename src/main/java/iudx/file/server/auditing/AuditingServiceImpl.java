@@ -82,7 +82,7 @@ public class AuditingServiceImpl implements AuditingService{
     return this;
   }
 
-   Future<JsonObject> writeInDatabase(JsonObject query) {
+  private Future<JsonObject> writeInDatabase(JsonObject query) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject response = new JsonObject();
     pool.getConnection()
