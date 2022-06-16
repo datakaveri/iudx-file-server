@@ -318,6 +318,7 @@ public class FileServerVerticle extends AbstractVerticle {
               .put("title", "Success")
               .put("fileId", fileId);
           handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
+          auditParams.put(RESPONSE_SIZE,0);
           updateAuditTable(auditParams);
         } else {
           processResponse(response, saveRecordHandler.cause().getMessage());
@@ -358,6 +359,7 @@ public class FileServerVerticle extends AbstractVerticle {
             .put("fileId", fileId);
         // insertFileRecord(params, fileId); no need to insert in DB
         handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
+        auditParams.put(RESPONSE_SIZE,0);
         updateAuditTable(auditParams);
       } else {
         processResponse(response, uploadHandler.cause().getMessage());
@@ -401,6 +403,7 @@ public class FileServerVerticle extends AbstractVerticle {
             .put("title", "Success")
             .put("fileId", uploadJson.getString("fileId"));
         handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
+        auditParams.put(RESPONSE_SIZE,0);
         updateAuditTable(auditParams);
       } else {
         LOGGER.debug(handler.cause());
@@ -492,6 +495,7 @@ public class FileServerVerticle extends AbstractVerticle {
               if (handler.failed()) {
                 processResponse(response, handler.cause().getMessage());
               } else {
+                auditParams.put(RESPONSE_SIZE,response.bytesWritten());
                 updateAuditTable(auditParams);
               }
               // do nothing response is already written and file is served using
@@ -552,6 +556,7 @@ public class FileServerVerticle extends AbstractVerticle {
     database.search(json, type, queryHandler -> {
       if (queryHandler.succeeded()) {
         handleResponse(response, HttpStatusCode.SUCCESS, queryHandler.result());
+        auditParams.put(RESPONSE_SIZE,response.bytesWritten());
         updateAuditTable(auditParams);
       } else {
         processResponse(response, queryHandler.cause().getMessage());
@@ -602,6 +607,7 @@ public class FileServerVerticle extends AbstractVerticle {
           ResponseUrn urn = ResponseUrn.fromCode(resultTitle);
           if (urn.equals(SUCCESS)) {
             handleResponse(response, code, urn, ("File with id : " + id + " deleted successfully"));
+            auditParams.put(RESPONSE_SIZE,0);
             updateAuditTable(auditParams);
           } else if (urn.equals(RESOURCE_NOT_FOUND)) {
             String resultDetails = dbHandlerResult.getString("details");
@@ -631,6 +637,7 @@ public class FileServerVerticle extends AbstractVerticle {
     database.search(query, QueryType.LIST, queryHandler -> {
       if (queryHandler.succeeded()) {
         handleResponse(response, HttpStatusCode.SUCCESS, queryHandler.result());
+        auditParams.put(RESPONSE_SIZE,response.bytesWritten());
         updateAuditTable(auditParams);
       } else {
         processResponse(response, queryHandler.cause().getMessage());
@@ -649,6 +656,7 @@ public class FileServerVerticle extends AbstractVerticle {
             ResponseUrn urn = ResponseUrn.fromCode(deleteResult.getString("title"));
             handleResponse(response, HttpStatusCode.SUCCESS, urn,
                 ("File with id : " + id + " deleted successfully"));
+            auditParams.put(RESPONSE_SIZE,0);
             updateAuditTable(auditParams);
           } else {
             processResponse(response, handler.cause().getMessage());
@@ -667,6 +675,7 @@ public class FileServerVerticle extends AbstractVerticle {
             LOGGER.info(deleteResult);
             handleResponse(response, HttpStatusCode.SUCCESS, urn,
                 ("File with id : " + id + " deleted successfully"));
+            auditParams.put(RESPONSE_SIZE,0);
             updateAuditTable(auditParams);
           } else {
             processResponse(response, handler.cause().getMessage());
@@ -818,7 +827,7 @@ public class FileServerVerticle extends AbstractVerticle {
    * @param auditInfo contains userid, api-endpoint and the resourceid
    */
   private void updateAuditTable(JsonObject auditInfo) {
-    LOGGER.info("Updating audit table on successful transaction");
+    LOGGER.info("Updating audit table on successful transaction "+auditInfo);
 
     /* getting provider id from the resource id */
     String resourceID = auditInfo.getString("resourceID");
