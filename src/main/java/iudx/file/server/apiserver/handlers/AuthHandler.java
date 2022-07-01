@@ -45,11 +45,18 @@ public class AuthHandler implements Handler<RoutingContext> {
         .put(HEADER_TOKEN, token)
         .put(API_METHOD, method);
 
+    if (token == null) {
+      LOGGER.error("Authentication failed [no token]");
+      processUnauthorized(context, true);
+      return;
+    }
+    
 
     String id = null;
     String fileName = null;
     if ("POST".equalsIgnoreCase(method)) {
       id = request.getFormAttribute("id");
+      fileName=request.getFormAttribute("file");
     } else if ("GET".equalsIgnoreCase(method) || "DELETE".equalsIgnoreCase(method)) {
       String fileId = request.getParam("file-id");
       if (fileId == null) {// for list API
@@ -59,17 +66,20 @@ public class AuthHandler implements Handler<RoutingContext> {
         fileName = fileId.substring(fileId.lastIndexOf("/"));
       }
     }
+    
+    // bypass auth flow for sample file download.
+    if (fileName != null && fileName.toLowerCase().contains("sample")) {
+      LOGGER.info("sampleFile : " + fileName);
+      context.next();
+      return;
+    }
 
     LOGGER.info("fileName : " + fileName);
     LOGGER.info("id :"+id);
     JsonArray idArray = new JsonArray();
     idArray.add(id);
     JsonObject requestJson = new JsonObject().put("ids", idArray);
-    if (token == null) {
-      LOGGER.error("Authentication failed [no token]");
-      processUnauthorized(context, true);
-      return;
-    }
+    
 
     authInfo.put("id", id);
     authenticator.tokenInterospect(requestJson, authInfo, handler -> {
