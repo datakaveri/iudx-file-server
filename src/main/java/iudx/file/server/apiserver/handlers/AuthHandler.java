@@ -56,7 +56,6 @@ public class AuthHandler implements Handler<RoutingContext> {
     String fileName = null;
     if ("POST".equalsIgnoreCase(method)) {
       id = request.getFormAttribute("id");
-      fileName=request.getFormAttribute("file");
     } else if ("GET".equalsIgnoreCase(method) || "DELETE".equalsIgnoreCase(method)) {
       String fileId = request.getParam("file-id");
       if (fileId == null) {// for list API
