@@ -198,11 +198,10 @@ public class AuthHandlerTest {
   @DisplayName("bypass - auth handler [bypass for sample file]")
   public void bypassAuthHandlerTest(Vertx vertx) {
 
-    doReturn("/iudx/v1/upload").when(request).path();
+    doReturn("/iudx/v1/download").when(request).path();
     doReturn("asdasds.asdasd.adasd").when(request).getHeader("token");
-    doReturn(HttpMethod.POST).when(request).method();
-    doReturn("asdad/asdasdsd/asdasd/dsfsdfsd/asdasdasdasd").when(request).getFormAttribute("id");
-    doReturn("sample.txt").when(request).getFormAttribute("file");
+    doReturn(HttpMethod.GET).when(request).method();
+    doReturn("asdad/asdasdsd/asdasd/dsfsdfsd/asdasdasdasd/sample.txt").when(request).getParam("file-id");
     
     new AuthHandler(authService).handle(event);
 

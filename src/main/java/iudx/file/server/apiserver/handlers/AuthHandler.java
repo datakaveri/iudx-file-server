@@ -7,6 +7,7 @@ import iudx.file.server.apiserver.utilities.HttpStatusCode;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
@@ -66,8 +67,7 @@ public class AuthHandler implements Handler<RoutingContext> {
       }
     }
     
-    // bypass auth flow for sample file download.
-    if (fileName != null && fileName.toLowerCase().contains("sample")) {
+    if ((fileName != null && fileName.toLowerCase().contains("sample"))) {
       LOGGER.info("sampleFile : " + fileName);
       context.next();
       return;
