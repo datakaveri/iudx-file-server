@@ -11,7 +11,10 @@ import static iudx.file.server.auditing.util.Constants.USER_ID;
 import static iudx.file.server.auditing.util.Constants.WRITE_QUERY;
 
 import io.vertx.core.json.JsonObject;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,7 +40,12 @@ public class QueryBuilder {
     String api = request.getString(API);
     String resourceID = request.getString(RESOURCE_ID);
     String providerID = request.getString(PROVIDER_ID);
-    ZonedDateTime zst = ZonedDateTime.now();
+    ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+    String isoTime =
+        LocalDateTime.now()
+            .atZone(ZoneId.of("Asia/Kolkata"))
+            .truncatedTo(ChronoUnit.SECONDS)
+            .toString();
     long responseSize = request.getLong(RESPONSE_SIZE);
     LOGGER.debug("TIME ZST: " + zst);
     long time = getEpochTime(zst);
@@ -52,8 +60,8 @@ public class QueryBuilder {
                 .replace("$3", userId)
                 .replace("$4", Long.toString(time))
                 .replace("$5", resourceID)
+                .replace("$6", isoTime)
                 .replace("$7", providerID)
-                .replace("$6", zst.toString())
                 .replace("$8", Long.toString(responseSize)));
     LOGGER.debug("Info: Query: " + query);
     return new JsonObject().put(QUERY_KEY, query);
