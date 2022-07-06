@@ -40,7 +40,7 @@ public class AuditingServiceTest {
     static void startVertex(Vertx vertx, VertxTestContext vertxTestContext) {
         vertxObj = vertx;
         dbConfig = new JsonObject();
-        dbConfig.put("auditingDatabaseIP", "1");
+        dbConfig.put("auditingDatabaseIP", "localhost");
         dbConfig.put("auditingDatabasePort", 123);
         dbConfig.put("auditingDatabaseName", "auditing");
         dbConfig.put("auditingDatabaseUserName", "immudb");
