@@ -1,0 +1,10 @@
+
+curl --location --request POST 'https://localhost:8443/iudx/v1/upload' \
+--header 'token: eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiI4NDRlMjUxYi01NzRiLTQ2ZTYtOTI0Ny1mNzZmMWY3MGE2MzciLCJpc3MiOiJhdXRodmVydHguaXVkeC5pbyIsImF1ZCI6InJzLml1ZHguaW8iLCJleHAiOjE2NTUxNDg3MzYsImlhdCI6MTY1NTEwNTUzNiwiaWlkIjoicmk6aWlzYy5hYy5pbi84OWEzNjI3M2Q3N2RhYzRjZjM4MTE0ZmNhMWJiZTY0MzkyNTQ3Zjg2L2ZpbGUuaXVkeC5pby9zdXJhdC1pdG1zLXJlYWx0aW1lLWluZm9ybWF0aW9uL3N1cmF0LWl0bXMtbGl2ZS1ldGEiLCJyb2xlIjoicHJvdmlkZXIiLCJjb25zIjp7fX0.K2jtXY0Q4vlk4_FxT9P1I8Ot9e8_xZf95D6dWCQuAe9twqfYgMu1KbMFKmDAPYaqaRp0QgE6PE2-6TBeAmgSsA' \
+--form 'file=@"/home/gopal/Desktop/abcde.txt"' \
+--form 'id="iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"' \
+--form 'startTime="2020-09-05T00:00:00Z"' \
+--form 'endTime="2020-09-15T00:00:00Z"' \
+--form 'geometry="point"' \
+--form 'coordinates="[72.81,21.16]"'
+
