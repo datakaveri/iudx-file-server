@@ -69,11 +69,11 @@ public class AuditingServiceTest {
   static void startVertex(Vertx vertx, VertxTestContext vertxTestContext) {
     vertxObj = vertx;
     dbConfig = new JsonObject();
-    dbConfig.put("auditingDatabaseIP","52.140.124.157");
-    dbConfig.put("auditingDatabasePort", 32508);
+    dbConfig.put("auditingDatabaseIP","localhost");
+    dbConfig.put("auditingDatabasePort", 123);
     dbConfig.put("auditingDatabaseName","metering");
     dbConfig.put("auditingDatabaseUserName","immudb");
-    dbConfig.put("auditingDatabasePassword","IzY=Q8^~dzTkdv&v0Cc");
+    dbConfig.put("auditingDatabasePassword","");
     dbConfig.put("auditingDatabaseTableName","rsaudit");
     dbConfig.put("auditingPoolSize", 24);
     AuditingService auditingService = new AuditingServiceImpl(dbConfig, vertxObj);
