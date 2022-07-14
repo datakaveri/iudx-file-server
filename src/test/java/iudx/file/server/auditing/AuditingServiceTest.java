@@ -69,11 +69,12 @@ public class AuditingServiceTest {
   static void startVertex(Vertx vertx, VertxTestContext vertxTestContext) {
     vertxObj = vertx;
     dbConfig = new JsonObject();
-    dbConfig.put("auditingDatabaseIP","localhost");
-    dbConfig.put("auditingDatabasePort", 123);
-    dbConfig.put("auditingDatabaseName","auditing");
+    dbConfig.put("auditingDatabaseIP","52.140.124.157");
+    dbConfig.put("auditingDatabasePort", 32508);
+    dbConfig.put("auditingDatabaseName","metering");
     dbConfig.put("auditingDatabaseUserName","immudb");
-    dbConfig.put("auditingDatabasePassword","");
+    dbConfig.put("auditingDatabasePassword","IzY=Q8^~dzTkdv&v0Cc");
+    dbConfig.put("auditingDatabaseTableName","rsaudit");
     dbConfig.put("auditingPoolSize", 24);
     AuditingService auditingService = new AuditingServiceImpl(dbConfig, vertxObj);
     vertxTestContext.completeNow();
@@ -85,7 +86,8 @@ public class AuditingServiceTest {
             .put(API,"/ngsi-ld/v1/temporal/entities")
             .put(USER_ID,"pranav-testing-stuff")
             .put(PROVIDER_ID, "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86")
-            .put(RESOURCE_ID,"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta");
+            .put(RESOURCE_ID,"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta")
+            .put(RESPONSE_SIZE,12345);
     return jsonObject;
   }
 
@@ -198,7 +200,6 @@ public class AuditingServiceTest {
         return null;
       }
     }).when(auditingService).executeWriteQuery(any(), any());
-
 
     auditingService.executeWriteQuery(request, any());
 

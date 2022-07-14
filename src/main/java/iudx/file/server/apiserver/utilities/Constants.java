@@ -60,5 +60,5 @@ public class Constants extends iudx.file.server.common.Constants{
   public static final int VALIDATION_ALLOWED_COORDINATES=10;
   public static final int VALIDATION_COORDINATE_PRECISION_ALLOWED=6;
 
-
+  public static final String RESPONSE_SIZE = "response_size";
 }
