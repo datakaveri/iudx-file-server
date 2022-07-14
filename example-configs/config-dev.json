@@ -89,6 +89,7 @@
 			"auditingDatabaseName": "",
 			"auditingDatabaseUserName": "",
 			"auditingDatabasePassword": "",
+			"auditingDatabaseTableName": "",
 			"auditingPoolSize": 25
 		}
 	]

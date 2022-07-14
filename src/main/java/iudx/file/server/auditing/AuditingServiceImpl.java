@@ -30,6 +30,7 @@ public class AuditingServiceImpl implements AuditingService{
   private String databaseName;
   private String databaseUserName;
   private String databasePassword;
+  private String databaseTableName;
   private int databasePoolSize;
   private ResponseBuilder responseBuilder;
 
@@ -40,6 +41,7 @@ public class AuditingServiceImpl implements AuditingService{
       databaseName = propObj.getString("auditingDatabaseName");
       databaseUserName = propObj.getString("auditingDatabaseUserName");
       databasePassword = propObj.getString("auditingDatabasePassword");
+      databaseTableName = propObj.getString("auditingDatabaseTableName");
       databasePoolSize = propObj.getInteger("auditingPoolSize");
     }
 
@@ -59,6 +61,7 @@ public class AuditingServiceImpl implements AuditingService{
   @Override
   public AuditingService executeWriteQuery(
           JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
+    request.put(DATABASE_TABLE_NAME, databaseTableName);
     query = queryBuilder.buildWriteQuery(request);
 
     if (query.containsKey(ERROR)) {
