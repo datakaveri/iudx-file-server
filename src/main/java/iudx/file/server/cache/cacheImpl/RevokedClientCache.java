@@ -44,16 +44,14 @@ public class RevokedClientCache implements IudxCache {
     String query = PostgresConstants.SELECT_REVOKE_TOKEN_SQL;
     pgService.executeQuery(query, handler -> {
       if (handler.succeeded()) {
-        LOGGER.debug("result : " + handler.result().getJsonArray("result"));
+        LOGGER.debug("result : cache refreshed");
         JsonArray clientIdArray = handler.result().getJsonArray("result");
 
         clientIdArray.forEach(e -> {
           JsonObject clientInfo = (JsonObject) e;
           String key = clientInfo.getString("_id");
           String value = clientInfo.getString("expiry");
-          LOGGER.debug("key : " + key + " value : " + value);
           this.cache.put(key, value);
-          LOGGER.debug("cache size : " + this.cache.size());
         });
 
       }
