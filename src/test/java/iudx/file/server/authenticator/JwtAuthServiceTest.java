@@ -203,7 +203,7 @@ public class JwtAuthServiceTest {
     });
   }
 
-
+  @Disabled
   @Test
   @DisplayName("success - allow  access to query endpoint for open token")
   public void access4QueryAPIOpenToken(VertxTestContext testContext) {
@@ -248,6 +248,7 @@ public class JwtAuthServiceTest {
     });
   }
   
+ 
   @Test
   @DisplayName("success - allow  access to query endpoint for close token")
   public void access4QueryAPICloseToken(VertxTestContext testContext) {
@@ -291,7 +292,8 @@ public class JwtAuthServiceTest {
       }
     });
   }
-  
+
+  @Disabled  
   @Test
   @DisplayName("success - allow  access to query open endpoint for open token")
   public void access4QueryOpenTokenOpenResource(VertxTestContext testContext) {
