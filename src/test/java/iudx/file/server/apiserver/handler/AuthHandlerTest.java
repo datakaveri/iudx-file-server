@@ -67,7 +67,7 @@ public class AuthHandlerTest {
     doReturn("/iudx/v1/upload").when(request).path();
     doReturn(null).when(request).getHeader("token");
     doReturn(HttpMethod.POST).when(request).method();
-    doReturn("asdad/asdasdsd/asdasd/dsfsdfsd/asdasdasdasd").when(request).getFormAttribute("id");
+    //doReturn("asdad/asdasdsd/asdasd/dsfsdfsd/asdasdasdasd").when(request).getFormAttribute("id");
 
     Mockito.doReturn(response).when(response).putHeader(anyString(), anyString());
     Mockito.doReturn(response).when(response).setStatusCode(anyInt());
@@ -190,6 +190,25 @@ public class AuthHandlerTest {
     AuthHandler res =  AuthHandler.create(Vertx.vertx());
     assertNotNull(res);
     vertxTestContext.completeNow();
+  }
+  
+  
+
+  @Test
+  @DisplayName("bypass - auth handler [bypass for sample file]")
+  public void bypassAuthHandlerTest(Vertx vertx) {
+
+    doReturn("/iudx/v1/download").when(request).path();
+    doReturn("asdasds.asdasd.adasd").when(request).getHeader("token");
+    doReturn(HttpMethod.GET).when(request).method();
+    doReturn("asdad/asdasdsd/asdasd/dsfsdfsd/asdasdasdasd/sample.txt").when(request).getParam("file-id");
+    
+    new AuthHandler(authService).handle(event);
+
+    verify(event, times(1)).next();
+    verify(authService,times(0)).tokenInterospect(any(), any(), any());
+    
+
   }
 
 }

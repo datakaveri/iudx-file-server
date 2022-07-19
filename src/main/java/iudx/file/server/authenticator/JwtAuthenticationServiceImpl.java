@@ -50,7 +50,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
 
   final JWTAuth jwtAuth;
-   WebClient catWebClient;
+  WebClient catWebClient;
   final String host;
   final int port;;
   final String audience;
@@ -119,11 +119,15 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       }
     }).compose(openResourceHandler -> {
       result.isOpen = openResourceHandler.equalsIgnoreCase("OPEN");
-      if(result.isOpen && OPEN_ENDPOINTS.contains(endPoint)) {
+      if (result.isOpen && OPEN_ENDPOINTS.contains(endPoint)) {
         JsonObject json = new JsonObject()
-                .put(JSON_USERID, result.jwtData.getSub());
+            .put(JSON_USERID, result.jwtData.getSub());
         return Future.succeededFuture(true);
-      } else if(!result.isOpen) {
+      } else if (QUERY_ENDPOINTS.contains(endPoint)) {
+        JsonObject json = new JsonObject()
+            .put(JSON_USERID, result.jwtData.getSub());
+        return Future.succeededFuture(true);
+      } else if (!result.isOpen) {
         return isValidId(result.jwtData, id);
       } else {
         return Future.succeededFuture(true);
@@ -134,11 +138,11 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
         jsonResponse.put(JSON_USERID, result.jwtData.getSub());
         LOGGER.info("jwt : " + result.jwtData);
         jsonResponse.put(
-                JSON_EXPIRY,
-                (LocalDateTime.ofInstant(
-                        Instant.ofEpochSecond(Long.parseLong(String.valueOf(result.jwtData.getExp()))),
-                        ZoneId.systemDefault()))
-                        .toString());
+            JSON_EXPIRY,
+            (LocalDateTime.ofInstant(
+                Instant.ofEpochSecond(Long.parseLong(String.valueOf(result.jwtData.getExp()))),
+                ZoneId.systemDefault()))
+                    .toString());
         return Future.succeededFuture(jsonResponse);
       } else {
         return validateAccess(result.jwtData, result.isOpen, authenticationInfo);
@@ -316,7 +320,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     return promise.future();
   }
 
-  public Future<JsonObject> validateAccess(JwtData jwtData, boolean openResource, JsonObject authInfo) {
+  public Future<JsonObject> validateAccess(JwtData jwtData, boolean openResource,
+      JsonObject authInfo) {
     LOGGER.trace("validateAccess() started");
     Promise<JsonObject> promise = Promise.promise();
     String jwtId = jwtData.getIid().split(":")[1];
@@ -328,6 +333,15 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       jsonResponse.put(JSON_USERID, jwtData.getSub());
       return Future.succeededFuture(jsonResponse);
     }
+    
+    if(QUERY_ENDPOINTS.contains(authInfo.getString("apiEndpoint"))){
+      LOGGER.info("User access is allowed. [Query endpoints]");
+      JsonObject jsonResponse = new JsonObject();
+      jsonResponse.put(JSON_IID, jwtId);
+      jsonResponse.put(JSON_USERID, jwtData.getSub());
+      return Future.succeededFuture(jsonResponse);
+    }
+    
 
     Method method = Method.valueOf(authInfo.getString("method"));
     Api api = Api.fromEndpoint(authInfo.getString("apiEndpoint"));
@@ -363,6 +377,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   Future<Boolean> isValidId(JwtData jwtData, String id) {
     Promise<Boolean> promise = Promise.promise();
     String jwtId = jwtData.getIid().split(":")[1];
+    LOGGER.info("id : {}, jwtID : {}", id, jwtId);
     if (id.equalsIgnoreCase(jwtId)) {
       promise.complete(true);
     } else {

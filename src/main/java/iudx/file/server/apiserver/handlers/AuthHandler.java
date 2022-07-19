@@ -7,6 +7,7 @@ import iudx.file.server.apiserver.utilities.HttpStatusCode;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
@@ -45,6 +46,12 @@ public class AuthHandler implements Handler<RoutingContext> {
         .put(HEADER_TOKEN, token)
         .put(API_METHOD, method);
 
+    if (token == null) {
+      LOGGER.error("Authentication failed [no token]");
+      processUnauthorized(context, true);
+      return;
+    }
+    
 
     String id = null;
     String fileName = null;
@@ -59,17 +66,19 @@ public class AuthHandler implements Handler<RoutingContext> {
         fileName = fileId.substring(fileId.lastIndexOf("/"));
       }
     }
+    
+    if ((fileName != null && fileName.toLowerCase().contains("sample"))) {
+      LOGGER.info("sampleFile : " + fileName);
+      context.next();
+      return;
+    }
 
     LOGGER.info("fileName : " + fileName);
     LOGGER.info("id :"+id);
     JsonArray idArray = new JsonArray();
     idArray.add(id);
     JsonObject requestJson = new JsonObject().put("ids", idArray);
-    if (token == null) {
-      LOGGER.error("Authentication failed [no token]");
-      processUnauthorized(context, true);
-      return;
-    }
+    
 
     authInfo.put("id", id);
     authenticator.tokenInterospect(requestJson, authInfo, handler -> {
