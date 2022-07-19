@@ -1354,7 +1354,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{secureResourceToken}}",
+								"value": "{{openResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -1819,7 +1819,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{secureRGToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -2936,7 +2936,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{delegateToken-RG}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
