@@ -455,7 +455,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "/home/vasanth/Downloads/Scope of Work_ADEx.docx.pdf"
+									"src": "/home/ubuntu/configs/test.txt"
 								},
 								{
 									"key": "id",
@@ -607,7 +607,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "/home/vasanth/Downloads/Scope of Work_ADEx.docx.pdf"
+									"src": "/home/ubuntu/configs/test.txt"
 								},
 								{
 									"key": "id",
@@ -683,7 +683,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "/home/vasanth/Downloads/IUDX - NGSI LD.pdf"
+									"src": "/home/ubuntu/configs/test.txt"
 								},
 								{
 									"key": "id",
@@ -752,7 +752,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "/home/vasanth/Downloads/Scope of Work_ADEx.docx.pdf"
+									"src": "/home/ubuntu/configs/test.txt"
 								},
 								{
 									"key": "id",
@@ -837,7 +837,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "/home/vasanth/Downloads/IUDX - NGSI LD.pdf"
+									"src": "/home/ubuntu/configs/test.txt"
 								},
 								{
 									"key": "id",
@@ -938,7 +938,7 @@
 								{
 									"key": "file1",
 									"type": "file",
-									"src": "/home/vasanth/Downloads/Scope of Work_ADEx.docx.pdf"
+									"src": "/home/ubuntu/configs/test.txt"
 								},
 								{
 									"key": "id",
@@ -1029,7 +1029,7 @@
 								{
 									"key": "file1",
 									"type": "file",
-									"src": "/home/vasanth/Downloads/IUDX - NGSI LD.pdf"
+									"src": "/home/ubuntu/configs/test.txt"
 								},
 								{
 									"key": "id",
@@ -1125,7 +1125,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "/home/vasanth/Downloads/IUDX - NGSI LD.pdf"
+									"src": "/home/ubuntu/configs/test.txt"
 								},
 								{
 									"key": "id1",
@@ -1205,7 +1205,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "/home/vasanth/Downloads/IUDX - NGSI LD.pdf"
+									"src": "/home/ubuntu/configs/test.txt"
 								},
 								{
 									"key": "id",
