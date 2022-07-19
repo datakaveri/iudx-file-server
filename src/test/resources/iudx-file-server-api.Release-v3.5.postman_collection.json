@@ -1819,7 +1819,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{secureResourceToken}}",
+								"value": "{{secureRGToken}}",
 								"type": "text"
 							}
 						],
