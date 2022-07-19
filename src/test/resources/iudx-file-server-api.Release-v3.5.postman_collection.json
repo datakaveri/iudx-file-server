@@ -428,7 +428,7 @@
 									"});",
 									"",
 									"var jsonData = pm.response.json(); ",
-									"pm.globals.set(\"rl_sample\",jsonData.fileId);"
+									"pm.environment.set(\"rl_sample\",jsonData.fileId);"
 								],
 								"type": "text/javascript"
 							}
@@ -1354,7 +1354,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{openResourceToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -1819,7 +1819,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{secureResourceToken}}",
+								"value": "{{secureRGToken}}",
 								"type": "text"
 							}
 						],
@@ -2936,7 +2936,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{secureResourceToken}}",
+								"value": "{{delegateToken-RG}}",
 								"type": "text"
 							}
 						],
