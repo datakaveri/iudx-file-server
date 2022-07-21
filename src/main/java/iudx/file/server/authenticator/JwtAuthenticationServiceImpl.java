@@ -119,11 +119,13 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       }
     }).compose(openResourceHandler -> {
       result.isOpen = openResourceHandler.equalsIgnoreCase("OPEN");
-      if(result.isOpen && OPEN_ENDPOINTS.contains(endPoint)) {
-        JsonObject json = new JsonObject()
-                .put(JSON_USERID, result.jwtData.getSub());
+      if (result.isOpen && OPEN_ENDPOINTS.contains(endPoint)) {
+        JsonObject json = new JsonObject().put(JSON_USERID, result.jwtData.getSub());
         return Future.succeededFuture(true);
-      } else if(!result.isOpen) {
+      } else if (QUERY_ENDPOINTS.contains(endPoint)) {
+        JsonObject json = new JsonObject().put(JSON_USERID, result.jwtData.getSub());
+        return Future.succeededFuture(true);
+      } else if (!result.isOpen) {
         return isValidId(result.jwtData, id);
       } else {
         return Future.succeededFuture(true);
@@ -328,6 +330,14 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       jsonResponse.put(JSON_USERID, jwtData.getSub());
       return Future.succeededFuture(jsonResponse);
     }
+    
+    if(QUERY_ENDPOINTS.contains(authInfo.getString("apiEndpoint"))){
+        LOGGER.info("User access is allowed. [Query endpoints]");
+        JsonObject jsonResponse = new JsonObject();
+        jsonResponse.put(JSON_IID, jwtId);
+        jsonResponse.put(JSON_USERID, jwtData.getSub());
+        return Future.succeededFuture(jsonResponse);
+      }
 
     Method method = Method.valueOf(authInfo.getString("method"));
     Api api = Api.fromEndpoint(authInfo.getString("apiEndpoint"));
