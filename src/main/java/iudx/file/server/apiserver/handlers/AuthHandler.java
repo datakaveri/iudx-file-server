@@ -24,7 +24,7 @@ public class AuthHandler implements Handler<RoutingContext> {
   private static AuthenticationService authenticator;
 
   public AuthHandler(AuthenticationService authenticator) {
-    this.authenticator=authenticator;
+    this.authenticator = authenticator;
   }
 
 
@@ -51,7 +51,7 @@ public class AuthHandler implements Handler<RoutingContext> {
       processUnauthorized(context, true);
       return;
     }
-    
+
 
     String id = null;
     String fileName = null;
@@ -66,25 +66,26 @@ public class AuthHandler implements Handler<RoutingContext> {
         fileName = fileId.substring(fileId.lastIndexOf("/"));
       }
     }
-    
-    if ((fileName != null && fileName.toLowerCase().contains("sample"))) {
+
+    if (fileName != null && fileName.toLowerCase().contains("sample")
+        && "GET".equalsIgnoreCase(method)) {
       LOGGER.info("sampleFile : " + fileName);
       context.next();
       return;
     }
 
     LOGGER.info("fileName : " + fileName);
-    LOGGER.info("id :"+id);
+    LOGGER.info("id :" + id);
     JsonArray idArray = new JsonArray();
     idArray.add(id);
     JsonObject requestJson = new JsonObject().put("ids", idArray);
-    
+
 
     authInfo.put("id", id);
     authenticator.tokenInterospect(requestJson, authInfo, handler -> {
       if (handler.succeeded()) {
         LOGGER.info("auth success.");
-        context.data().put("AuthResult",handler.result().getString("userID"));
+        context.data().put("AuthResult", handler.result().getString("userID"));
       } else {
         LOGGER.error("Authentication failed [" + handler.cause().getMessage() + "]");
         processUnauthorized(context, false);
@@ -103,9 +104,11 @@ public class AuthHandler implements Handler<RoutingContext> {
 
   private JsonObject responseUnauthorizedJson(Boolean noToken) {
     return new JsonObject()
-        .put(JSON_TYPE, noToken ? ResponseUrn.MISSING_TOKEN.getUrn() : ResponseUrn.INVALID_TOKEN.getUrn())
+        .put(JSON_TYPE,
+            noToken ? ResponseUrn.MISSING_TOKEN.getUrn() : ResponseUrn.INVALID_TOKEN.getUrn())
         .put(JSON_TITLE, "Not authorized")
-        .put(JSON_DETAIL, noToken? ResponseUrn.MISSING_TOKEN.getMessage() : ResponseUrn.INVALID_TOKEN.getMessage());
+        .put(JSON_DETAIL, noToken ? ResponseUrn.MISSING_TOKEN.getMessage()
+            : ResponseUrn.INVALID_TOKEN.getMessage());
   }
 
 }

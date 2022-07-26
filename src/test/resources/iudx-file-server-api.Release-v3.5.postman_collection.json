@@ -2936,7 +2936,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{secureResourceToken}}",
+								"value": "{{delegateToken-RG}}",
 								"type": "text"
 							}
 						],
