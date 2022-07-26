@@ -184,9 +184,14 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+            <groupId>com.ongres.scram</groupId>
+            <artifactId>client</artifactId>
+            <version>2.1</version>
+        </dependency>
+		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>42.3.5</version>
+			<version>42.4.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -285,6 +290,7 @@
 						<exclude>iudx/file/server/database/postgres/PostgresService.class</exclude>
 						<exclude>iudx/file/server/auditing/AuditingService.class</exclude>
 						<exclude>iudx/file/server/databroker/DataBrokerService.class</exclude>
+						<exclude>iudx/file/server/databroker/DataBrokerServiceImpl.class</exclude>
 						<!-- generated classes -->
 						<exclude>**/JwtDataConverter.class</exclude>
 						<exclude>**/*VertxEBProxy.class</exclude>

@@ -7,6 +7,7 @@ import iudx.file.server.apiserver.utilities.HttpStatusCode;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
@@ -23,7 +24,7 @@ public class AuthHandler implements Handler<RoutingContext> {
   private static AuthenticationService authenticator;
 
   public AuthHandler(AuthenticationService authenticator) {
-    this.authenticator=authenticator;
+    this.authenticator = authenticator;
   }
 
 
@@ -45,6 +46,12 @@ public class AuthHandler implements Handler<RoutingContext> {
         .put(HEADER_TOKEN, token)
         .put(API_METHOD, method);
 
+    if (token == null) {
+      LOGGER.error("Authentication failed [no token]");
+      processUnauthorized(context, true);
+      return;
+    }
+
 
     String id = null;
     String fileName = null;
@@ -60,22 +67,25 @@ public class AuthHandler implements Handler<RoutingContext> {
       }
     }
 
+    if (fileName != null && fileName.toLowerCase().contains("sample")
+        && "GET".equalsIgnoreCase(method)) {
+      LOGGER.info("sampleFile : " + fileName);
+      context.next();
+      return;
+    }
+
     LOGGER.info("fileName : " + fileName);
-    LOGGER.info("id :"+id);
+    LOGGER.info("id :" + id);
     JsonArray idArray = new JsonArray();
     idArray.add(id);
     JsonObject requestJson = new JsonObject().put("ids", idArray);
-    if (token == null) {
-      LOGGER.error("Authentication failed [no token]");
-      processUnauthorized(context, true);
-      return;
-    }
+
 
     authInfo.put("id", id);
     authenticator.tokenInterospect(requestJson, authInfo, handler -> {
       if (handler.succeeded()) {
         LOGGER.info("auth success.");
-        context.data().put("AuthResult",handler.result().getString("userID"));
+        context.data().put("AuthResult", handler.result().getString("userID"));
       } else {
         LOGGER.error("Authentication failed [" + handler.cause().getMessage() + "]");
         processUnauthorized(context, false);
@@ -94,9 +104,11 @@ public class AuthHandler implements Handler<RoutingContext> {
 
   private JsonObject responseUnauthorizedJson(Boolean noToken) {
     return new JsonObject()
-        .put(JSON_TYPE, noToken ? ResponseUrn.MISSING_TOKEN.getUrn() : ResponseUrn.INVALID_TOKEN.getUrn())
+        .put(JSON_TYPE,
+            noToken ? ResponseUrn.MISSING_TOKEN.getUrn() : ResponseUrn.INVALID_TOKEN.getUrn())
         .put(JSON_TITLE, "Not authorized")
-        .put(JSON_DETAIL, noToken? ResponseUrn.MISSING_TOKEN.getMessage() : ResponseUrn.INVALID_TOKEN.getMessage());
+        .put(JSON_DETAIL, noToken ? ResponseUrn.MISSING_TOKEN.getMessage()
+            : ResponseUrn.INVALID_TOKEN.getMessage());
   }
 
 }

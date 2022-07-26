@@ -34,7 +34,7 @@ pipeline {
           thresholds: [ skipped(failureThreshold: '1'), failed(failureThreshold: '0') ],
           tools: [ JUnit(pattern: 'target/surefire-reports/*.xml') ]
         )
-        jacoco classPattern: 'target/classes', execPattern: 'target/jacoco.exec', sourcePattern: 'src/main/java', exclusionPattern: 'iudx/file/server/apiserver/FileServerVerticle.class,iudx/file/server/apiserver/FileServerVerticle**,iudx/file/server/authenticator/AuthenticationService.class,iudx/file/server/database/DatabaseService.class,**/JwtDataConverter.class,**/*VertxEBProxy.class,**/Constants.class,**/*VertxProxyHandler.class,**/*Verticle.class,iudx/file/server/deploy/**'
+        jacoco classPattern: 'target/classes', execPattern: 'target/jacoco.exec', sourcePattern: 'src/main/java', exclusionPattern: 'iudx/file/server/apiserver/FileServerVerticle.class,iudx/file/server/apiserver/FileServerVerticle**,iudx/file/server/authenticator/AuthenticationService.class,iudx/file/server/database/DatabaseService.class,**/JwtDataConverter.class,**/*VertxEBProxy.class,**/Constants.class,**/*VertxProxyHandler.class,**/*Verticle.class,iudx/file/server/deploy/**,iudx/file/server/databroker/DataBrokerServiceImpl.class'
       }
       post{
         failure{
@@ -92,19 +92,66 @@ pipeline {
       }
     }
 
-    stage('Push Image') {
-      when{
-        expression {
-          return env.GIT_BRANCH == 'origin/master';
-        }
-      }
-      steps{
-        script {
-          docker.withRegistry( registryUri, registryCredential ) {
-            devImage.push("4.0-alpha-${env.GIT_HASH}")
-            deplImage.push("4.0-alpha-${env.GIT_HASH}")
+    stage('Continuous Deployment') {
+      when {
+        allOf {
+          anyOf {
+            changeset "docker/**"
+            changeset "docs/**"
+            changeset "pom.xml"
+            changeset "src/main/**"
+            triggeredBy cause: 'UserIdCause'
+          }
+          expression {
+            return env.GIT_BRANCH == 'origin/master';
           }
         }
+      }
+      stages {
+        stage('Push Images') {
+          steps {
+            script {
+              docker.withRegistry( registryUri, registryCredential ) {
+                devImage.push("4.0-alpha-${env.GIT_HASH}")
+                deplImage.push("4.0-alpha-${env.GIT_HASH}")
+              }
+            }
+          }
+        }
+        stage('Docker Swarm deployment') {
+          steps {
+            script {
+              sh "ssh azureuser@docker-swarm 'docker service update fs_fs --image ghcr.io/datakaveri/fs-depl:4.0-alpha-${env.GIT_HASH}'"
+              sh 'sleep 10'
+            }
+          }
+          post{
+            failure{
+              error "Failed to deploy image in Docker Swarm"
+            }
+          }          
+        }
+        // stage('Integration test on swarm deployment') {
+        //   steps {
+        //     node('master') {
+        //       script{
+        //         sh 'newman run /var/lib/jenkins/iudx/fs/Newman/iudx-file-server-api.Release-v3.5.postman_collection.json -e /home/ubuntu/configs/cd/fs-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/fs/Newman/report/cd-report.html --reporter-htmlextra-skipSensitiveData'
+        //       }
+        //     }
+        //   }
+        //   post{
+        //     always{
+        //       node('master') {
+        //         script{
+        //           publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/fs/Newman/report/', reportFiles: 'cd-report.html', reportTitles: '', reportName: 'Docker-Swarm Integration Test Report'])
+        //         }
+        //       }
+        //     }
+        //     failure{
+        //       error "Test failure. Stopping pipeline execution!"
+        //     }
+        //   }
+        // }
       }
     }
   }
