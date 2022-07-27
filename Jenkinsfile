@@ -54,7 +54,7 @@ pipeline {
     stage('Start File server for Integration Tests'){
       steps{
         script{
-            sh 'scp src/test/resources/iudx-file-server-api.Release-v3.5.postman_collection.json jenkins@jenkins-master:/var/lib/jenkins/iudx/fs/Newman/'
+            sh 'scp src/test/resources/IUDX-File-Server-APIs-V3.5.postman_collection.json jenkins@jenkins-master:/var/lib/jenkins/iudx/fs/Newman/'
             sh 'docker-compose -f docker-compose.test.yml up -d integTest'
             sh 'sleep 45'
         }
