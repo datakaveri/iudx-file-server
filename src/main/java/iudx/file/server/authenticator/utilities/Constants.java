@@ -10,7 +10,7 @@ public class Constants extends iudx.file.server.common.Constants {
           List.of("ngsi-ld/v1/download");
 
   public static final List<String> QUERY_ENDPOINTS =
-	      List.of("/ngsi-ld/v1/temporal/entities","/ngsi-ld/v1/entities");
+	      List.of("/ngsi-ld/v1/temporal/entities","/ngsi-ld/v1/entities","/iudx/v1/list");
 
   public static final String JSON_IID = "iid";
   public static final String JSON_EXPIRY = "expiry";
