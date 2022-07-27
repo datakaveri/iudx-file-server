@@ -606,7 +606,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "/home/kailash/Downloads/test.txt"
+									"src": "/home/ubuntu/configs/test.txt"
 								},
 								{
 									"key": "id",
@@ -751,7 +751,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "/home/kailash/Downloads/test.txt"
+									"src": "/home/ubuntu/configs/test.txt"
 								},
 								{
 									"key": "id",
@@ -937,7 +937,7 @@
 								{
 									"key": "file1",
 									"type": "file",
-									"src": "/home/kailash/Downloads/test.txt"
+									"src": "/home/ubuntu/configs/test.txt"
 								},
 								{
 									"key": "id",
@@ -1028,7 +1028,7 @@
 								{
 									"key": "file1",
 									"type": "file",
-									"src": "/home/kailash/Downloads/test.txt"
+									"src": "/home/ubuntu/configs/test.txt"
 								},
 								{
 									"key": "id",
