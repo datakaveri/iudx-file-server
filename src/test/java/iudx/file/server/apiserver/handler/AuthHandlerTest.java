@@ -61,7 +61,6 @@ public class AuthHandlerTest {
     doReturn("/iudx/v1/upload").when(request).path();
     doReturn(null).when(request).getHeader("token");
     doReturn(HttpMethod.POST).when(request).method();
-    doReturn("asdad/asdasdsd/asdasd/dsfsdfsd/asdasdasdasd").when(request).getFormAttribute("id");
 
     Mockito.doReturn(response).when(response).putHeader(anyString(), anyString());
     Mockito.doReturn(response).when(response).setStatusCode(anyInt());
