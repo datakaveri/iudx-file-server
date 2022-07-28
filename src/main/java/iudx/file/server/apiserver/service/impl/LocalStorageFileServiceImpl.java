@@ -1,7 +1,7 @@
 package iudx.file.server.apiserver.service.impl;
 
 import java.util.Iterator;
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
 
 import iudx.file.server.apiserver.response.ResponseUrn;
@@ -38,7 +38,7 @@ public class LocalStorageFileServiceImpl implements FileService {
    * {@inheritDoc}
    */
   @Override
-  public Future<JsonObject> upload(Set<FileUpload> files, String filename, String filePath) {
+  public Future<JsonObject> upload(List<FileUpload> files, String filename, String filePath) {
     Promise<JsonObject> promise = Promise.promise();
     LOGGER.debug("uploading.. files to file system.");
     final JsonObject metadata = new JsonObject();
@@ -79,7 +79,7 @@ public class LocalStorageFileServiceImpl implements FileService {
   }
 
   @Override
-  public Future<JsonObject> upload(Set<FileUpload> files, String filePath) {
+  public Future<JsonObject> upload(List<FileUpload> files, String filePath) {
     return upload(files, UUID.randomUUID().toString(), filePath);
   }
 

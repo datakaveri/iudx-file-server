@@ -1,5 +1,6 @@
 package iudx.file.server.apiserver.service;
 
+import java.util.List;
 import java.util.Set;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -16,7 +17,7 @@ public interface FileService {
    * @param file set of file (although there will always be a single file to upload)
    * @param handler
    */
-  Future<JsonObject> upload(final Set<FileUpload> file, String filePath);
+  Future<JsonObject> upload(final List<FileUpload> file, String filePath);
 
   /**
    * upload file to server
@@ -26,7 +27,7 @@ public interface FileService {
    * @param filePath path for uploaded file
    * @param handler
    */
-  Future<JsonObject> upload(final Set<FileUpload> file, String fileName, String filePath);
+  Future<JsonObject> upload(final List<FileUpload> file, String fileName, String filePath);
 
   /**
    * download file from server
