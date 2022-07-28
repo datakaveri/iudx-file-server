@@ -12,17 +12,16 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * The Auditing Verticle
+ *
  * <h1>Auditing Verticle</h1>
- * <p>
- * The Auditing Verticle implementation in the IUDX File Server exposes the
- * {@link iudx.file.server.auditing.AuditingService} over the Vert.x Event Bus.
- * </p>
+ *
+ * <p>The Auditing Verticle implementation in the IUDX File Server exposes the {@link
+ * iudx.file.server.auditing.AuditingService} over the Vert.x Event Bus.
  *
  * @version 1.0
  * @since 2021-11-23
  */
-
-public class AuditingVerticle extends AbstractVerticle{
+public class AuditingVerticle extends AbstractVerticle {
 
   private static final String AUDITING_SERVICE_ADDRESS = "iudx.file.auditing.service";
   private static final Logger LOGGER = LogManager.getLogger(AuditingVerticle.class);
@@ -34,6 +33,7 @@ public class AuditingVerticle extends AbstractVerticle{
   private String databaseName;
   private String databaseUserName;
   private String databasePassword;
+  private String databaseTableName;
   private int poolSize;
   private PgConnectOptions config;
   private ServiceBinder binder;
@@ -47,7 +47,6 @@ public class AuditingVerticle extends AbstractVerticle{
    *
    * @throws Exception which is a start up exception.
    */
-
   @Override
   public void start() throws Exception {
 
@@ -57,6 +56,7 @@ public class AuditingVerticle extends AbstractVerticle{
     databaseUserName = config().getString("auditingDatabaseUserName");
     databasePassword = config().getString("auditingDatabasePassword");
     poolSize = config().getInteger("auditingPoolSize");
+    databaseTableName = config().getString("auditingDatabaseTableName");
 
     JsonObject propObj = new JsonObject();
     propObj.put("auditingDatabaseIP", databaseIP);
@@ -65,11 +65,12 @@ public class AuditingVerticle extends AbstractVerticle{
     propObj.put("auditingDatabaseUserName", databaseUserName);
     propObj.put("auditingDatabasePassword", databasePassword);
     propObj.put("auditingPoolSize", poolSize);
+    propObj.put("auditingDatabaseTableName", databaseTableName);
 
     binder = new ServiceBinder(vertx);
     auditing = new AuditingServiceImpl(propObj, vertx);
-    consumer = binder.setAddress(AUDITING_SERVICE_ADDRESS)
-            .register(AuditingService.class, auditing);
+    consumer =
+        binder.setAddress(AUDITING_SERVICE_ADDRESS).register(AuditingService.class, auditing);
     LOGGER.info("Auditing Service Started");
   }
 

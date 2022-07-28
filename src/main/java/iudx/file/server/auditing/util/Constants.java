@@ -21,6 +21,10 @@ public class Constants {
   public static final String API = "api";
   public static final String RESOURCE_ID = "resourceID";
   public static final String PROVIDER_ID = "providerID";
+
+  public static final String RESPONSE_SIZE = "response_size";
+
+  public static final String  DATABASE_TABLE_NAME = "databaseTableName";
   public static final String WRITE_QUERY =
-          "INSERT INTO rsauditingtable (id,api,userid,epochtime,resourceid,isotime,providerid) VALUES ('$1','$2','$3',$4,'$5','$6','$7')";
+          "INSERT INTO $0 (id,api,userid,epochtime,resourceid,isotime,providerid,size) VALUES ('$1','$2','$3',$4,'$5','$6','$7',$8)";
 }
