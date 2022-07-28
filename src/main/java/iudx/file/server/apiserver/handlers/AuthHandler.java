@@ -46,6 +46,12 @@ public class AuthHandler implements Handler<RoutingContext> {
         .put(API_METHOD, method);
 
 
+    if (token == null) {
+      LOGGER.error("Authentication failed [no token]");
+      processUnauthorized(context, true);
+      return;
+    }
+
     String id = null;
     String fileName = null;
     if ("POST".equalsIgnoreCase(method)) {
@@ -60,16 +66,20 @@ public class AuthHandler implements Handler<RoutingContext> {
       }
     }
 
+    
+    if (fileName != null && fileName.toLowerCase().contains("sample")
+        && "GET".equalsIgnoreCase(method)) {
+      LOGGER.info("sampleFile : " + fileName);
+      context.next();
+      return;
+    }
+    
     LOGGER.info("fileName : " + fileName);
     LOGGER.info("id :"+id);
     JsonArray idArray = new JsonArray();
     idArray.add(id);
     JsonObject requestJson = new JsonObject().put("ids", idArray);
-    if (token == null) {
-      LOGGER.error("Authentication failed [no token]");
-      processUnauthorized(context, true);
-      return;
-    }
+ 
 
     authInfo.put("id", id);
     authenticator.tokenInterospect(requestJson, authInfo, handler -> {
