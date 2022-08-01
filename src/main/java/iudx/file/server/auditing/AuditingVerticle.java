@@ -34,6 +34,7 @@ public class AuditingVerticle extends AbstractVerticle{
   private String databaseName;
   private String databaseUserName;
   private String databasePassword;
+  private String databaseTableName;
   private int poolSize;
   private PgConnectOptions config;
   private ServiceBinder binder;
@@ -57,6 +58,7 @@ public class AuditingVerticle extends AbstractVerticle{
     databaseUserName = config().getString("auditingDatabaseUserName");
     databasePassword = config().getString("auditingDatabasePassword");
     poolSize = config().getInteger("auditingPoolSize");
+    databaseTableName = config().getString("auditingDatabaseTableName");
 
     JsonObject propObj = new JsonObject();
     propObj.put("auditingDatabaseIP", databaseIP);
@@ -65,6 +67,7 @@ public class AuditingVerticle extends AbstractVerticle{
     propObj.put("auditingDatabaseUserName", databaseUserName);
     propObj.put("auditingDatabasePassword", databasePassword);
     propObj.put("auditingPoolSize", poolSize);
+    propObj.put("auditingDatabaseTableName", databaseTableName);
 
     binder = new ServiceBinder(vertx);
     auditing = new AuditingServiceImpl(propObj, vertx);

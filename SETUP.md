@@ -100,11 +100,10 @@ In order to connect to the appropriate RabbitMQ instance, required information s
 ```
 
 ----
-
 ## Setting up ImmuDB for IUDX File Server
 - Refer to the docker files available [here](https://github.com/datakaveri/iudx-deployment/blob/master/Docker-Swarm-deployment/single-node/immudb) to setup ImmuDB.
-
-In order to connect to the appropriate ImmuDB database, required information such as auditingDatabaseIP,auditingDatabasePort etc. should be updated in the AuditingVerticle module available in [config-example.json](configs/config-example.json).
+- Refer [this](https://github.com/datakaveri/iudx-deployment/blob/master/Docker-Swarm-deployment/single-node/immudb/docker/immudb-config-generator/immudb-config-generator.py) to create table/user.
+- In order to connect to the appropriate ImmuDB database, required information such as auditingDatabaseIP,auditingDatabasePort etc. should be updated in the AuditingVerticle module available in [config-example.json](configs/config-example.json).
 
 **AuditingVerticle**
 ```
@@ -116,22 +115,23 @@ In order to connect to the appropriate ImmuDB database, required information suc
     "auditingDatabaseName": <database-name>,
     "auditingDatabaseUserName": <username-for-immudb>,
     "auditingDatabasePassword": <password-for-immudb>,
+    "auditingDatabaseTableName": <table-name-for-immudb>
     "auditingPoolSize": <pool-size>
 }
 ```
 
 **Auditing Table Schema**
 ```
-CREATE TABLE IF NOT EXISTS rsauditingtable
-(
-    id uuid NOT NULL,
-    api varchar NOT NULL,
-    userid varchar NOT NULL,
-    epochtime integer NOT NULL,
-    resourceid varchar NOT NULL,
-    isotime timestamp with timezone NOT NULL,
-    providerid varchar NOT NULL,
-    CONSTRAINT metering_pk PRIMARY KEY (id)
+CREATE TABLE IF NOT EXISTS rsaudit (
+    id VARCHAR[128] NOT NULL, 
+    api VARCHAR[128], 
+    userid VARCHAR[128],
+    epochtime INTEGER,
+    resourceid VARCHAR[200],
+    isotime VARCHAR[128],
+    providerid VARCHAR[128],
+    size INTEGER,
+    PRIMARY KEY id
 );
 ```
 
