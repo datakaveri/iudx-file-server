@@ -44,8 +44,7 @@
 			"databaseIP": "localhost",
 			"databasePort": 9200,
 			"databaseUser": "elastic",
-			"databasePassword": "elk@elastic.in",
-			"databaseUsed": ""
+			"databasePassword": "elk@elastic.in"
 		},
 		{
 			"id": "iudx.file.server.database.postgres.PostgresVerticle",
