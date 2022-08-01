@@ -7,9 +7,8 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
@@ -20,7 +19,6 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -36,7 +34,6 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.file.server.apiserver.service.impl.LocalStorageFileServiceImpl;
 import iudx.file.server.mocks.FileUploadMock;
-import net.bytebuddy.implementation.bytecode.assign.primitive.VoidAwareAssigner;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class LocalFileStorageTest {
@@ -74,10 +71,10 @@ public class LocalFileStorageTest {
     lenient().when(asyncResult.result()).thenReturn(new JsonObject().put("fileName", file.fileName()));
 
     LOGGER.debug(file.uploadedFileName());
-    Set<FileUpload> set = new HashSet<>();
-    set.add(file);
+    List<FileUpload> list = new ArrayList<>();
+    list.add(file);
 
-    Future<JsonObject> fut = fileService.upload(set, "mockFile.txt", "/abc");
+    Future<JsonObject> fut = fileService.upload(list, "mockFile.txt", "/abc");
     fut.onComplete(handler -> {
 
       JsonObject res = handler.result();
@@ -112,10 +109,10 @@ public class LocalFileStorageTest {
     lenient().when(asyncResult.failed()).thenReturn(true);
 
     LOGGER.debug(file.uploadedFileName());
-    Set<FileUpload> set = new HashSet<>();
-    set.add(file);
+    List<FileUpload> list = new ArrayList<>();
+    list.add(file);
 
-    Future<JsonObject> fut = fileService.upload(set, "mockFile.txt", "/abc");
+    Future<JsonObject> fut = fileService.upload(list, "mockFile.txt", "/abc");
     fut.onComplete(handler -> {
       assertTrue(handler.failed());
       verify(fs, times(1)).move(any(), any(), any(), any());

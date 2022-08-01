@@ -8,34 +8,32 @@
 	<name>iudx-file-server</name>
 
 	<properties>
-		<vertx.version>4.0.3</vertx.version>
+		<vertx.version>4.3.2</vertx.version>
 		<openjdk.version>11</openjdk.version>
 		<hazelcast.version>4.0.2</hazelcast.version>
-		<micrometer.version>1.6.2</micrometer.version>
-		<curator.version>5.1.0</curator.version>
+		<micrometer.version>1.9.2</micrometer.version>
+		<curator.version>5.3.0</curator.version>
 		<maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
-		<junit-jupiter-api.version>5.7.2</junit-jupiter-api.version>
-		<junit-jupiter-params.version>5.7.2</junit-jupiter-params.version>
-		<junit-jupiter-engine.version>5.7.2</junit-jupiter-engine.version>
-		<testcontainers.version>1.15.3</testcontainers.version>
-		<testcontainer-elastic.version>1.15.3</testcontainer-elastic.version>
-		<testcontainer-postgres.version>1.16.3</testcontainer-postgres.version>
+		<junit-jupiter-api.version>5.8.2</junit-jupiter-api.version>
+		<junit-jupiter-params.version>5.8.2</junit-jupiter-params.version>
+		<junit-jupiter-engine.version>5.8.2</junit-jupiter-engine.version>
+		<testcontainers.version>1.17.3</testcontainers.version>
+		<testcontainer-elastic.version>1.17.3</testcontainer-elastic.version>
+		<testcontainer-postgres.version>1.17.3</testcontainer-postgres.version>
 		<log4j2.version>2.17.1</log4j2.version>
 		<disruptor.version>3.4.4</disruptor.version>
-		<junit-jupiter.version>1.15.3</junit-jupiter.version>
+		<junit-jupiter.version>1.17.3</junit-jupiter.version>
 		<elasticsearch-rest-client.version>7.12.1</elasticsearch-rest-client.version>
 		<elasticsearch-rest-high-level-client.version>7.12.1</elasticsearch-rest-high-level-client.version>
-		<jacoco-maven-plugin.version>0.8.7</jacoco-maven-plugin.version>
-		<maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
-		<checkstyle.version>8.42</checkstyle.version>
-		<maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
-		<maven-javadoc-plugin.version>3.2.0</maven-javadoc-plugin.version>
+		<jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
+		<checkstyle.version>10.3.1</checkstyle.version>
+		<maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
+		<maven-javadoc-plugin.version>3.4.0</maven-javadoc-plugin.version>
 		<exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
-		<maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
-		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+		<maven-surefire-plugin.version>3.0.0-M7</maven-surefire-plugin.version>
+		<maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
 		<maven-pmd-plugin.version>3.14.0</maven-pmd-plugin.version>
-		<maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
-		<maven-surefire-report-plugin.version>3.0.0-M5</maven-surefire-report-plugin.version>
+		<maven-surefire-report-plugin.version>3.0.0-M7</maven-surefire-report-plugin.version>
 
 		<exec.mainClass>iudx.file.server.deploy.Deployer</exec.mainClass>
 		<exec.mainClassDev>iudx.file.server.deploy.DeployerDev</exec.mainClassDev>

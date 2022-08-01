@@ -295,7 +295,7 @@ public class FileServerVerticle extends AbstractVerticle {
     StringBuilder uploadPath = new StringBuilder();
     uploadPath.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
 
-    Set<FileUpload> files = routingContext.fileUploads();
+    List<FileUpload> files = routingContext.fileUploads();
     if (!isExternalStorage && (files.size() == 0 || !isValidFileContentType(files))) {
       handleResponse(response, HttpStatusCode.BAD_REQUEST);
       String message = new RestResponse.Builder()
@@ -342,7 +342,7 @@ public class FileServerVerticle extends AbstractVerticle {
    * @param filePath
    * @param id
    */
-  private void sampleFileUpload(HttpServerResponse response, Set<FileUpload> files,
+  private void sampleFileUpload(HttpServerResponse response, List<FileUpload> files,
       String fileName,
       String filePath, String id, JsonObject auditParams) {
 
@@ -376,7 +376,7 @@ public class FileServerVerticle extends AbstractVerticle {
    * @param id
    */
   private void archiveFileUpload(HttpServerResponse response, MultiMap params,
-      Set<FileUpload> files,
+      List<FileUpload> files,
       String filePath, String id, JsonObject auditParams) {
     JsonObject uploadJson = new JsonObject();
     JsonObject responseJson = new JsonObject();
@@ -790,7 +790,7 @@ public class FileServerVerticle extends AbstractVerticle {
   }
 
 
-  private boolean isValidFileContentType(Set<FileUpload> files) {
+  private boolean isValidFileContentType(List<FileUpload> files) {
     for (FileUpload file : files) {
       LOGGER.debug(file.contentType());
       if (!contentTypeValidator.isValid(file.contentType())) {
