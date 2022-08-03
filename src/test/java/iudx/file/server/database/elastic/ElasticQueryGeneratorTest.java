@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -16,6 +17,7 @@ import iudx.file.server.common.QueryType;
 import iudx.file.server.database.elasticdb.elastic.ElasticQueryGenerator;
 import iudx.file.server.database.elasticdb.elastic.ListQueryParser;
 import iudx.file.server.database.elasticdb.elastic.QueryParser;
+import iudx.file.server.database.elasticdb.utilities.ResponseBuilder;
 
 @ExtendWith(VertxExtension.class)
 public class ElasticQueryGeneratorTest {
@@ -169,6 +171,32 @@ public class ElasticQueryGeneratorTest {
     String query=qp.parse(boolQuery, new JsonObject().put(ID, "adasd/asdasd/asdasd/asd/asdasd")).toString();
     assertTrue(query.contains("id"));
     
+  }
+  
+  @Test
+  public void testResponseBuilder(VertxTestContext testContext) {
+    JsonObject error=new JsonObject();
+    error.put("status", 404);
+    error.put("error", new JsonObject().put("type", "index_not_found_exception"));
+    
+    ResponseBuilder responseBuilder=new ResponseBuilder("success");
+    responseBuilder.setMessage(error);
+    
+    assertEquals("Invalid resource id", responseBuilder.getResponse().getString("errorMessage"));
+    testContext.completeNow();
+  }
+  
+  @Test
+  public void testResponseBuilderAlt(VertxTestContext testContext) {
+    JsonObject error=new JsonObject();
+    error.put("status", 404);
+    error.put("error", new JsonObject().put("root_cause", new JsonArray().add(new JsonObject().put("reason", "backend connect failure"))));
+    
+    ResponseBuilder responseBuilder=new ResponseBuilder("success");
+    responseBuilder.setMessage(error);
+    
+    assertEquals("backend connect failure", responseBuilder.getResponse().getString("errorMessage"));
+    testContext.completeNow();
   }
 
 }

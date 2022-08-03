@@ -131,15 +131,6 @@ public class DatabaseServiceImpl implements DatabaseService {
     return this;
   }
 
-
-  public boolean isResourceLevelId(List<String> id) {
-    return id.size() >= 5;
-  }
-
-  public boolean isResourceLevelFileId(List<String> id) {
-    return id.size() >= 6;
-  }
-
   public int getOrDefault(JsonObject json, String key, int def) {
     if (json.containsKey(key)) {
       int value = Integer.parseInt(json.getString(key));

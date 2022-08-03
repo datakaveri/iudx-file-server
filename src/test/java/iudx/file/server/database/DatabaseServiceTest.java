@@ -108,6 +108,16 @@ public class DatabaseServiceTest {
       testContext.completeNow();
     }
   }
+  
+  @Test
+  @Description("exception for incomplete config")
+  public void testObjectCreation4IncompleteConfi(Vertx vertx,VertxTestContext testContext) {
+    JsonObject config=dbConfig.copy();
+    config.remove("file-metadata-index");
+    assertThrows(RuntimeException.class,()-> new DatabaseServiceImpl(config));
+    testContext.completeNow();
+  }
+  
 
   @Test
   @Order(1)
