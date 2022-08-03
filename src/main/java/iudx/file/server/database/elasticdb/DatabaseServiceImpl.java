@@ -19,8 +19,14 @@ public class DatabaseServiceImpl implements DatabaseService {
 
   private static final Logger LOGGER = LogManager.getLogger(DatabaseServiceImpl.class);
   private final ElasticClient client;
+  private final String fileMetadataIndex;
 
   public DatabaseServiceImpl(JsonObject config) {
+    this.fileMetadataIndex=config.getString("file-metadata-index");
+    if(fileMetadataIndex==null) {
+      LOGGER.fatal("file metadata index is not passed in configs");
+      throw new RuntimeException("requires file-metadata index");
+    }
     String ip = config.getString("databaseIP");
     int port = config.getInteger("databasePort");
     String username = config.getString("databaseUser");
@@ -48,10 +54,9 @@ public class DatabaseServiceImpl implements DatabaseService {
     elasticQuery.put("query", boolQuery);
 
     LOGGER.debug(boolQuery);
-    String index = getIndex(apiQuery);
-    LOGGER.debug(index);
-    final String searchIndexUrl = index.concat(SEARCH_REQ_PARAM);
-    final String countIndexUrl = index.concat(COUNT_REQ_PARAM);
+    LOGGER.debug(fileMetadataIndex);
+    final String searchIndexUrl = fileMetadataIndex.concat(SEARCH_REQ_PARAM);
+    final String countIndexUrl = fileMetadataIndex.concat(COUNT_REQ_PARAM);
 
     client.countAsync(countIndexUrl, elasticQuery.toString(), countHandler -> {
       if (countHandler.succeeded()) {
@@ -87,9 +92,8 @@ public class DatabaseServiceImpl implements DatabaseService {
       handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
       return this;
     }
-    String index = getIndex(document);
-    LOGGER.debug(index);
-    client.insertAsync(index, document, insertHandler -> {
+    LOGGER.debug(fileMetadataIndex);
+    client.insertAsync(fileMetadataIndex, document, insertHandler -> {
       if (insertHandler.succeeded()) {
         handler.handle(Future.succeededFuture(insertHandler.result()));
       } else {
@@ -115,10 +119,9 @@ public class DatabaseServiceImpl implements DatabaseService {
     elasticQuery.put("query", deleteQuery);
     LOGGER.debug("delete query :: " + elasticQuery);
 
-    String index = getIndexFromFileId(id);
 
-    LOGGER.debug("index : " + index);
-    client.deleteAsync(index, id, elasticQuery.toString(), deleteHandler -> {
+    LOGGER.debug("index : " + fileMetadataIndex);
+    client.deleteAsync(fileMetadataIndex, id, elasticQuery.toString(), deleteHandler -> {
       if (deleteHandler.succeeded()) {
         handler.handle(Future.succeededFuture(deleteHandler.result()));
       } else {
@@ -126,36 +129,6 @@ public class DatabaseServiceImpl implements DatabaseService {
       }
     });
     return this;
-  }
-
-  private String getIndex(JsonObject requestJson) {
-    String id = requestJson.getString(ID);
-    return getIndexFromId(id);
-  }
-
-
-  private String getIndexFromId(String id) {
-    List<String> splitId = new LinkedList<>(Arrays.asList(id.split("/")));
-    if (isResourceLevelId(splitId)) { // only Resource level id needs to remove last element, since
-                                      // all items will be stored at Group level
-      splitId.remove(splitId.size() - 1);
-    }
-    String index = String.join("__", splitId);
-    return index;
-  }
-
-  private String getIndexFromFileId(String id) {
-    List<String> splitId = new LinkedList<>(Arrays.asList(id.split("/")));
-    if (isResourceLevelFileId(splitId)) { // only Resource level id needs to remove last element,
-                                          // since
-      // all items will be stored at Group level
-      splitId.remove(splitId.size() - 1);
-      splitId.remove(splitId.size() - 1);
-    } else {
-      splitId.remove(splitId.size() - 1);
-    }
-    String index = String.join("__", splitId);
-    return index;
   }
 
 
