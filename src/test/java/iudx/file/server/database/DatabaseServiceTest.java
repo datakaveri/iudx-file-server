@@ -48,8 +48,7 @@ public class DatabaseServiceTest {
   private static RestClient client;
   private static ElasticsearchContainer elasticContainer;
   public static String CONTAINER = "docker.elastic.co/elasticsearch/elasticsearch:7.12.1";
-  public static String index =
-      "iisc.ac.in__89a36273d77dac4cf38114fca1bbe64392547f86__file.iudx.io__surat-itms-realtime-information";
+  public static String index = "file-metadata";
 
   private static DatabaseService dbService;
 
@@ -75,6 +74,7 @@ public class DatabaseServiceTest {
     dbConfig.put("databasePort", 9200);
     dbConfig.put("databaseUser", "elastic");
     dbConfig.put("databasePassword", "elk@elastic.in");
+    dbConfig.put("file-metadata-index", index);
 
     // dbService = new DatabaseServiceImpl(dbConfig);
 
@@ -108,6 +108,16 @@ public class DatabaseServiceTest {
       testContext.completeNow();
     }
   }
+  
+  @Test
+  @Description("exception for incomplete config")
+  public void testObjectCreation4IncompleteConfi(Vertx vertx,VertxTestContext testContext) {
+    JsonObject config=dbConfig.copy();
+    config.remove("file-metadata-index");
+    assertThrows(RuntimeException.class,()-> new DatabaseServiceImpl(config));
+    testContext.completeNow();
+  }
+  
 
   @Test
   @Order(1)
@@ -194,7 +204,8 @@ public class DatabaseServiceTest {
     JsonObject responseJson = new JsonObject(responseString);
 
     JsonArray records = responseJson.getJsonObject("hits").getJsonArray("hits");
-    assertEquals(4, records.size());
+    System.out.println(records);
+    assertEquals(5, records.size());
     assertTrue(records.getJsonObject(0).getJsonObject("_source").containsKey("fileId"));
 
     testContext.completeNow();
