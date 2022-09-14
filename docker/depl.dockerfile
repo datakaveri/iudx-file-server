@@ -32,7 +32,7 @@ EXPOSE 8080 8443
 # Creating a non-root user
 RUN useradd -r -u 1001 -g root file-user
 # Create storage directory and owned by file-user
-RUN mkdir -p /usr/share/app/storage/temp_dir &&  mkdir -p /usr/share/app/storage/upload_dir  && chown -R file-user /usr/share/app/storage/
+RUN mkdir -p /usr/share/app/storage/temp-dir &&  mkdir -p /usr/share/app/storage/upload-dir  && chown -R file-user /usr/share/app/storage/
 # hint for volume mount 
 VOLUME /usr/share/app/storage
 # Setting non-root user to use when container starts
