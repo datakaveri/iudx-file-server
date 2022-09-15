@@ -1,6 +1,7 @@
 package iudx.file.server.database;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
@@ -47,7 +48,7 @@ public class DatabaseServiceTest {
   private static final Logger LOGGER = LogManager.getLogger(DatabaseServiceTest.class);
   private static RestClient client;
   private static ElasticsearchContainer elasticContainer;
-  public static String CONTAINER = "docker.elastic.co/elasticsearch/elasticsearch:7.12.1";
+  public static String CONTAINER = "docker.elastic.co/elasticsearch/elasticsearch:8.3.3";
   public static String index = "file-metadata";
 
   private static DatabaseService dbService;
@@ -96,6 +97,8 @@ public class DatabaseServiceTest {
           .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder
               .setDefaultCredentialsProvider(credentialsProvider))
           .build();
+
+      LOGGER.info("client running :" + client.isRunning());
 
       // create index in container
       Request indexCreationRequest = new Request("PUT", index);

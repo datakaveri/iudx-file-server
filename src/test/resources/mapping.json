@@ -23,8 +23,8 @@
 				"type": "date_range"
 			},
 			"location": {
-				"type": "geo_shape",
-				"strategy": "recursive"
+				"type": "geo_shape"
+				
 			}
 		}
 	}
