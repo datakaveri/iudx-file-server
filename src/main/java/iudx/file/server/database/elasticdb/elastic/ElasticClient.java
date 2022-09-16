@@ -1,6 +1,15 @@
 package iudx.file.server.database.elasticdb.elastic;
 
-import static iudx.file.server.database.elasticdb.utilities.Constants.*;
+import static iudx.file.server.database.elasticdb.utilities.Constants.BAD_PARAMETERS;
+import static iudx.file.server.database.elasticdb.utilities.Constants.COUNT;
+import static iudx.file.server.database.elasticdb.utilities.Constants.DB_ERROR_2XX;
+import static iudx.file.server.database.elasticdb.utilities.Constants.DOCS_KEY;
+import static iudx.file.server.database.elasticdb.utilities.Constants.EMPTY_RESPONSE;
+import static iudx.file.server.database.elasticdb.utilities.Constants.FAILED;
+import static iudx.file.server.database.elasticdb.utilities.Constants.FILTER_PATH;
+import static iudx.file.server.database.elasticdb.utilities.Constants.HITS;
+import static iudx.file.server.database.elasticdb.utilities.Constants.SOURCE_FILTER_KEY;
+import static iudx.file.server.database.elasticdb.utilities.Constants.SUCCESS;
 import java.io.IOException;
 import java.util.UUID;
 import org.apache.http.HttpHost;
