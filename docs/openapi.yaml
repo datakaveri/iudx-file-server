@@ -310,7 +310,7 @@ paths:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
           description: 'Unauthorized'
 
-  /ngsi-ld/v1/list:
+  /iudx/v1/list:
     get:
       tags:
         - Discovery
