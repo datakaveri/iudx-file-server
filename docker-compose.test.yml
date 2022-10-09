@@ -39,4 +39,4 @@ services:
     expose: 
       - "2181"
     networks:
-      - di-net
+      - fs-net
