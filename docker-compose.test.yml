@@ -31,3 +31,12 @@ services:
       - "8443:8443"
     networks:
       - fs-net
+    depends_on:
+      - "zookeeper"  
+  
+  zookeeper:
+    image: zookeeper:latest
+    expose: 
+      - "2181"
+    networks:
+      - di-net
