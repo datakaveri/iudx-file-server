@@ -1,9 +1,9 @@
-[![Build Status](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins.iudx.io%2Fjob%2Fiudx%2520file-server%2520%28master%29%2520pipeline%2F)](https://jenkins.iudx.io/job/iudx%20file-server%20(master)%20pipeline/lastBuild/)
-[![Jenkins Coverage](https://img.shields.io/jenkins/coverage/jacoco?jobUrl=https%3A%2F%2Fjenkins.iudx.io%2Fjob%2Fiudx%2520file-server%2520%28master%29%2520pipeline%2F)](https://jenkins.iudx.io/job/iudx%20file-server%20(master)%20pipeline/lastBuild/jacoco/)
-[![Unit Tests](https://img.shields.io/jenkins/tests?jobUrl=https%3A%2F%2Fjenkins.iudx.io%2Fjob%2Fiudx%2520file-server%2520%28master%29%2520pipeline%2F)](https://jenkins.iudx.io/job/iudx%20file-server%20(master)%20pipeline/lastBuild/testReport/)
-[![Performance Tests](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins.iudx.io%2Fjob%2Fiudx%2520file-server%2520%28master%29%2520pipeline%2F&label=performance%20tests)](https://jenkins.iudx.io/job/iudx%20file-server%20(master)%20pipeline/lastBuild/performance/)
-[![Security Tests](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins.iudx.io%2Fjob%2Fiudx%2520file-server%2520%28master%29%2520pipeline%2F&label=security%20tests)](https://jenkins.iudx.io/job/iudx%20file-server%20(master)%20pipeline/lastBuild/zap/)
-[![Integration Tests](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins.iudx.io%2Fjob%2Fiudx%2520file-server%2520%28master%29%2520pipeline%2F&label=integration%20tests)](https://jenkins.iudx.io/job/iudx%20file-server%20(master)%20pipeline/HTML_20Report/)
+[![Build Status](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins.iudx.io%2Fjob%2Fiudx%2520file-server%2520%28v4.0.0%29%2520pipeline%2F)](https://jenkins.iudx.io/job/iudx%20file-server%20(v4.0.0)%20pipeline/lastBuild/)
+[![Jenkins Coverage](https://img.shields.io/jenkins/coverage/jacoco?jobUrl=https%3A%2F%2Fjenkins.iudx.io%2Fjob%2Fiudx%2520file-server%2520%28v4.0.0%29%2520pipeline%2F)](https://jenkins.iudx.io/job/iudx%20file-server%20(v4.0.0)%20pipeline/lastBuild/jacoco/)
+[![Unit Tests](https://img.shields.io/jenkins/tests?jobUrl=https%3A%2F%2Fjenkins.iudx.io%2Fjob%2Fiudx%2520file-server%2520%28v4.0.0%29%2520pipeline%2F)](https://jenkins.iudx.io/job/iudx%20file-server%20(v4.0.0)%20pipeline/lastBuild/testReport/)
+[![Performance Tests](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins.iudx.io%2Fjob%2Fiudx%2520file-server%2520%28v4.0.0%29%2520pipeline%2F&label=performance%20tests)](https://jenkins.iudx.io/job/iudx%20file-server%20(v4.0.0)%20pipeline/lastBuild/performance/)
+[![Security Tests](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins.iudx.io%2Fjob%2Fiudx%2520file-server%2520%28v4.0.0%29%2520pipeline%2F&label=security%20tests)](https://jenkins.iudx.io/job/iudx%20file-server%20(v4.0.0)%20pipeline/lastBuild/zap/)
+[![Integration Tests](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins.iudx.io%2Fjob%2Fiudx%2520file-server%2520%28v4.0.0%29%2520pipeline%2F&label=integration%20tests)](https://jenkins.iudx.io/job/iudx%20file-server%20(v4.0.0)%20pipeline/HTML_20Report/)
 
 ![IUDX](./docs/iudx.png)
 
@@ -88,8 +88,8 @@ Find the installations of the above along with the configurations to modify the 
          ```
    2. Clustered setup with all verticles running in a single container: 
       - This needs following things:
-         - Docker swarm and overlay network having a name 'overlay-net'. Refer [here](https://github.com/datakaveri/iudx-deployment/tree/master/docs/swarm-setup.md)
-         - Zookeeper running in 'overlay-net' named overlay network. Refer [here](https://github.com/datakaveri/iudx-deployment/tree/master/single-node/zookeeper)
+         - Docker swarm and overlay network having a name 'overlay-net'. Refer [here](https://github.com/datakaveri/iudx-deployment/tree/v4.0.0/docs/swarm-setup.md)
+         - Zookeeper running in 'overlay-net' named overlay network. Refer [here](https://github.com/datakaveri/iudx-deployment/tree/v4.0.0/single-node/zookeeper)
       - This makes use of iudx/fs-depl:latest image and config-depl.json present at `secrets/all-verticles-configs/config-depl.json`
          ```sh 
          # Command to bring up the clustered one file-server container
