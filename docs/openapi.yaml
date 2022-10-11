@@ -92,7 +92,7 @@ paths:
                   type: string
                   description: Specifies the start time for the data within the document (`ISO8601`) `*not required for sample file upload`
 
-                endTime:
+                endtime:
                   type: string
                   description: Specifies the end time for the data within the document (`ISO8601`) `*not required for sample file upload`
                 geometry:
@@ -249,7 +249,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: endTime
+        - name: endtime
           in: query
           description: end time in `ISO8601`
           required: true
@@ -374,7 +374,7 @@ components:
         title: Success
         results: [{
           "fileId": "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta/sample.txt"
-        }]
+          }]
     standardInvalidTokenErrorResponse:
       title: standardInvalidTokenErrorResponse
       properties:
@@ -426,7 +426,7 @@ components:
             "endTime":"2020-06-10T14:20:00Z"
           },
           "fileID":"suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta/sample.txt"
-        }]
+          }]
         limit: 5000
         offset: 0
         totalHits: 9091
