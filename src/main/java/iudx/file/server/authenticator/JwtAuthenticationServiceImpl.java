@@ -1,24 +1,16 @@
 package iudx.file.server.authenticator;
 
 import static iudx.file.server.authenticator.utilities.Constants.CACHE_TIMEOUT;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.concurrent.TimeUnit;
-import static iudx.file.server.authenticator.utilities.Constants.*;
-
+import static iudx.file.server.authenticator.utilities.Constants.JSON_EXPIRY;
+import static iudx.file.server.authenticator.utilities.Constants.JSON_IID;
+import static iudx.file.server.authenticator.utilities.Constants.JSON_USERID;
+import static iudx.file.server.authenticator.utilities.Constants.OPEN_ENDPOINTS;
+import static iudx.file.server.authenticator.utilities.Constants.QUERY_ENDPOINTS;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
-
-import io.vertx.core.buffer.Buffer;
-import io.vertx.ext.web.client.HttpResponse;
-import io.vertx.ext.web.client.WebClient;
-import io.vertx.ext.web.client.WebClientOptions;
-import io.vertx.ext.web.client.predicate.ResponsePredicate;
-import iudx.file.server.authenticator.utilities.Constants;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,15 +21,21 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.authentication.TokenCredentials;
 import io.vertx.ext.auth.jwt.JWTAuth;
+import io.vertx.ext.web.client.HttpResponse;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
+import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import iudx.file.server.authenticator.authorization.Api;
 import iudx.file.server.authenticator.authorization.AuthorizationContextFactory;
 import iudx.file.server.authenticator.authorization.AuthorizationRequest;
 import iudx.file.server.authenticator.authorization.AuthorizationStrategy;
 import iudx.file.server.authenticator.authorization.JwtAuthorization;
 import iudx.file.server.authenticator.authorization.Method;
+import iudx.file.server.authenticator.utilities.Constants;
 import iudx.file.server.authenticator.utilities.JwtData;
 import iudx.file.server.cache.CacheService;
 import iudx.file.server.cache.cacheImpl.CacheType;
@@ -153,6 +151,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
         handler.handle(Future.succeededFuture(completeHandler.result()));
       } else {
         LOGGER.error("error : " + completeHandler.cause());
+        LOGGER.error("error : " + completeHandler);
         handler.handle(Future.failedFuture(completeHandler.cause().getMessage()));
       }
     });
