@@ -1,18 +1,28 @@
 package iudx.file.server.apiserver.validations;
 
-import static iudx.file.server.apiserver.utilities.Constants.*;
+import static iudx.file.server.apiserver.utilities.Constants.PARAM_COORDINATES;
+import static iudx.file.server.apiserver.utilities.Constants.PARAM_END_TIME;
+import static iudx.file.server.apiserver.utilities.Constants.PARAM_END_TIME_LOWERCASE;
+import static iudx.file.server.apiserver.utilities.Constants.PARAM_GEOMETRY;
+import static iudx.file.server.apiserver.utilities.Constants.PARAM_GEOPROPERTY;
+import static iudx.file.server.apiserver.utilities.Constants.PARAM_GEOREL;
+import static iudx.file.server.apiserver.utilities.Constants.PARAM_ID;
+import static iudx.file.server.apiserver.utilities.Constants.PARAM_START_TIME;
+import static iudx.file.server.apiserver.utilities.Constants.PARAM_TIME;
+import static iudx.file.server.apiserver.utilities.Constants.PARAM_TIME_REL;
+import static iudx.file.server.common.Constants.PARAM_LIMIT;
+import static iudx.file.server.common.Constants.PARAM_OFFSET;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
-
-import io.vertx.core.json.JsonObject;
-import iudx.file.server.apiserver.response.ResponseUrn;
+import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import java.util.Set;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
+import io.vertx.core.json.JsonObject;
+import iudx.file.server.apiserver.response.ResponseUrn;
 
 public class RequestValidator {
 
@@ -31,6 +41,7 @@ public class RequestValidator {
     validParams.add(PARAM_COORDINATES);
     validParams.add(PARAM_OFFSET);
     validParams.add(PARAM_LIMIT);
+    validParams.add(PARAM_END_TIME_LOWERCASE);
 
   }
 

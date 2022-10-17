@@ -44,6 +44,7 @@ public class Constants extends iudx.file.server.common.Constants{
   public static final String PARAM_START_TIME = "startTime";
   public static final String PARAM_TIME = "time";
   public static final String PARAM_END_TIME = "endTime";
+  public static final String PARAM_END_TIME_LOWERCASE = "endtime";
   public static final String PARAM_FILE_ID = "file-id";
   public static final String PARAM_TIME_REL = "timerel";
   public static final String PARAM_GEOREL="georel";
