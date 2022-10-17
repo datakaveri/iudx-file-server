@@ -112,8 +112,8 @@ pipeline {
           steps {
             script {
               docker.withRegistry( registryUri, registryCredential ) {
-                devImage.push("4.0-alpha-${env.GIT_HASH}")
-                deplImage.push("4.0-alpha-${env.GIT_HASH}")
+                devImage.push("4.5.0-alpha-${env.GIT_HASH}")
+                deplImage.push("4.5.0-alpha-${env.GIT_HASH}")
               }
             }
           }
@@ -121,7 +121,7 @@ pipeline {
         stage('Docker Swarm deployment') {
           steps {
             script {
-              sh "ssh azureuser@docker-swarm 'docker service update file-server_file-server --image ghcr.io/datakaveri/fs-depl:4.0-alpha-${env.GIT_HASH}'"
+              sh "ssh azureuser@docker-swarm 'docker service update file-server_file-server --image ghcr.io/datakaveri/fs-depl:4.5.0-alpha-${env.GIT_HASH}'"
               sh 'sleep 10'
             }
           }
@@ -131,27 +131,27 @@ pipeline {
             }
           }          
         }
-        // stage('Integration test on swarm deployment') {
-        //   steps {
-        //     node('master') {
-        //       script{
-        //         sh 'newman run /var/lib/jenkins/iudx/fs/Newman/iudx-file-server-api.Release-v3.5.postman_collection.json -e /home/ubuntu/configs/cd/fs-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/fs/Newman/report/cd-report.html --reporter-htmlextra-skipSensitiveData'
-        //       }
-        //     }
-        //   }
-        //   post{
-        //     always{
-        //       node('master') {
-        //         script{
-        //           publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/fs/Newman/report/', reportFiles: 'cd-report.html', reportTitles: '', reportName: 'Docker-Swarm Integration Test Report'])
-        //         }
-        //       }
-        //     }
-        //     failure{
-        //       error "Test failure. Stopping pipeline execution!"
-        //     }
-        //   }
-        // }
+        stage('Integration test on swarm deployment') {
+          steps {
+            node('built-in') {
+              script{
+                sh 'newman run /var/lib/jenkins/iudx/fs/Newman/iudx-file-server-api.Release-v4.0.postman_collection.json -e /home/ubuntu/configs/cd/fs-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/fs/Newman/report/cd-report.html --reporter-htmlextra-skipSensitiveData'
+              }
+            }
+          }
+          post{
+            always{
+              node('built-in') {
+                script{
+                  publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/fs/Newman/report/', reportFiles: 'cd-report.html', reportTitles: '', reportName: 'Docker-Swarm Integration Test Report'])
+                }
+              }
+            }
+            failure{
+              error "Test failure. Stopping pipeline execution!"
+            }
+          }
+        }
       }
     }
   }
