@@ -27,4 +27,12 @@ public class Constants {
   public static final String  DATABASE_TABLE_NAME = "databaseTableName";
   public static final String WRITE_QUERY =
           "INSERT INTO $0 (id,api,userid,epochtime,resourceid,isotime,providerid,size) VALUES ('$1','$2','$3',$4,'$5','$6','$7',$8)";
+  public static final String ORIGIN_SERVER = "file-server";
+  public static final String ORIGIN = "origin";
+  public static final String PRIMARY_KEY= "primaryKey";
+  public static final String EPOCH_TIME = "epochTime";
+  public static final String ISO_TIME = "isoTime";
+  public static final String EXCHANGE_NAME = "auditing";
+  public static final String ROUTING_KEY = "##";
+
 }

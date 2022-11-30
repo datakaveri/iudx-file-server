@@ -93,7 +93,7 @@ public class DataBrokerVerticle extends AbstractVerticle {
 
         consumer = binder
             .setAddress(DATABROKER_SERVICE_ADDRESS)
-            .register(DataBrokerService.class, new DataBrokerServiceImpl());
+            .register(DataBrokerService.class, new DataBrokerServiceImpl(client));
 
         startRevokedClientListener(cacheService);
       } else {

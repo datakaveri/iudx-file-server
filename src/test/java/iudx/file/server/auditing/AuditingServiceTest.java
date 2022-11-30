@@ -1,21 +1,12 @@
 package iudx.file.server.auditing;
 
-import static iudx.file.server.auditing.util.Constants.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.pgclient.PgPool;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.SqlConnection;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import iudx.file.server.databroker.DataBrokerService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,135 +15,75 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+
+import static iudx.file.server.auditing.util.Constants.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
-
 public class AuditingServiceTest {
+  private static Vertx vertxObj;
+  private static JsonObject dbConfig;
 
+  @BeforeAll
+  @DisplayName("Deploying Verticle")
+  static void startVertex(Vertx vertx, VertxTestContext vertxTestContext) {
+    vertxObj = vertx;
+    dbConfig = new JsonObject();
+    dbConfig.put("auditingDatabaseIP", "localhost");
+    dbConfig.put("auditingDatabasePort", 123);
+    dbConfig.put("auditingDatabaseName", "auditing");
+    dbConfig.put("auditingDatabaseUserName", "immudb");
+    dbConfig.put("auditingDatabasePassword", "");
+    dbConfig.put("auditingPoolSize", 24);
+    dbConfig.put("auditingDatabaseTableName", "tableName");
+    AuditingService auditingService = new AuditingServiceImpl(dbConfig, vertxObj);
+    vertxTestContext.completeNow();
+  }
 
-    private static Vertx vertxObj;
-    private static JsonObject dbConfig;
-    private static JsonObject dummyJSON;
+  @Test
+  @DisplayName("Testing Write Query Successful")
+  void writeDataSuccessful(VertxTestContext vertxTestContext) {
+    JsonObject request = new JsonObject();
+    ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+    long time = zst.toInstant().toEpochMilli();
+    String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
+    request.put(EPOCH_TIME, time);
+    request.put(ISO_TIME, isoTime);
+    request.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
+    request.put(ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
+    request.put(API, "/ngsi-ld/v1/subscription");
+    request.put(RESPONSE_SIZE, 12);
+    AuditingServiceImpl auditingService = new AuditingServiceImpl(dbConfig, vertxObj);
 
+    AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+    AuditingServiceImpl.rmqService = mock(DataBrokerService.class);
 
-    @BeforeAll
-    @DisplayName("Deploying Verticle")
-    static void startVertex(Vertx vertx, VertxTestContext vertxTestContext) {
-        vertxObj = vertx;
-        dbConfig = new JsonObject();
-        dbConfig.put("auditingDatabaseIP", "localhost");
-        dbConfig.put("auditingDatabasePort", 123);
-        dbConfig.put("auditingDatabaseName", "auditing");
-        dbConfig.put("auditingDatabaseUserName", "immudb");
-        dbConfig.put("auditingDatabasePassword", "");
-        dbConfig.put("auditingPoolSize", 24);
-        dbConfig.put("auditingDatabaseTableName","tableName");
-        AuditingService auditingService = new AuditingServiceImpl(dbConfig, vertxObj);
-        vertxTestContext.completeNow();
-    }
-
-    private JsonObject writeRequest() {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject
-            .put(RESPONSE_SIZE,0)
-            .put(API, "/ngsi-ld/v1/temporal/entities")
-            .put(USER_ID, "pranav-testing-stuff")
-            .put(PROVIDER_ID, "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86")
-            .put(RESOURCE_ID,
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta");
-        return jsonObject;
-    }
-
-    @DisplayName("Test query containing error in executeWriteQuery")
-    @Test
-    public void testQueryErrorInExecuteWriteQuery(VertxTestContext vertxTestContext) {
-        dummyJSON = new JsonObject();
-        dummyJSON.put("username", "ABC");
-        dummyJSON.put("password", "ABC");
-
-        AuditingServiceImpl auditingService = new AuditingServiceImpl(dbConfig, vertxObj);
-        AuditingService res = auditingService.executeWriteQuery(dummyJSON, AsyncResult::succeeded);
-        assertNull(res);
-        vertxTestContext.completeNow();
-    }
-
-
-    @DisplayName("Test executeWriteQuery Success")
-    @Test
-    public void testExecuteWriteQuerySuccess(VertxTestContext vertxTestContext) {
-
-        JsonObject request = writeRequest();
-        AuditingServiceImpl auditingServiceImpl = new AuditingServiceImpl(dbConfig, vertxObj);
-        Future<SqlConnection> sqlConnectionFuture = mock(Future.class);
-        Future<Object> objectFuture = mock(Future.class);
-        AsyncResult<RowSet<Row>> asyncResultMock = mock(AsyncResult.class);
-
-        auditingServiceImpl.pool = mock(PgPool.class);
-
-        when(auditingServiceImpl.pool.getConnection()).thenReturn(sqlConnectionFuture);
-        when(sqlConnectionFuture.compose(any())).thenReturn(objectFuture);
-        when(asyncResultMock.succeeded()).thenReturn(true);
-
-        doAnswer(new Answer<AsyncResult<RowSet<Row>>>() {
-            @Override
-            public AsyncResult<RowSet<Row>> answer(InvocationOnMock arg0) throws Throwable {
-                ((Handler<AsyncResult<RowSet<Row>>>) arg0.getArgument(0)).handle(asyncResultMock);
+    when(asyncResult.succeeded()).thenReturn(true);
+    doAnswer(
+            new Answer<AsyncResult<JsonObject>>() {
+              @Override
+              public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(3)).handle(asyncResult);
                 return null;
-            }
-        }).when(objectFuture).onComplete(any());
+              }
+            })
+        .when(auditingService.rmqService)
+        .publishMessage(any(), anyString(), anyString(), any());
 
-        JsonObject expected = new JsonObject();
-        expected.put("type", 200);
-        expected.put("title", "Success");
-        expected.put("detail", "Table Updated Successfully");
-
-        auditingServiceImpl.executeWriteQuery(request, handler -> {
-            if (handler.succeeded()) {
-                assertEquals(expected, handler.result());
-                vertxTestContext.completeNow();
-            } else {
-                vertxTestContext.failNow(handler.cause());
-            }
+    auditingService.executeWriteQuery(
+        request,
+        handler -> {
+          if (handler.succeeded()) {
+            vertxTestContext.completeNow();
+          } else {
+            vertxTestContext.failNow("Failed");
+          }
         });
-
-    }
-
-    @DisplayName("Test executeWriteQuery Failure")
-    @Test
-    public void testExecuteWriteQueryFailure(VertxTestContext vertxTestContext) {
-
-        AuditingServiceImpl auditingServiceImpl = new AuditingServiceImpl(dbConfig, vertxObj);
-        JsonObject request = writeRequest();
-        Future<SqlConnection> sqlConnectionFuture = mock(Future.class);
-        Future<Object> objectFutureMock = mock(Future.class);
-        AsyncResult<RowSet<Row>> asyncResultMock = mock(AsyncResult.class);
-        Throwable throwableMock = mock(Throwable.class);
-
-        auditingServiceImpl.pool = mock(PgPool.class);
-
-        when(auditingServiceImpl.pool.getConnection()).thenReturn(sqlConnectionFuture);
-        when(sqlConnectionFuture.compose(any())).thenReturn(objectFutureMock);
-        when(asyncResultMock.failed()).thenReturn(true);
-        when(asyncResultMock.cause()).thenReturn(throwableMock);
-        when(throwableMock.getMessage()).thenReturn("Dummy Failure Message");
-        doAnswer(new Answer<AsyncResult<RowSet<Row>>>() {
-            @Override
-            public AsyncResult<RowSet<Row>> answer(InvocationOnMock arg0) throws Throwable {
-                ((Handler<AsyncResult<RowSet<Row>>>) arg0.getArgument(0)).handle(asyncResultMock);
-                return null;
-            }
-        }).when(objectFutureMock).onComplete(any());
-
-
-        auditingServiceImpl.executeWriteQuery(request, handler -> {
-            if (handler.succeeded()) {
-                vertxTestContext.failNow("Succeeded while there is failure in fetching rows ");
-            } else {
-                assertNull(handler.result());
-                String expected = "io.vertx.core.impl.NoStackTraceThrowable: {\"type\":400,\"title\":\"Failed\",\"detail\":\"Dummy Failure Message\"}";
-                assertEquals(expected, handler.cause().toString());
-                vertxTestContext.completeNow();
-            }
-        });
-    }
+    verify(auditingService.rmqService, times(1))
+        .publishMessage(any(), anyString(), anyString(), any());
+  }
 }

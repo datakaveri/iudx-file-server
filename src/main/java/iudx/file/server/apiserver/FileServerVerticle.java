@@ -1,12 +1,18 @@
 package iudx.file.server.apiserver;
 
+import static iudx.file.server.apiserver.response.ResponseUrn.SUCCESS;
 import static iudx.file.server.apiserver.utilities.Constants.*;
 import static iudx.file.server.apiserver.response.ResponseUrn.*;
 import static iudx.file.server.apiserver.utilities.Utilities.getFileIdComponents;
 import static iudx.file.server.apiserver.utilities.Utilities.getQueryType;
+import static iudx.file.server.auditing.util.Constants.*;
+import static iudx.file.server.auditing.util.Constants.RESPONSE_SIZE;
 import static iudx.file.server.common.Constants.AUDIT_SERVICE_ADDRESS;
 import static iudx.file.server.common.Constants.DB_SERVICE_ADDRESS;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -794,7 +800,7 @@ public class FileServerVerticle extends AbstractVerticle {
     for (FileUpload file : files) {
       LOGGER.debug(file.contentType());
       if (!contentTypeValidator.isValid(file.contentType())) {
-        return false;
+        return false;/*String resourceID = request.getString(RESOURCE_ID);*/
       }
     }
     return true;
@@ -830,10 +836,17 @@ public class FileServerVerticle extends AbstractVerticle {
     LOGGER.info("Updating audit table on successful transaction "+auditInfo);
 
     /* getting provider id from the resource id */
-    String resourceID = auditInfo.getString("resourceID");
+    String resourceID = auditInfo.getString(RESOURCE_ID);
     String providerID =
         resourceID.substring(0, resourceID.indexOf('/', resourceID.indexOf('/') + 1));
     auditInfo.put("providerID", providerID);
+
+    ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+    long epochTime = zst.toInstant().toEpochMilli();
+    String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
+
+    auditInfo.put(EPOCH_TIME,epochTime);
+    auditInfo.put(ISO_TIME,isoTime);
 
     auditingService.executeWriteQuery(auditInfo, auditHandler -> {
       if (auditHandler.succeeded()) {
