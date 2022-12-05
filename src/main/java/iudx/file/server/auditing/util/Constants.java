@@ -17,9 +17,8 @@ public class Constants {
   public static final String DATA_NOT_FOUND="Required Data not Found";
 
   /*Auditing Service Constants*/
-  public static final String USER_ID = "userID";
   public static final String API = "api";
-  public static final String RESOURCE_ID = "resourceID";
+  public static final String RESOURCE_ID = "id";
   public static final String PROVIDER_ID = "providerID";
 
   public static final String RESPONSE_SIZE = "response_size";

@@ -294,8 +294,8 @@ public class FileServerVerticle extends AbstractVerticle {
 
     JsonObject auditParams = new JsonObject()
         .put("api", request.path())
-        .put("userID", routingContext.data().get("AuthResult"))
-        .put("resourceID", id);
+        .put(USER_ID, routingContext.data().get("AuthResult"))
+        .put(RESOURCE_ID, id);
 
     String fileIdComponent[] = getFileIdComponents(id);
     StringBuilder uploadPath = new StringBuilder();
@@ -480,8 +480,8 @@ public class FileServerVerticle extends AbstractVerticle {
 
     JsonObject auditParams = new JsonObject()
         .put("api", request.path())
-        .put("userID", routingContext.data().get("AuthResult"))
-        .put("resourceID", id);
+        .put(USER_ID, routingContext.data().get("AuthResult"))
+        .put(RESOURCE_ID, id);
 
     String fileIdComponent[] = getFileIdComponents(id);
     StringBuilder uploadDir = new StringBuilder();
@@ -525,9 +525,9 @@ public class FileServerVerticle extends AbstractVerticle {
     QueryType type = getQueryType(params);
 
     JsonObject auditParams = new JsonObject()
-        .put("resourceID", query.getString("id"))
+        .put(RESOURCE_ID, query.getString("id"))
         .put("api", context.request().path())
-        .put("userID", context.data().get("AuthResult"));
+        .put(USER_ID, context.data().get("AuthResult"));
 
     queryParamsValidator.compose(paramsValidator -> {
       return allowedFilters;
@@ -583,8 +583,8 @@ public class FileServerVerticle extends AbstractVerticle {
 
     JsonObject auditParams = new JsonObject()
         .put("api", request.path())
-        .put("userID", routingContext.data().get("AuthResult"))
-        .put("resourceID", id);
+        .put(USER_ID, routingContext.data().get("AuthResult"))
+        .put(RESOURCE_ID, id);
 
     String fileIdComponent[] = getFileIdComponents(id);
     StringBuilder uploadDir = new StringBuilder();
@@ -637,8 +637,8 @@ public class FileServerVerticle extends AbstractVerticle {
     JsonObject query = new JsonObject().put("id", id);
     JsonObject auditParams = new JsonObject()
         .put("api", request.path())
-        .put("userID", context.data().get("AuthResult"))
-        .put("resourceID", id);
+        .put(USER_ID, context.data().get("AuthResult"))
+        .put(RESOURCE_ID, id);
 
     database.search(query, QueryType.LIST, queryHandler -> {
       if (queryHandler.succeeded()) {

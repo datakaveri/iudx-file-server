@@ -19,6 +19,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
+import static iudx.file.server.apiserver.utilities.Constants.USER_ID;
 import static iudx.file.server.auditing.util.Constants.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
