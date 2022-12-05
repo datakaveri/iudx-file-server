@@ -33,15 +33,7 @@ public class AuditingServiceTest {
   @DisplayName("Deploying Verticle")
   static void startVertex(Vertx vertx, VertxTestContext vertxTestContext) {
     vertxObj = vertx;
-    dbConfig = new JsonObject();
-    dbConfig.put("auditingDatabaseIP", "localhost");
-    dbConfig.put("auditingDatabasePort", 123);
-    dbConfig.put("auditingDatabaseName", "auditing");
-    dbConfig.put("auditingDatabaseUserName", "immudb");
-    dbConfig.put("auditingDatabasePassword", "");
-    dbConfig.put("auditingPoolSize", 24);
-    dbConfig.put("auditingDatabaseTableName", "tableName");
-    AuditingService auditingService = new AuditingServiceImpl(dbConfig, vertxObj);
+    AuditingService auditingService = new AuditingServiceImpl(vertxObj);
     vertxTestContext.completeNow();
   }
 
@@ -56,9 +48,9 @@ public class AuditingServiceTest {
     request.put(ISO_TIME, isoTime);
     request.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
     request.put(ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
-    request.put(API, "/ngsi-ld/v1/subscription");
+    request.put(API, "/iudx/v1/list");
     request.put(RESPONSE_SIZE, 12);
-    AuditingServiceImpl auditingService = new AuditingServiceImpl(dbConfig, vertxObj);
+    AuditingServiceImpl auditingService = new AuditingServiceImpl(vertxObj);
 
     AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
     AuditingServiceImpl.rmqService = mock(DataBrokerService.class);

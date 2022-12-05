@@ -25,17 +25,6 @@ public class AuditingVerticle extends AbstractVerticle {
 
   private static final String AUDITING_SERVICE_ADDRESS = "iudx.file.auditing.service";
   private static final Logger LOGGER = LogManager.getLogger(AuditingVerticle.class);
-  PgConnectOptions connectOptions;
-  PoolOptions poolOptions;
-  PgPool pool;
-  private String databaseIP;
-  private int databasePort;
-  private String databaseName;
-  private String databaseUserName;
-  private String databasePassword;
-  private String databaseTableName;
-  private int poolSize;
-  private PgConnectOptions config;
   private ServiceBinder binder;
   private MessageConsumer<JsonObject> consumer;
   private AuditingService auditing;
@@ -50,25 +39,8 @@ public class AuditingVerticle extends AbstractVerticle {
   @Override
   public void start() throws Exception {
 
-    databaseIP = config().getString("auditingDatabaseIP");
-    databasePort = config().getInteger("auditingDatabasePort");
-    databaseName = config().getString("auditingDatabaseName");
-    databaseUserName = config().getString("auditingDatabaseUserName");
-    databasePassword = config().getString("auditingDatabasePassword");
-    poolSize = config().getInteger("auditingPoolSize");
-    databaseTableName = config().getString("auditingDatabaseTableName");
-
-    JsonObject propObj = new JsonObject();
-    propObj.put("auditingDatabaseIP", databaseIP);
-    propObj.put("auditingDatabasePort", databasePort);
-    propObj.put("auditingDatabaseName", databaseName);
-    propObj.put("auditingDatabaseUserName", databaseUserName);
-    propObj.put("auditingDatabasePassword", databasePassword);
-    propObj.put("auditingPoolSize", poolSize);
-    propObj.put("auditingDatabaseTableName", databaseTableName);
-
     binder = new ServiceBinder(vertx);
-    auditing = new AuditingServiceImpl(propObj, vertx);
+    auditing = new AuditingServiceImpl(vertx);
     consumer =
         binder.setAddress(AUDITING_SERVICE_ADDRESS).register(AuditingService.class, auditing);
     LOGGER.info("Auditing Service Started");

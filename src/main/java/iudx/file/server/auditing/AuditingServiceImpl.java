@@ -25,8 +25,7 @@ public class AuditingServiceImpl implements AuditingService {
   private final ObjectMapper objectMapper = new ObjectMapper();
   private JsonObject writeMessage = new JsonObject();
 
-  public AuditingServiceImpl(JsonObject propObj, Vertx vertxInstance) {
-
+  public AuditingServiceImpl(Vertx vertxInstance) {
     this.rmqService = DataBrokerService.createProxy(vertxInstance, DATABROKER_SERVICE_ADDRESS);
   }
 
@@ -34,7 +33,7 @@ public class AuditingServiceImpl implements AuditingService {
   public AuditingService executeWriteQuery(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
     writeMessage = queryBuilder.buildWriteQueryForRMQ(request);
-    LOGGER.info("Json Write=" + writeMessage);
+    LOGGER.info("Json request to Write=" + writeMessage);
     rmqService.publishMessage(
         writeMessage,
         EXCHANGE_NAME,
