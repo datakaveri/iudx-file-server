@@ -800,7 +800,7 @@ public class FileServerVerticle extends AbstractVerticle {
     for (FileUpload file : files) {
       LOGGER.debug(file.contentType());
       if (!contentTypeValidator.isValid(file.contentType())) {
-        return false;/*String resourceID = request.getString(RESOURCE_ID);*/
+        return false;
       }
     }
     return true;

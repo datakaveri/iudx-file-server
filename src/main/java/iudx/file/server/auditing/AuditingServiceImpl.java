@@ -7,11 +7,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.pgclient.PgConnectOptions;
-import io.vertx.pgclient.PgPool;
-import io.vertx.sqlclient.PoolOptions;
 import iudx.file.server.auditing.util.QueryBuilder;
-import iudx.file.server.auditing.util.ResponseBuilder;
 import iudx.file.server.common.Response;
 import iudx.file.server.databroker.DataBrokerService;
 import org.apache.logging.log4j.LogManager;
@@ -24,42 +20,13 @@ import static iudx.file.server.common.Constants.DATABROKER_SERVICE_ADDRESS;
 public class AuditingServiceImpl implements AuditingService {
 
   private static final Logger LOGGER = LogManager.getLogger(AuditingServiceImpl.class);
-  private final QueryBuilder queryBuilder = new QueryBuilder();
   public static DataBrokerService rmqService;
+  private final QueryBuilder queryBuilder = new QueryBuilder();
   private final ObjectMapper objectMapper = new ObjectMapper();
-  PgConnectOptions connectOptions;
-  PoolOptions poolOptions;
-  PgPool pool;
   private JsonObject writeMessage = new JsonObject();
-  private String databaseIP;
-  private int databasePort;
-  private String databaseName;
-  private String databaseUserName;
-  private String databasePassword;
-  private String databaseTableName;
-  private int databasePoolSize;
 
   public AuditingServiceImpl(JsonObject propObj, Vertx vertxInstance) {
-    if (propObj != null && !propObj.isEmpty()) {
-      databaseIP = propObj.getString("auditingDatabaseIP");
-      databasePort = propObj.getInteger("auditingDatabasePort");
-      databaseName = propObj.getString("auditingDatabaseName");
-      databaseUserName = propObj.getString("auditingDatabaseUserName");
-      databasePassword = propObj.getString("auditingDatabasePassword");
-      databasePoolSize = propObj.getInteger("auditingPoolSize");
-      databaseTableName = propObj.getString("auditingDatabaseTableName");
-    }
 
-    this.connectOptions =
-        new PgConnectOptions()
-            .setPort(databasePort)
-            .setHost(databaseIP)
-            .setDatabase(databaseName)
-            .setUser(databaseUserName)
-            .setPassword(databasePassword);
-
-    this.poolOptions = new PoolOptions().setMaxSize(databasePoolSize);
-    this.pool = PgPool.pool(vertxInstance, connectOptions, poolOptions);
     this.rmqService = DataBrokerService.createProxy(vertxInstance, DATABROKER_SERVICE_ADDRESS);
   }
 
@@ -67,7 +34,7 @@ public class AuditingServiceImpl implements AuditingService {
   public AuditingService executeWriteQuery(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
     writeMessage = queryBuilder.buildWriteQueryForRMQ(request);
-    LOGGER.info("Json Write="+ writeMessage);
+    LOGGER.info("Json Write=" + writeMessage);
     rmqService.publishMessage(
         writeMessage,
         EXCHANGE_NAME,
