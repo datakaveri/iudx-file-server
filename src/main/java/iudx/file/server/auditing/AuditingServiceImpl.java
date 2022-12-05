@@ -33,7 +33,7 @@ public class AuditingServiceImpl implements AuditingService {
   public AuditingService executeWriteQuery(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
     writeMessage = queryBuilder.buildWriteQueryForRMQ(request);
-    LOGGER.info("Json request to Write=" + writeMessage);
+
     rmqService.publishMessage(
         writeMessage,
         EXCHANGE_NAME,
