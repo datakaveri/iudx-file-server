@@ -33,6 +33,6 @@ public class Constants {
   public static final String EPOCH_TIME = "epochTime";
   public static final String ISO_TIME = "isoTime";
   public static final String EXCHANGE_NAME = "auditing";
-  public static final String ROUTING_KEY = "##";
+  public static final String ROUTING_KEY = "#";
 
 }
