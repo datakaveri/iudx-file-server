@@ -1,12 +1,18 @@
 package iudx.file.server.apiserver;
 
+import static iudx.file.server.apiserver.response.ResponseUrn.SUCCESS;
 import static iudx.file.server.apiserver.utilities.Constants.*;
 import static iudx.file.server.apiserver.response.ResponseUrn.*;
 import static iudx.file.server.apiserver.utilities.Utilities.getFileIdComponents;
 import static iudx.file.server.apiserver.utilities.Utilities.getQueryType;
+import static iudx.file.server.auditing.util.Constants.*;
+import static iudx.file.server.auditing.util.Constants.RESPONSE_SIZE;
 import static iudx.file.server.common.Constants.AUDIT_SERVICE_ADDRESS;
 import static iudx.file.server.common.Constants.DB_SERVICE_ADDRESS;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -288,8 +294,8 @@ public class FileServerVerticle extends AbstractVerticle {
 
     JsonObject auditParams = new JsonObject()
         .put("api", request.path())
-        .put("userID", routingContext.data().get("AuthResult"))
-        .put("resourceID", id);
+        .put(USER_ID, routingContext.data().get("AuthResult"))
+        .put(RESOURCE_ID, id);
 
     String fileIdComponent[] = getFileIdComponents(id);
     StringBuilder uploadPath = new StringBuilder();
@@ -474,8 +480,8 @@ public class FileServerVerticle extends AbstractVerticle {
 
     JsonObject auditParams = new JsonObject()
         .put("api", request.path())
-        .put("userID", routingContext.data().get("AuthResult"))
-        .put("resourceID", id);
+        .put(USER_ID, routingContext.data().get("AuthResult"))
+        .put(RESOURCE_ID, id);
 
     String fileIdComponent[] = getFileIdComponents(id);
     StringBuilder uploadDir = new StringBuilder();
@@ -519,9 +525,9 @@ public class FileServerVerticle extends AbstractVerticle {
     QueryType type = getQueryType(params);
 
     JsonObject auditParams = new JsonObject()
-        .put("resourceID", query.getString("id"))
+        .put(RESOURCE_ID, query.getString("id"))
         .put("api", context.request().path())
-        .put("userID", context.data().get("AuthResult"));
+        .put(USER_ID, context.data().get("AuthResult"));
 
     queryParamsValidator.compose(paramsValidator -> {
       return allowedFilters;
@@ -577,8 +583,8 @@ public class FileServerVerticle extends AbstractVerticle {
 
     JsonObject auditParams = new JsonObject()
         .put("api", request.path())
-        .put("userID", routingContext.data().get("AuthResult"))
-        .put("resourceID", id);
+        .put(USER_ID, routingContext.data().get("AuthResult"))
+        .put(RESOURCE_ID, id);
 
     String fileIdComponent[] = getFileIdComponents(id);
     StringBuilder uploadDir = new StringBuilder();
@@ -631,8 +637,8 @@ public class FileServerVerticle extends AbstractVerticle {
     JsonObject query = new JsonObject().put("id", id);
     JsonObject auditParams = new JsonObject()
         .put("api", request.path())
-        .put("userID", context.data().get("AuthResult"))
-        .put("resourceID", id);
+        .put(USER_ID, context.data().get("AuthResult"))
+        .put(RESOURCE_ID, id);
 
     database.search(query, QueryType.LIST, queryHandler -> {
       if (queryHandler.succeeded()) {
@@ -830,10 +836,17 @@ public class FileServerVerticle extends AbstractVerticle {
     LOGGER.info("Updating audit table on successful transaction "+auditInfo);
 
     /* getting provider id from the resource id */
-    String resourceID = auditInfo.getString("resourceID");
+    String resourceID = auditInfo.getString(RESOURCE_ID);
     String providerID =
         resourceID.substring(0, resourceID.indexOf('/', resourceID.indexOf('/') + 1));
     auditInfo.put("providerID", providerID);
+
+    ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+    long epochTime = zst.toInstant().toEpochMilli();
+    String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
+
+    auditInfo.put(EPOCH_TIME,epochTime);
+    auditInfo.put(ISO_TIME,isoTime);
 
     auditingService.executeWriteQuery(auditInfo, auditHandler -> {
       if (auditHandler.succeeded()) {
