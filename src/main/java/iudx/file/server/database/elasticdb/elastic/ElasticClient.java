@@ -1,17 +1,24 @@
 package iudx.file.server.database.elasticdb.elastic;
 
 import static iudx.file.server.database.elasticdb.utilities.Constants.BAD_PARAMETERS;
-import static iudx.file.server.database.elasticdb.utilities.Constants.COUNT;
-import static iudx.file.server.database.elasticdb.utilities.Constants.DB_ERROR_2XX;
-import static iudx.file.server.database.elasticdb.utilities.Constants.DOCS_KEY;
 import static iudx.file.server.database.elasticdb.utilities.Constants.EMPTY_RESPONSE;
 import static iudx.file.server.database.elasticdb.utilities.Constants.FAILED;
-import static iudx.file.server.database.elasticdb.utilities.Constants.FILTER_PATH;
-import static iudx.file.server.database.elasticdb.utilities.Constants.HITS;
-import static iudx.file.server.database.elasticdb.utilities.Constants.SOURCE_FILTER_KEY;
 import static iudx.file.server.database.elasticdb.utilities.Constants.SUCCESS;
 import java.io.IOException;
 import java.util.UUID;
+
+import co.elastic.clients.elasticsearch.ElasticsearchAsyncClient;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch.core.CountRequest;
+import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.search.SourceConfig;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import co.elastic.clients.transport.ElasticsearchTransport;
+import co.elastic.clients.transport.rest_client.RestClientTransport;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.vertx.core.Promise;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -20,10 +27,7 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.elasticsearch.client.Request;
-import org.elasticsearch.client.Response;
-import org.elasticsearch.client.ResponseListener;
-import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.*;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -36,6 +40,8 @@ public class ElasticClient {
 
   private RestClient client;
   private ResponseBuilder responseBuilder;
+  ElasticsearchClient esClient;
+  ElasticsearchAsyncClient asyncClient;
   private static final Logger LOGGER = LogManager.getLogger(ElasticClient.class);
 
   /**
@@ -56,7 +62,18 @@ public class ElasticClient {
     this.port = databasePort;
     this.user = user;
     this.password = password;
-    client = connect(databaseIP, databasePort, user, password);
+    CredentialsProvider credentials = new BasicCredentialsProvider();
+    credentials.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(user, password));
+    RestClientBuilder restClientBuilder = RestClient
+            .builder(new HttpHost(databaseIP, databasePort))
+            .setHttpClientConfigCallback(
+                    httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentials));
+    client = restClientBuilder.build();
+
+    ElasticsearchTransport transport = new RestClientTransport(client, new JacksonJsonpMapper());
+    // And create the API client
+    esClient = new ElasticsearchClient(transport);
+    asyncClient = new ElasticsearchAsyncClient(transport);
   }
 
   /**
@@ -66,69 +83,51 @@ public class ElasticClient {
    * @param query Query
    * @param searchHandler JsonObject result {@link AsyncResult}
    */
-  public ElasticClient searchAsync(String index, String filterPathValue, String query,
-      Handler<AsyncResult<JsonObject>> searchHandler) {
-    if (!client.isRunning())
-      client = reConnect();
-    Request queryRequest = new Request("GET", index);
-    queryRequest.addParameter(FILTER_PATH, filterPathValue);
-    queryRequest.setJsonEntity(query);
-
-    client.performRequestAsync(queryRequest, new ResponseListener() {
-      @Override
-      public void onSuccess(Response response) {
-        JsonArray dbResponse = new JsonArray();
-        try {
-          JsonObject responseJson = new JsonObject(EntityUtils.toString(response.getEntity()));
-
-          responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(200);
-          JsonArray responseHits = new JsonArray();
-          if (responseJson.containsKey(HITS)) {
-            responseHits = responseJson.getJsonObject(HITS).getJsonArray(HITS);
-          } else if (responseJson.containsKey(DOCS_KEY)) {
-            responseHits = responseJson.getJsonArray(DOCS_KEY);
-          }
-
-          responseHits.stream()
-              .map(e -> (JsonObject) e)
-              .filter(e -> !e.isEmpty())
-              .forEach(e -> dbResponse.add(e.getJsonObject(SOURCE_FILTER_KEY)));
-
-
-          responseBuilder.setMessage(dbResponse);
-          responseBuilder.setTotalDocsCount(
-              responseJson.getJsonObject("hits").getJsonObject("total").getInteger("value"));
-          searchHandler.handle(Future.succeededFuture(responseBuilder.getResponse()));
-        } catch (IOException e) {
-          LOGGER.error("IO Execption from Database: " + e.getMessage());
-          JsonObject ioError = new JsonObject(e.getMessage());
-          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(ioError);
-          searchHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-        }
+  public Future<JsonObject> asyncSearch(String index, Query query, int size, int from){
+    Promise<JsonObject> promise = Promise.promise();
+    SearchRequest searchRequest = SearchRequest
+            .of(e -> e.index(index).query(query).size(size).from(from));
+//LOGGER.debug("search 101 = "+ searchRequest);
+    asyncClient.search(searchRequest, ObjectNode.class).whenCompleteAsync((response, exception) -> {
+      if (exception != null) {
+        LOGGER.error("async search query failed : {}", exception);
+        promise.fail(exception);
+        return;
       }
-
-      @Override
-      public void onFailure(Exception e) {
-        try {
-          JsonObject dbError = new JsonObject().put("error", e.getMessage()).put("status", 400);
-          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(e.getMessage());
-          searchHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-        } catch (DecodeException jsonError) {
-          LOGGER.error("Json parsing exception: " + jsonError);
-          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
-              .setMessage(BAD_PARAMETERS);
-          searchHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+      try {
+        JsonArray dbResponse = new JsonArray();
+        if (response.hits().total().value() == 0) {
+          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204);
+          responseBuilder.setMessage(EMPTY_RESPONSE);
+          promise.fail(responseBuilder.getResponse().toString());
+          return;
         }
+
+        // TODO : explore client API docs to directly get response, avoid loop over response to
+        // create a separate Json
+        response
+                .hits()
+                .hits()
+                .stream()
+                .forEach(hit -> dbResponse.add(new JsonObject(hit.source().toString())));
+
+        responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(200);
+        responseBuilder.setMessage(dbResponse);
+        promise.complete(responseBuilder.getResponse());
+      } catch (Exception ex) {
+        LOGGER.error("Exception occurred while executing query: {}", ex);
+        JsonObject dbException = new JsonObject(ex.getMessage());
+        responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(dbException);
+        promise.fail(responseBuilder.getResponse().toString());
       }
     });
-    return this;
+    return promise.future();
   }
 
 
   public ElasticClient insertAsync(String index, JsonObject document,
       Handler<AsyncResult<JsonObject>> insertHandler) {
-    if (!client.isRunning())
-      client = reConnect();
+    LOGGER.debug("insertAsyn = "+ index + "  " + document.toString() + " ");
     StringBuilder putRequestIndex = new StringBuilder(index);
     putRequestIndex.append("/_doc/");
     putRequestIndex.append(UUID.randomUUID().toString());
@@ -188,15 +187,17 @@ public class ElasticClient {
 
 
   public ElasticClient deleteAsync(String index, String id, String query,
-      Handler<AsyncResult<JsonObject>> deletetHandler) {
-    if (!client.isRunning())
-      client = reConnect();
+      Handler<AsyncResult<JsonObject>> deletetHandler)
+  /*public ElasticClient asyncDelete(String index, String id, Query query)*/{
 
     StringBuilder deleteURI = new StringBuilder(index);
     deleteURI.append("/_delete_by_query");
 
     Request deleteRequest = new Request("POST", deleteURI.toString());
     deleteRequest.setJsonEntity(query);
+
+
+    /*DeleteByQueryRequest request = new DeleteByQueryRequest("source1","source 2");*/
     client.performRequestAsync(deleteRequest, new ResponseListener() {
 
       @Override
@@ -246,14 +247,52 @@ public class ElasticClient {
     return this;
   }
 
-  public ElasticClient countAsync(String index, String query,
-      Handler<AsyncResult<JsonObject>> countHandler) {
-    if (!client.isRunning())
-      client = reConnect();
-    Request queryRequest = new Request("GET", index);
-    queryRequest.setJsonEntity(query);
+  public Future<JsonObject> asyncCount(String index, Query query) {
 
-    client.performRequestAsync(queryRequest, new ResponseListener() {
+    Promise<JsonObject> promise = Promise.promise();
+
+    LOGGER.debug("In asyncount =" + index + "  " + query);
+
+    CountRequest countRequest = CountRequest.of(e -> e.index(index).query(query));
+    LOGGER.debug("In countrequest =" + countRequest);
+
+    asyncClient.count(e -> e.index(index).query(query)).whenCompleteAsync((response, exception) -> {
+      if (exception != null) {
+        LOGGER.error("async count query failed : {}", exception);
+        promise.fail(exception);
+        return;
+      }
+
+      try {
+        LOGGER.debug("Response in es ="+ response);
+        long count = response.count();
+        LOGGER.debug("count  in es==" + count);
+        if (count == 0) {
+          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204);
+          responseBuilder.setMessage(EMPTY_RESPONSE);
+          promise.fail(responseBuilder.getResponse().toString());
+          return;
+        }
+        responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(200);
+        responseBuilder.setCount(count);
+        promise.complete(responseBuilder.getResponse());
+        LOGGER.debug("ends==" + count);
+      } catch (Exception ex) {
+        LOGGER.error("Exception occurred while executing query: {}", ex);
+        JsonObject dbException = new JsonObject(ex.getMessage());
+        responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(dbException);
+        promise.fail(responseBuilder.getResponse().toString());
+      }
+
+    });
+    return promise.future();
+
+   /* Request queryRequest = new Request("GET", index);
+    queryRequest.setJsonEntity(query);*/
+
+
+
+   /* client.performRequestAsync(queryRequest, new ResponseListener() {
       @Override
       public void onSuccess(Response response) {
 
@@ -300,24 +339,6 @@ public class ElasticClient {
         }
       }
     });
-    return this;
+    return this;*/
   }
-
-  private RestClient connect(String databaseIP, int databasePort, String user, String password) {
-    LOGGER.info("Creating elastic rest client.");
-    CredentialsProvider credentials = new BasicCredentialsProvider();
-    credentials.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(user, password));
-    return RestClient.builder(new HttpHost(databaseIP, databasePort))
-        .setHttpClientConfigCallback(
-            httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentials))
-        .build();
-
-  }
-
-  private RestClient reConnect() {
-    LOGGER.info("Reconnection elastic rest client.");
-    return connect(this.ip, this.port, this.user, this.password);
-
-  }
-
 }

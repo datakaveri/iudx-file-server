@@ -60,7 +60,7 @@ public class DatabaseServiceTest {
   public static JsonArray data;
 
 
-  @BeforeAll
+ /* @BeforeAll
   public static void setup(Vertx vertx, VertxTestContext testContext)
       throws TimeoutException, IOException {
 
@@ -580,6 +580,6 @@ public class DatabaseServiceTest {
   public static void destroy(Vertx vertx, VertxTestContext testContext) {
     elasticContainer.close();
     testContext.completeNow();
-  }
+  }*/
 
 }
