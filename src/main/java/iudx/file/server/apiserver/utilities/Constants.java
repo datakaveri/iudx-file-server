@@ -3,12 +3,12 @@ package iudx.file.server.apiserver.utilities;
 public class Constants extends iudx.file.server.common.Constants{
   public static final long MAX_SIZE = 1073741824L; // 1GB = 1073741824 Bytes
   // api
-  public static final String API_TEMPORAL = "/ngsi-ld/v1/temporal/entities";
-  public static final String API_SPATIAL="/ngsi-ld/v1/entities";
-  public static final String API_FILE_UPLOAD = "/iudx/v1/upload";
-  public static final String API_FILE_DOWNLOAD = "/iudx/v1/download";
-  public static final String API_FILE_DELETE = "/iudx/v1/delete";
-  public static final String API_LIST_METADATA = "/iudx/v1/list";
+  public static final String API_TEMPORAL = "/temporal/entities";
+  public static final String API_SPATIAL="/entities";
+  public static final String API_FILE_UPLOAD = "/upload";
+  public static final String API_FILE_DOWNLOAD = "/download";
+  public static final String API_FILE_DELETE = "/delete";
+  public static final String API_LIST_METADATA = "/list";
   public static final String API_APIS="/apis";
   public static final String API_API_SPECS="/apis/spec";
 

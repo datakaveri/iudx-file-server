@@ -109,7 +109,8 @@ public class FileServerVerticle extends AbstractVerticle {
   private ContentTypeValidator contentTypeValidator;
   private WebClientFactory webClientFactory;
   private CatalogueService catalogueService;
-
+  private String basePath;
+  private String iudxV1BasePath;
   private final ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
 
   @Override
@@ -134,6 +135,9 @@ public class FileServerVerticle extends AbstractVerticle {
     allowedMethods.add(HttpMethod.DELETE);
     allowedMethods.add(HttpMethod.PATCH);
     allowedMethods.add(HttpMethod.PUT);
+
+    basePath = config().getString("basePath");
+    iudxV1BasePath = config().getString("iudxV1BasePath");
 
     router = Router.router(vertx);
     router.route().handler(
@@ -164,13 +168,13 @@ public class FileServerVerticle extends AbstractVerticle {
 
     ValidationsHandler temporalQueryVaidationHandler =
         new ValidationsHandler(RequestType.TEMPORAL_QUERY);
-    router.get(API_TEMPORAL).handler(BodyHandler.create())
+    router.get(basePath + API_TEMPORAL).handler(BodyHandler.create())
         .handler(temporalQueryVaidationHandler)
         .handler(AuthHandler.create(vertx))
         .handler(this::query).failureHandler(validationsFailureHandler);
 
     ValidationsHandler uploadValidationHandler = new ValidationsHandler(RequestType.UPLOAD);
-    router.post(API_FILE_UPLOAD)
+    router.post(iudxV1BasePath + API_FILE_UPLOAD)
         .handler(BodyHandler.create().setUploadsDirectory(temp_directory).setBodyLimit(MAX_SIZE)
             .setDeleteUploadedFilesOnEnd(false))
         .handler(uploadValidationHandler)
@@ -178,25 +182,25 @@ public class FileServerVerticle extends AbstractVerticle {
         .handler(this::upload).failureHandler(validationsFailureHandler);
 
     ValidationsHandler downloadValidationHandler = new ValidationsHandler(RequestType.DOWNLOAD);
-    router.get(API_FILE_DOWNLOAD).handler(BodyHandler.create())
+    router.get(iudxV1BasePath + API_FILE_DOWNLOAD).handler(BodyHandler.create())
         .handler(downloadValidationHandler)
         .handler(AuthHandler.create(vertx))
         .handler(this::download).failureHandler(validationsFailureHandler);
 
     ValidationsHandler deleteValidationHandler = new ValidationsHandler(RequestType.DELETE);
-    router.delete(API_FILE_DELETE).handler(BodyHandler.create())
+    router.delete(iudxV1BasePath + API_FILE_DELETE).handler(BodyHandler.create())
         .handler(deleteValidationHandler)
         .handler(AuthHandler.create(vertx))
         .handler(this::delete).failureHandler(validationsFailureHandler);
 
     ValidationsHandler listQueryValidationHandler = new ValidationsHandler(RequestType.LIST_QUERY);
-    router.get(API_LIST_METADATA).handler(BodyHandler.create())
+    router.get(iudxV1BasePath + API_LIST_METADATA).handler(BodyHandler.create())
         .handler(listQueryValidationHandler)
         .handler(AuthHandler.create(vertx))
         .handler(this::listMetadata).failureHandler(validationsFailureHandler);
 
     ValidationsHandler geoQueryValidationHandler = new ValidationsHandler(RequestType.GEO_QUERY);
-    router.get(API_SPATIAL).handler(BodyHandler.create())
+    router.get(basePath + API_SPATIAL).handler(BodyHandler.create())
         .handler(geoQueryValidationHandler)
         .handler(AuthHandler.create(vertx))
         .handler(this::query).failureHandler(validationsFailureHandler);
