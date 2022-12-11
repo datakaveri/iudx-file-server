@@ -2,7 +2,7 @@
 
 ARG VERSION="0.0.1-SNAPSHOT"
 
-FROM maven:latest as dependencies
+FROM maven:3-eclipse-temurin-11 as dependencies
 
 WORKDIR /usr/share/app
 COPY pom.xml .
