@@ -424,13 +424,11 @@ public class FileServerVerticle extends AbstractVerticle {
 
           LOGGER.debug("deleting file :" + fileUUID);
           vertx.fileSystem().deleteBlocking(directory + "/" + uploadDir + "/" + fileUUID);
-
         }
         processResponse(response, handler.cause().getMessage());
 
       }
     });
-
   }
 
   private Future<Boolean> saveFileRecord(MultiMap formParams, String fileId) {
@@ -455,22 +453,9 @@ public class FileServerVerticle extends AbstractVerticle {
 
     formParams.entries().stream().forEach(e -> json.put(e.getKey(), e.getValue()));
 
-    // insert record in elastic index.
-    /*database.save(json, handler -> {
-      if (handler.succeeded()) {
-        LOGGER.info("Record inserted in DB");
-        promise.complete(true);
-      } else {
-        LOGGER.error("failed to PUT record");
-        promise.fail(handler.cause().getMessage());
-      }
-    });*/
     Future<JsonObject> saveDb = database.save(json);
     saveDb.onComplete(handler -> {
       if (handler.succeeded()) {
-        //handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
-        //auditParams.put(RESPONSE_SIZE, response.bytesWritten());
-        //Future.future(fu -> updateAuditTable(auditParams));
         LOGGER.info("Record inserted in DB");
         promise.complete(true);
       } else if (handler.failed()) {
@@ -560,7 +545,6 @@ public class FileServerVerticle extends AbstractVerticle {
           isValidFilters = true;
         }
         if (isValidFilters) {
-          LOGGER.debug("YEG AYA 542");
           executeSearch(JsonObject.mapFrom(params), type, response, auditParams);
         } else {
           handleResponse(response, HttpStatusCode.BAD_REQUEST,
@@ -575,22 +559,7 @@ public class FileServerVerticle extends AbstractVerticle {
 
   private void executeSearch(JsonObject json, QueryType type, HttpServerResponse response,
       JsonObject auditParams) {
-    LOGGER.debug("Json ===" + json);
-    LOGGER.debug("type ===" + type);
-    LOGGER.debug("audit ===" + auditParams);
     Future<JsonObject> searchDBFuture = database.search(json, type);
-/*
-    database.search(json, type, queryHandler -> {
-      if (queryHandler.succeeded()) {
-        handleResponse(response, HttpStatusCode.SUCCESS, queryHandler.result());
-        auditParams.put(RESPONSE_SIZE,response.bytesWritten());
-        updateAuditTable(auditParams);
-      } else {
-        LOGGER.debug("Cause 567 ===" + queryHandler.cause());
-        processResponse(response, queryHandler.cause().getMessage());
-      }
-    });
-*/
     searchDBFuture.onComplete(handler -> {
       if (handler.succeeded()) {
         LOGGER.info("Success: Search Success");
@@ -609,6 +578,7 @@ public class FileServerVerticle extends AbstractVerticle {
    */
 
   public void delete(RoutingContext routingContext) {
+    LOGGER.debug("DELETE IN FSV at 612");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     response.putHeader("content-type", "application/json");
@@ -637,32 +607,13 @@ public class FileServerVerticle extends AbstractVerticle {
     LOGGER.debug(uploadDir);
     LOGGER.debug("is archieve : " + isArchiveFile);
 
-    if (isExternalStorage) {/*
-      database.delete(id, dbDeleteHandler -> {
-        if (dbDeleteHandler.succeeded()) {
-          JsonObject dbHandlerResult = dbDeleteHandler.result();
-          String resultTitle = dbHandlerResult.getString("title");
-          int resultType = dbHandlerResult.getInteger("type");
-          HttpStatusCode code = HttpStatusCode.getByValue(resultType);
-          ResponseUrn urn = ResponseUrn.fromCode(resultTitle);
-          if (urn.equals(SUCCESS)) {
-            handleResponse(response, code, urn, ("File with id : " + id + " deleted successfully"));
-            auditParams.put(RESPONSE_SIZE,0);
-            updateAuditTable(auditParams);
-          } else if (urn.equals(RESOURCE_NOT_FOUND)) {
-            String resultDetails = dbHandlerResult.getString("details");
-            handleResponse(response, code, urn, resultDetails);
-          }
-        } else {
-          handleResponse(response, HttpStatusCode.NOT_FOUND, dbDeleteHandler.cause().getMessage());
-        }
-      });*/
+    if (isExternalStorage) {
       Future<JsonObject> deleteDbFuture = database.delete(id);
       deleteDbFuture.onComplete(handlers -> {
         if (handlers.succeeded()) {
           JsonObject dbHandlerResult = handlers.result();
-          String resultTitle = dbHandlerResult.getString("title");
-          int resultType = dbHandlerResult.getInteger("type");
+          String resultTitle = dbHandlerResult.getJsonObject("result").getString("title");
+          int resultType = dbHandlerResult.getJsonObject("result").getInteger("type");
           HttpStatusCode code = HttpStatusCode.getByValue(resultType);
           ResponseUrn urn = ResponseUrn.fromCode(resultTitle);
           if (urn.equals(SUCCESS)) {
@@ -670,7 +621,7 @@ public class FileServerVerticle extends AbstractVerticle {
             auditParams.put(RESPONSE_SIZE,0);
             updateAuditTable(auditParams);
           } else if (urn.equals(RESOURCE_NOT_FOUND)) {
-            String resultDetails = dbHandlerResult.getString("details");
+            String resultDetails = dbHandlerResult.getJsonObject("result").getString("details");
             handleResponse(response, code, urn, resultDetails);
           }
         }
@@ -695,15 +646,6 @@ public class FileServerVerticle extends AbstractVerticle {
         .put(USER_ID, context.data().get("AuthResult"))
         .put(RESOURCE_ID, id);
 
-    /*database.search(query, QueryType.LIST, queryHandler -> {
-      if (queryHandler.succeeded()) {
-        handleResponse(response, HttpStatusCode.SUCCESS, queryHandler.result());
-        auditParams.put(RESPONSE_SIZE,response.bytesWritten());
-        updateAuditTable(auditParams);
-      } else {
-        processResponse(response, queryHandler.cause().getMessage());
-      }
-    });*/
     Future<JsonObject> searchDBFuture = database.search(query, QueryType.LIST);
     searchDBFuture.onComplete(handler -> {
       if (handler.succeeded()) {
@@ -760,25 +702,6 @@ public class FileServerVerticle extends AbstractVerticle {
           processResponse(response, handlers.cause().getMessage());
       }
     });
-    /*database.delete(id, dbDeleteHandler -> {
-      if (dbDeleteHandler.succeeded()) {
-        fileService.delete(fileUUID, uploadDir.toString()).onComplete(handler -> {
-          if (handler.succeeded()) {
-            JsonObject deleteResult = handler.result();
-            ResponseUrn urn = ResponseUrn.fromCode(deleteResult.getString("title"));
-            LOGGER.info(deleteResult);
-            handleResponse(response, HttpStatusCode.SUCCESS, urn,
-                ("File with id : " + id + " deleted successfully"));
-            auditParams.put(RESPONSE_SIZE,0);
-            updateAuditTable(auditParams);
-          } else {
-            processResponse(response, handler.cause().getMessage());
-          }
-        });
-      } else {
-        processResponse(response, dbDeleteHandler.cause().getMessage());
-      }
-    });*/
   }
 
   /**
@@ -958,9 +881,7 @@ public class FileServerVerticle extends AbstractVerticle {
     LOGGER.debug("Info : " + failureMessage);
     try {
       JsonObject json = new JsonObject(failureMessage);
-      //LOGGER.debug("FILE SERVER AT 946 = "+ json.getString(JSON_TYPE));
       int type = json.getInteger(TYPE_KEY);
-//      int type = json.getInteger(STATUS);
       HttpStatusCode httpStatusCode = HttpStatusCode.getByValue(type);
       String urnTitle = json.getString(JSON_TITLE);
       ResponseUrn urn;
