@@ -58,8 +58,8 @@ public class DatabaseServiceTest {
   private static final Logger LOGGER = LogManager.getLogger(DatabaseServiceTest.class);
   private static RestClient client;
   private static ElasticsearchContainer elasticContainer;
-  public static String CONTAINER = "docker.elastic.co/elasticsearch/elasticsearch:7.12.1";
-  //public static String CONTAINER = "docker.elastic.co/elasticsearch/elasticsearch:8.3.3";
+  //public static String CONTAINER = "docker.elastic.co/elasticsearch/elasticsearch:7.12.1";
+  public static String CONTAINER = "docker.elastic.co/elasticsearch/elasticsearch:8.3.3";
   public static String index = "file-metadata";
 
   private static DatabaseService dbService;
