@@ -42,6 +42,7 @@ public class Configuration {
         if (jsonObject != null) {
             return jsonObject.getString(path);
         } else {
+
             return null;
         }
     }
