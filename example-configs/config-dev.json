@@ -3,6 +3,10 @@
 	"zookeepers": [
 		"zookeeper"
 	],
+	"apiConfiguration" : {
+		"ngsildBasePath" : "/ngsi-ld/v1",
+		"dxV1BasePath" : "/iudx/v1"
+	},
 	"clusterId": "iudx-fs-cluster",
 	"modules": [
 		{

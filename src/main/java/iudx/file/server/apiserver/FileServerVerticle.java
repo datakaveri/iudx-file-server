@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import iudx.file.server.apiserver.response.ResponseType;
+import iudx.file.server.apiserver.utilities.Configuration;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -109,8 +110,8 @@ public class FileServerVerticle extends AbstractVerticle {
   private ContentTypeValidator contentTypeValidator;
   private WebClientFactory webClientFactory;
   private CatalogueService catalogueService;
-  private String basePath;
-  private String iudxV1BasePath;
+  private String ngsildBasePath;
+  private String dxV1BasePath;
   private final ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
 
   @Override
@@ -136,8 +137,8 @@ public class FileServerVerticle extends AbstractVerticle {
     allowedMethods.add(HttpMethod.PATCH);
     allowedMethods.add(HttpMethod.PUT);
 
-    basePath = config().getString("basePath");
-    iudxV1BasePath = config().getString("iudxV1BasePath");
+    ngsildBasePath = Configuration.getBasePath(Configuration.NGSILD_BASE_PATH);
+    dxV1BasePath = Configuration.getBasePath(Configuration.IUDX_V1_BASE_PATH);
 
     router = Router.router(vertx);
     router.route().handler(
@@ -168,13 +169,13 @@ public class FileServerVerticle extends AbstractVerticle {
 
     ValidationsHandler temporalQueryVaidationHandler =
         new ValidationsHandler(RequestType.TEMPORAL_QUERY);
-    router.get(basePath + API_TEMPORAL).handler(BodyHandler.create())
+    router.get(ngsildBasePath + API_TEMPORAL).handler(BodyHandler.create())
         .handler(temporalQueryVaidationHandler)
         .handler(AuthHandler.create(vertx))
         .handler(this::query).failureHandler(validationsFailureHandler);
 
     ValidationsHandler uploadValidationHandler = new ValidationsHandler(RequestType.UPLOAD);
-    router.post(iudxV1BasePath + API_FILE_UPLOAD)
+    router.post(dxV1BasePath + API_FILE_UPLOAD)
         .handler(BodyHandler.create().setUploadsDirectory(temp_directory).setBodyLimit(MAX_SIZE)
             .setDeleteUploadedFilesOnEnd(false))
         .handler(uploadValidationHandler)
@@ -182,25 +183,25 @@ public class FileServerVerticle extends AbstractVerticle {
         .handler(this::upload).failureHandler(validationsFailureHandler);
 
     ValidationsHandler downloadValidationHandler = new ValidationsHandler(RequestType.DOWNLOAD);
-    router.get(iudxV1BasePath + API_FILE_DOWNLOAD).handler(BodyHandler.create())
+    router.get(dxV1BasePath + API_FILE_DOWNLOAD).handler(BodyHandler.create())
         .handler(downloadValidationHandler)
         .handler(AuthHandler.create(vertx))
         .handler(this::download).failureHandler(validationsFailureHandler);
 
     ValidationsHandler deleteValidationHandler = new ValidationsHandler(RequestType.DELETE);
-    router.delete(iudxV1BasePath + API_FILE_DELETE).handler(BodyHandler.create())
+    router.delete(dxV1BasePath + API_FILE_DELETE).handler(BodyHandler.create())
         .handler(deleteValidationHandler)
         .handler(AuthHandler.create(vertx))
         .handler(this::delete).failureHandler(validationsFailureHandler);
 
     ValidationsHandler listQueryValidationHandler = new ValidationsHandler(RequestType.LIST_QUERY);
-    router.get(iudxV1BasePath + API_LIST_METADATA).handler(BodyHandler.create())
+    router.get(dxV1BasePath + API_LIST_METADATA).handler(BodyHandler.create())
         .handler(listQueryValidationHandler)
         .handler(AuthHandler.create(vertx))
         .handler(this::listMetadata).failureHandler(validationsFailureHandler);
 
     ValidationsHandler geoQueryValidationHandler = new ValidationsHandler(RequestType.GEO_QUERY);
-    router.get(basePath + API_SPATIAL).handler(BodyHandler.create())
+    router.get(ngsildBasePath + API_SPATIAL).handler(BodyHandler.create())
         .handler(geoQueryValidationHandler)
         .handler(AuthHandler.create(vertx))
         .handler(this::query).failureHandler(validationsFailureHandler);

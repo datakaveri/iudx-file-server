@@ -1,14 +1,16 @@
 package iudx.file.server.authenticator.authorization;
 
+import iudx.file.server.apiserver.utilities.Configuration;
+
 import java.util.stream.Stream;
 
 public enum Api {
-  UPLOAD("/iudx/v1/upload"),
-  DOWNLOAD("/iudx/v1/download"),
-  DELETE_FILE("/iudx/v1/delete"),
-  QUERY("/ngsi-ld/v1/temporal/entities"),
-  SPATIAL("/ngsi-ld/v1/entities"),
-  LIST("/iudx/v1/list"),
+  UPLOAD(Configuration.getBasePath(Configuration.IUDX_V1_BASE_PATH) + "/upload"),
+  DOWNLOAD(Configuration.getBasePath(Configuration.IUDX_V1_BASE_PATH) + "/download"),
+  DELETE_FILE(Configuration.getBasePath(Configuration.IUDX_V1_BASE_PATH) + "/delete"),
+  QUERY(Configuration.getBasePath(Configuration.NGSILD_BASE_PATH) + "/temporal/entities"),
+  SPATIAL(Configuration.getBasePath(Configuration.NGSILD_BASE_PATH) + "/entities"),
+  LIST(Configuration.getBasePath(Configuration.IUDX_V1_BASE_PATH) + "/list"),
   API_SPECS("/apis/spec"),
   APIS("/apis");
 
