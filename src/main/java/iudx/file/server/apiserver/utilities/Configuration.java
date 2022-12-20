@@ -15,7 +15,7 @@ public class Configuration {
     private static final String CONFIG_PATH = "./secrets/all-verticles-configs/config-dev.json";
     private static File file;
     private static Vertx vertx;
-    public static final String NGSILD_BASE_PATH = "ngsildBasePath";
+    public static final String NGSILD_BASE_PATH = "dxApiBasePath";
     public static final String IUDX_V1_BASE_PATH = "dxV1BasePath";
 
     /**
