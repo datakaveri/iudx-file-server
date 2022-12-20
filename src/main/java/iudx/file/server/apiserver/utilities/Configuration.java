@@ -28,7 +28,7 @@ public class Configuration {
         file = new File(CONFIG_PATH);
         if (file.exists()) {
             Buffer buffer = fileSystem.readFileBlocking(CONFIG_PATH);
-            JsonObject basePathJson = buffer.toJsonObject().getJsonObject("apiConfiguration");
+            JsonObject basePathJson = buffer.toJsonObject().getJsonObject("commonConfig");
             return basePathJson;
         } else {
             LOG.error("Couldn't read configuration file : " + CONFIG_PATH);
