@@ -3,7 +3,7 @@
 	"zookeepers": [
 		"zookeeper"
 	],
-	"apiConfiguration" : {
+	"commonConfig" : {
 		"ngsildBasePath" : "/ngsi-ld/v1",
 		"dxV1BasePath" : "/iudx/v1"
 	},
