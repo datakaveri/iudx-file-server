@@ -1,42 +1,85 @@
 package iudx.file.server.database.elasticdb.elastic;
 
-
-import static iudx.file.server.database.elasticdb.utilities.Constants.*;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
+import co.elastic.clients.elasticsearch._types.FieldValue;
+import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import io.vertx.core.json.JsonObject;
 import iudx.file.server.common.QueryType;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static iudx.file.server.database.elasticdb.utilities.Constants.FILE_ID;
+import static iudx.file.server.database.elasticdb.utilities.Constants.ID;
 
 public class ElasticQueryGenerator {
+  private static final Logger LOGGER = LogManager.getLogger(ElasticQueryGenerator.class);
+  Map<FilterType, List<Query>> queryLists = new HashMap<>();
+  ElasticsearchQueryDecorator queryDecorator = null;
 
-  private static QueryParser temporalQueryParser = new TemporalQueryParser();
-  private static QueryParser geoQueryParser = new GeoQueryParser();
-  // private static QueryParser listQueryParser = new ListQueryParser();
+  public Query getQuery(JsonObject json, QueryType type) {
 
-
-  public String getQuery(JsonObject json, QueryType type) {
-    BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-    boolQuery.filter(QueryBuilders.termsQuery(ID, json.getString(ID)));
-    if (QueryType.TEMPORAL_GEO.equals(type)) {
-      boolQuery = temporalQueryParser.parse(boolQuery, json);
-      boolQuery = geoQueryParser.parse(boolQuery, json);
-    } else if (QueryType.TEMPORAL.equals(type)) {
-      boolQuery = temporalQueryParser.parse(boolQuery, json);
-    } else if (QueryType.GEO.equals(type)) {
-      boolQuery = geoQueryParser.parse(boolQuery, json);
+    for (FilterType filterType : FilterType.values()) {
+      queryLists.put(filterType, new ArrayList<Query>());
     }
 
-    return boolQuery.toString();
+    FieldValue field = FieldValue.of(json.getString(ID));
+
+    TermsQueryField termQueryField = TermsQueryField.of(e -> e.value(List.of(field)));
+    Query idTermsQuery = TermsQuery.of(query -> query.field("id").terms(termQueryField))._toQuery();
+
+    queryLists.get(FilterType.FILTER).add(idTermsQuery);
+
+    if (QueryType.TEMPORAL_GEO.equals(type)) {
+      queryDecorator = new TemporalQueryFiltersDecorator(queryLists, json);
+      queryDecorator.add();
+      queryDecorator = new GeoQueryFiltersDecorator(queryLists, json);
+      queryDecorator.add();
+    } else if (QueryType.TEMPORAL.equals(type)) {
+      queryDecorator = new TemporalQueryFiltersDecorator(queryLists, json);
+      queryDecorator.add();
+    } else if (QueryType.GEO.equals(type)) {
+      queryDecorator = new GeoQueryFiltersDecorator(queryLists, json);
+      queryDecorator.add();
+    }
+    Query q = getBoolQuery(queryLists);
+    LOGGER.info("query from elastic: {}", q.toString());
+
+    return q;
   }
 
-  // TODO : discuss if it will be better to include other filters.
-  public String deleteQuery(String id) {
+  public Query deleteQuery(String id) {
+    Query deleteQuery = MatchQuery.of(e -> e.field(FILE_ID).query(id))._toQuery();
+    return deleteQuery;
+  }
 
-    JsonObject json = new JsonObject();
-    JsonObject matchJson = new JsonObject();
-    matchJson.put(FILE_ID, id);
-    json.put("match", matchJson);
+  private Query getBoolQuery(Map<FilterType, List<Query>> filterQueries) {
+    BoolQuery.Builder boolQuery = new BoolQuery.Builder();
 
-    return json.toString();
+    for (Map.Entry<FilterType, List<Query>> entry : filterQueries.entrySet()) {
+      if (FilterType.FILTER.equals(entry.getKey())
+          && filterQueries.get(FilterType.FILTER).size() > 0) {
+        boolQuery.filter(filterQueries.get(FilterType.FILTER));
+      }
+
+      if (FilterType.MUST_NOT.equals(entry.getKey())
+          && filterQueries.get(FilterType.MUST_NOT).size() > 0) {
+        boolQuery.mustNot(filterQueries.get(FilterType.MUST_NOT));
+      }
+
+      if (FilterType.MUST.equals(entry.getKey()) && filterQueries.get(FilterType.MUST).size() > 0) {
+        boolQuery.must(filterQueries.get(FilterType.MUST));
+      }
+
+      if (FilterType.SHOULD.equals(entry.getKey())
+          && filterQueries.get(FilterType.SHOULD).size() > 0) {
+        boolQuery.should(filterQueries.get(FilterType.SHOULD));
+      }
+    }
+
+    return boolQuery.build()._toQuery();
   }
 }

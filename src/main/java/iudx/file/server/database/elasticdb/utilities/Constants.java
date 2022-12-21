@@ -27,6 +27,13 @@ public class Constants extends iudx.file.server.common.Constants {
   public static final String SEARCH_REQ_PARAM = "/_search";
   public static final String COUNT_REQ_PARAM = "/_count";
   public static final String ID = "id";
+  public static final String ID_NOT_FOUND = "No id found";
+  public static final String EMPTY_RESOURCE_ID = "resource-id is empty";
+  public static final String SEARCH_TYPE = "searchType";
+  public static final String SEARCHTYPE_NOT_FOUND = "No searchType found";
+  public static final String MALFORMED_ID = "Malformed Id ";
+  public static final String RESPONSE_FILTER_REGEX = "(.*)responseFilter(.*)";
+  public static final String RESPONSE_ATTRS = "attrs";
   public static final String FILE_ID="fileId";
   public static final String TIME_RANGE="timeRange";
   public static final String TIME_RANGE_STARTTIME="startTime";

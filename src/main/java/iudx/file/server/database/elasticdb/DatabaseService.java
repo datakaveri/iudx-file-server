@@ -5,6 +5,7 @@ import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -14,17 +15,11 @@ import iudx.file.server.common.QueryType;
 @ProxyGen
 public interface DatabaseService {
 
+  Future<JsonObject> search(final JsonObject query, final QueryType type);
 
-  @Fluent
-  DatabaseService search(final JsonObject query,final QueryType type, final Handler<AsyncResult<JsonObject>> handler);
+  Future<JsonObject> save(final JsonObject json);
 
-
-  @Fluent
-  DatabaseService save(final JsonObject json, final Handler<AsyncResult<JsonObject>> handler);
-
-  @Fluent
-  DatabaseService delete(final String id, final Handler<AsyncResult<JsonObject>> handler);
-
+  Future<JsonObject> delete(final String id);
 
   @GenIgnore
   static DatabaseService createProxy(Vertx vertx, String address) {
