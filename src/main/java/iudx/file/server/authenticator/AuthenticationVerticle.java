@@ -1,6 +1,8 @@
 package iudx.file.server.authenticator;
 
 import static iudx.file.server.common.Constants.*;
+
+import iudx.file.server.common.Api;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.AbstractVerticle;
@@ -31,6 +33,9 @@ public class AuthenticationVerticle extends AbstractVerticle {
   private AuthenticationService jwtAuthenticationService;
   private WebClient webClient;
   private CacheService cacheService;
+  private String dxApiBasePath;
+  private String iudxApiBasePath;
+  private Api api;
   private static final Logger LOGGER = LogManager.getLogger(AuthenticationVerticle.class);
 
   @Override
@@ -48,21 +53,24 @@ public class AuthenticationVerticle extends AbstractVerticle {
        * Default jwtIgnoreExpiry is false. If set through config, then that value is taken
        */
       boolean jwtIgnoreExpiry = config().getBoolean("jwtIgnoreExpiry") == null ? false
-          : config().getBoolean("jwtIgnoreExpiry");
+              : config().getBoolean("jwtIgnoreExpiry");
       if (jwtIgnoreExpiry) {
         jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);
         LOGGER
-            .warn("JWT ignore expiration set to true, do not set IgnoreExpiration in production!!");
+                .warn("JWT ignore expiration set to true, do not set IgnoreExpiration in production!!");
       }
       JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
       cacheService = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
+      dxApiBasePath = config().getString("dxApiBasePath");
+      iudxApiBasePath = config().getString("iudxApiBasePath");
+      api = new Api(dxApiBasePath,iudxApiBasePath);
       jwtAuthenticationService = new JwtAuthenticationServiceImpl(vertx, jwtAuth, config(),
-          catalogueService, cacheService);
+              catalogueService, cacheService, api);
       /* Publish the Authentication service with the Event Bus against an address. */
       binder = new ServiceBinder(vertx);
 
       consumer = binder.setAddress(AUTH_SERVICE_ADDRESS).register(AuthenticationService.class,
-          jwtAuthenticationService);
+              jwtAuthenticationService);
       LOGGER.info("AUTH service deployed");
 
     }).onFailure(handler -> {

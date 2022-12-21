@@ -27,28 +27,34 @@ import io.vertx.core.json.JsonObject;
  */
 public class DeployerDev {
   private static final Logger LOGGER = LogManager.getLogger(DeployerDev.class);
-
+  private static JsonObject getConfigForModule(int moduleIndex,JsonObject configurations) {
+    JsonObject commonConfigs=configurations.getJsonObject("commonConfig");
+    JsonObject config = configurations.getJsonArray("modules").getJsonObject(moduleIndex);
+    return config.mergeIn(commonConfigs, true);
+  }
   public static void recursiveDeploy(Vertx vertx, JsonObject configs, int i) {
     if (i >= configs.getJsonArray("modules").size()) {
       LOGGER.info("Deployed all");
       return;
     }
-    JsonObject config = configs.getJsonArray("modules").getJsonObject(i);
-    config.put("host", configs.getString("host"));
-    String moduleName = config.getString("id");
-    int numInstances = config.getInteger("verticleInstances");
+//    JsonObject config = configs.getJsonArray("modules").getJsonObject(i);
+    JsonObject moduleConfigurations = getConfigForModule(i, configs);
+
+    moduleConfigurations.put("host", configs.getString("host"));
+    String moduleName = moduleConfigurations.getString("id");
+    int numInstances = moduleConfigurations.getInteger("verticleInstances");
     vertx.deployVerticle(moduleName,
-                          new DeploymentOptions()
-                            .setInstances(numInstances)
-                            .setConfig(config),
-                          ar -> {
-      if (ar.succeeded()) {
-        LOGGER.info("Deployed " + moduleName);
-        recursiveDeploy(vertx, configs, i+1);
-      } else {
-        LOGGER.fatal("Failed to deploy " + moduleName + " cause:", ar.cause());
-      }
-    });
+            new DeploymentOptions()
+                    .setInstances(numInstances)
+                    .setConfig(moduleConfigurations),
+            ar -> {
+              if (ar.succeeded()) {
+                LOGGER.info("Deployed " + moduleName);
+                recursiveDeploy(vertx, configs, i+1);
+              } else {
+                LOGGER.fatal("Failed to deploy " + moduleName + " cause:", ar.cause());
+              }
+            });
   }
 
   public static void deploy(String configPath) {
@@ -57,7 +63,7 @@ public class DeployerDev {
 
     String config;
     try {
-     config = new String(Files.readAllBytes(Paths.get(configPath)), StandardCharsets.UTF_8);
+      config = new String(Files.readAllBytes(Paths.get(configPath)), StandardCharsets.UTF_8);
     } catch (Exception e) {
       LOGGER.fatal("Couldn't read configuration file");
       return;
@@ -73,10 +79,10 @@ public class DeployerDev {
 
   public static void main(String[] args) {
     CLI cli = CLI.create("IUDX File Server").setSummary("A CLI to deploy the resource server")
-        .addOption(new Option().setLongName("help").setShortName("h").setFlag(true)
-            .setDescription("display help"))
-        .addOption(new Option().setLongName("config").setShortName("c")
-            .setRequired(true).setDescription("configuration file"));
+            .addOption(new Option().setLongName("help").setShortName("h").setFlag(true)
+                    .setDescription("display help"))
+            .addOption(new Option().setLongName("config").setShortName("c")
+                    .setRequired(true).setDescription("configuration file"));
 
     StringBuilder usageString = new StringBuilder();
     cli.usage(usageString);

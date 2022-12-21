@@ -4,6 +4,10 @@
 		"zookeeper"
 	],
 	"clusterId": "iudx-fs-cluster",
+	"commonConfig" : {
+		"dxApiBasePath" : "/ngsi-ld/v1",
+		"iudxApiBasePath" : "/iudx/v1"
+	},
 	"modules": [
 		{
 			"id": "iudx.file.server.apiserver.FileServerVerticle",

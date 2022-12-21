@@ -1,6 +1,6 @@
 package iudx.file.server.authenticator;
 
-import static iudx.file.server.authenticator.authorization.Api.UPLOAD;
+
 import static iudx.file.server.authenticator.authorization.Method.GET;
 import static iudx.file.server.authenticator.authorization.Method.POST;
 import static org.junit.Assert.assertFalse;
@@ -17,6 +17,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
+import iudx.file.server.common.Api;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
@@ -40,7 +41,6 @@ import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import iudx.file.server.authenticator.authorization.Api;
 import iudx.file.server.authenticator.authorization.AuthorizationRequest;
 import iudx.file.server.authenticator.utilities.JwtData;
 import iudx.file.server.cache.CacheService;
@@ -64,22 +64,25 @@ public class JwtAuthServiceTest {
   HttpRequest<Buffer> httpRequestMock;
   @Mock
   HttpResponse<Buffer> httpResponseMock;
+  private static String dxApiBasePath;
+  private static String iudxApiBasePath;
+  private static Api api;
 
   private static String delegateJwt =
-      "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJhMTNlYjk1NS1jNjkxLTRmZDMtYjIwMC1mMThiYzc4ODEwYjUiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoiZm9vYmFyLml1ZHguaW8iLCJleHAiOjE2MjgxODIzMjcsImlhdCI6MTYyODEzOTEyNywiaWlkIjoicmk6ZXhhbXBsZS5jb20vNzllN2JmYTYyZmFkNmM3NjViYWM2OTE1NGMyZjI0Yzk0Yzk1MjIwYS9yZXNvdXJjZS1ncm91cC9yZXNvdXJjZSIsInJvbGUiOiJkZWxlZ2F0ZSIsImNvbnMiOnsiYWNjZXNzIjpbImFwaSIsInN1YnMiLCJpbmdlc3QiLCJmaWxlIl19fQ.tUoO1L-tXByxNtjY_iK41neeshCiYrNr505wWn1hC1ACwoeL9frebABeFiCqJQGrsBsGOZ1-OACZdHBNcetwyw";
+          "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJhMTNlYjk1NS1jNjkxLTRmZDMtYjIwMC1mMThiYzc4ODEwYjUiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoiZm9vYmFyLml1ZHguaW8iLCJleHAiOjE2MjgxODIzMjcsImlhdCI6MTYyODEzOTEyNywiaWlkIjoicmk6ZXhhbXBsZS5jb20vNzllN2JmYTYyZmFkNmM3NjViYWM2OTE1NGMyZjI0Yzk0Yzk1MjIwYS9yZXNvdXJjZS1ncm91cC9yZXNvdXJjZSIsInJvbGUiOiJkZWxlZ2F0ZSIsImNvbnMiOnsiYWNjZXNzIjpbImFwaSIsInN1YnMiLCJpbmdlc3QiLCJmaWxlIl19fQ.tUoO1L-tXByxNtjY_iK41neeshCiYrNr505wWn1hC1ACwoeL9frebABeFiCqJQGrsBsGOZ1-OACZdHBNcetwyw";
   private static String consumerJwt =
-      "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiIzMmE0Yjk3OS00ZjRhLTRjNDQtYjBjMy0yZmUxMDk5NTJiNWYiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoiZm9vYmFyLml1ZHguaW8iLCJleHAiOjE2MjgxODUzNTksImlhdCI6MTYyODE0MjE1OSwiaWlkIjoicmc6ZXhhbXBsZS5jb20vNzllN2JmYTYyZmFkNmM3NjViYWM2OTE1NGMyZjI0Yzk0Yzk1MjIwYS9yZXNvdXJjZS1ncm91cCIsInJvbGUiOiJjb25zdW1lciIsImNvbnMiOnsiYWNjZXNzIjpbImFwaSIsInN1YnMiLCJpbmdlc3QiLCJmaWxlIl19fQ.NoEiJB_5zwTU-zKbFHTefMuqDJ7L6mA11mfckzA4IZOSrdweSmR6my0zGcf7hEVljX9OOFm4tToZQYfCtPg4Uw";
+          "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiIzMmE0Yjk3OS00ZjRhLTRjNDQtYjBjMy0yZmUxMDk5NTJiNWYiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoiZm9vYmFyLml1ZHguaW8iLCJleHAiOjE2MjgxODUzNTksImlhdCI6MTYyODE0MjE1OSwiaWlkIjoicmc6ZXhhbXBsZS5jb20vNzllN2JmYTYyZmFkNmM3NjViYWM2OTE1NGMyZjI0Yzk0Yzk1MjIwYS9yZXNvdXJjZS1ncm91cCIsInJvbGUiOiJjb25zdW1lciIsImNvbnMiOnsiYWNjZXNzIjpbImFwaSIsInN1YnMiLCJpbmdlc3QiLCJmaWxlIl19fQ.NoEiJB_5zwTU-zKbFHTefMuqDJ7L6mA11mfckzA4IZOSrdweSmR6my0zGcf7hEVljX9OOFm4tToZQYfCtPg4Uw";
   private static String providerJwt =
-      "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJhMTNlYjk1NS1jNjkxLTRmZDMtYjIwMC1mMThiYzc4ODEwYjUiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoiZm9vYmFyLml1ZHguaW8iLCJleHAiOjE2MjgxODU4MjEsImlhdCI6MTYyODE0MjYyMSwiaWlkIjoicmc6ZXhhbXBsZS5jb20vNzllN2JmYTYyZmFkNmM3NjViYWM2OTE1NGMyZjI0Yzk0Yzk1MjIwYS9yZXNvdXJjZS1ncm91cCIsInJvbGUiOiJwcm92aWRlciIsImNvbnMiOnsiYWNjZXNzIjpbImFwaSIsInN1YnMiLCJpbmdlc3QiLCJmaWxlIl19fQ.BSoCQPUT8_YA-6p7-_OEUBOfbbvQZs8VKwDzdnubT3gutVueRe42a9d9mhszhijMQK7Qa0ww_rmAaPhA_2jP6w";
+          "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJhMTNlYjk1NS1jNjkxLTRmZDMtYjIwMC1mMThiYzc4ODEwYjUiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoiZm9vYmFyLml1ZHguaW8iLCJleHAiOjE2MjgxODU4MjEsImlhdCI6MTYyODE0MjYyMSwiaWlkIjoicmc6ZXhhbXBsZS5jb20vNzllN2JmYTYyZmFkNmM3NjViYWM2OTE1NGMyZjI0Yzk0Yzk1MjIwYS9yZXNvdXJjZS1ncm91cCIsInJvbGUiOiJwcm92aWRlciIsImNvbnMiOnsiYWNjZXNzIjpbImFwaSIsInN1YnMiLCJpbmdlc3QiLCJmaWxlIl19fQ.BSoCQPUT8_YA-6p7-_OEUBOfbbvQZs8VKwDzdnubT3gutVueRe42a9d9mhszhijMQK7Qa0ww_rmAaPhA_2jP6w";
 
   private static String closedResourceToken =
-      "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJhMTNlYjk1NS1jNjkxLTRmZDMtYjIwMC1mMThiYzc4ODEwYjUiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoicnMuaXVkeC5pbyIsImV4cCI6MTYyODYxMjg5MCwiaWF0IjoxNjI4NTY5NjkwLCJpaWQiOiJyZzppaXNjLmFjLmluLzg5YTM2MjczZDc3ZGFjNGNmMzgxMTRmY2ExYmJlNjQzOTI1NDdmODYvcnMuaXVkeC5pby9zdXJhdC1pdG1zLXJlYWx0aW1lLWluZm9ybWF0aW9uL3N1cmF0LWl0bXMtbGl2ZS1ldGEiLCJyb2xlIjoiY29uc3VtZXIiLCJjb25zIjp7ImFjY2VzcyI6WyJhcGkiLCJzdWJzIiwiaW5nZXN0IiwiZmlsZSJdfX0.OBJZUc15s8gDA6PB5IK3KkUGmjvJQWr7RvByhMXmmrCULmPGgtesFmNDVG2gqD4WXZob5OsjxZ1vxRmgMBgLxw";
+          "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJhMTNlYjk1NS1jNjkxLTRmZDMtYjIwMC1mMThiYzc4ODEwYjUiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoicnMuaXVkeC5pbyIsImV4cCI6MTYyODYxMjg5MCwiaWF0IjoxNjI4NTY5NjkwLCJpaWQiOiJyZzppaXNjLmFjLmluLzg5YTM2MjczZDc3ZGFjNGNmMzgxMTRmY2ExYmJlNjQzOTI1NDdmODYvcnMuaXVkeC5pby9zdXJhdC1pdG1zLXJlYWx0aW1lLWluZm9ybWF0aW9uL3N1cmF0LWl0bXMtbGl2ZS1ldGEiLCJyb2xlIjoiY29uc3VtZXIiLCJjb25zIjp7ImFjY2VzcyI6WyJhcGkiLCJzdWJzIiwiaW5nZXN0IiwiZmlsZSJdfX0.OBJZUc15s8gDA6PB5IK3KkUGmjvJQWr7RvByhMXmmrCULmPGgtesFmNDVG2gqD4WXZob5OsjxZ1vxRmgMBgLxw";
 
   private static String openResourceToken =
-      "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiI4NDRlMjUxYi01NzRiLTQ2ZTYtOTI0Ny1mNzZmMWY3MGE2MzciLCJpc3MiOiJhdXRodmVydHguaXVkeC5pbyIsImF1ZCI6InJzLml1ZHguaW8iLCJleHAiOjE2MzEyMTQxNjgsImlhdCI6MTYzMTE3MDk2OCwiaWlkIjoicnM6cnMuaXVkeC5pbyIsInJvbGUiOiJjb25zdW1lciIsImNvbnMiOnt9fQ.ATXT7FUkuWiEkfQECW4kIjuiGmUbYh51k-8as5-XLUXrWJVFI6LaJnk2JE6gr_RKknNksGEuxodO2rGzkEhfLQ";
+          "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiI4NDRlMjUxYi01NzRiLTQ2ZTYtOTI0Ny1mNzZmMWY3MGE2MzciLCJpc3MiOiJhdXRodmVydHguaXVkeC5pbyIsImF1ZCI6InJzLml1ZHguaW8iLCJleHAiOjE2MzEyMTQxNjgsImlhdCI6MTYzMTE3MDk2OCwiaWlkIjoicnM6cnMuaXVkeC5pbyIsInJvbGUiOiJjb25zdW1lciIsImNvbnMiOnt9fQ.ATXT7FUkuWiEkfQECW4kIjuiGmUbYh51k-8as5-XLUXrWJVFI6LaJnk2JE6gr_RKknNksGEuxodO2rGzkEhfLQ";
 
   private String id =
-      "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";
+          "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";
 
   @BeforeAll
   @DisplayName("Initialize Vertx and deploy Auth Verticle")
@@ -87,26 +90,32 @@ public class JwtAuthServiceTest {
     config = new Configuration();
     authConfig = config.configLoader(1, vertx);
     authConfig.put("host", "rs.iudx.io");
+    authConfig.put("dxApiBasePath","/ngsi-ld/v1");
+    authConfig.put("iudxApiBasePath", "/iudx/v1");
 
     JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
     jwtAuthOptions.addPubSecKey(
-        new PubSecKeyOptions()
-            .setAlgorithm("ES256")
-            .setBuffer("-----BEGIN PUBLIC KEY-----\n" +
-                "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE8BKf2HZ3wt6wNf30SIsbyjYPkkTS\n" +
-                "GGyyM2/MGF/zYTZV9Z28hHwvZgSfnbsrF36BBKnWszlOYW0AieyAUKaKdg==\n" +
-                "-----END PUBLIC KEY-----\n" +
-                ""));
+            new PubSecKeyOptions()
+                    .setAlgorithm("ES256")
+                    .setBuffer("-----BEGIN PUBLIC KEY-----\n" +
+                            "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE8BKf2HZ3wt6wNf30SIsbyjYPkkTS\n" +
+                            "GGyyM2/MGF/zYTZV9Z28hHwvZgSfnbsrF36BBKnWszlOYW0AieyAUKaKdg==\n" +
+                            "-----END PUBLIC KEY-----\n" +
+                            ""));
     jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);// ignore token expiration only for
-                                                             // test
+    // test
     JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
 
     webClientFactory = new WebClientFactory(vertx, authConfig);
     // catalogueService = new CatalogueServiceImpl(vertx, webClientFactory, authConfig);
     catalogueServiceMock = mock(CatalogueServiceImpl.class);
     cacheServiceMock = mock(CacheService.class);
+    dxApiBasePath = authConfig.getString("dxApiBasePath");
+    iudxApiBasePath = authConfig.getString("iudxApiBasePath");
+    api = new Api(dxApiBasePath,iudxApiBasePath);
+
     jwtAuthenticationService = new JwtAuthenticationServiceImpl(vertx, jwtAuth, authConfig,
-        catalogueServiceMock, cacheServiceMock);
+            catalogueServiceMock, cacheServiceMock, api);
     jwtAuthImplSpy = spy(jwtAuthenticationService);
 
     LOGGER.info("Auth tests setup complete");
@@ -158,7 +167,7 @@ public class JwtAuthServiceTest {
   @DisplayName("decode invalid jwt")
   public void decodeJwtFailure(VertxTestContext testContext) {
     String jwt =
-        "eyJ0eXAiOiJKV1QiLCJbGciOiJFUzI1NiJ9.eyJzdWIiOiJhM2U3ZTM0Yy00NGJmLTQxZmYtYWQ4Ni0yZWUwNGE5NTQ0MTgiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoiZm9vYmFyLml1ZHguaW8iLCJleHAiOjE2Mjc2ODk5NDAsImlhdCI6MTYyNzY0Njc0MCwiaWlkIjoicmc6ZXhhbXBsZS5jb20vNzllN2JmYTYyZmFkNmM3NjViYWM2OTE1NGMyZjI0Yzk0Yzk1MjIwYS9yZXNvdXJjZS1ncm91cCIsInJvbGUiOiJkZWxlZ2F0ZSIsImNvbnMiOnt9fQ.eJjCUvWuGD3L3Dn2fKj8Ydl1byGoyRS59VfL6ZJcdKR3_eIhm6SOY-CW3p5XDSYVhRTlWvlPLjfXYo9t_PxgnA";
+            "eyJ0eXAiOiJKV1QiLCJbGciOiJFUzI1NiJ9.eyJzdWIiOiJhM2U3ZTM0Yy00NGJmLTQxZmYtYWQ4Ni0yZWUwNGE5NTQ0MTgiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoiZm9vYmFyLml1ZHguaW8iLCJleHAiOjE2Mjc2ODk5NDAsImlhdCI6MTYyNzY0Njc0MCwiaWlkIjoicmc6ZXhhbXBsZS5jb20vNzllN2JmYTYyZmFkNmM3NjViYWM2OTE1NGMyZjI0Yzk0Yzk1MjIwYS9yZXNvdXJjZS1ncm91cCIsInJvbGUiOiJkZWxlZ2F0ZSIsImNvbnMiOnt9fQ.eJjCUvWuGD3L3Dn2fKj8Ydl1byGoyRS59VfL6ZJcdKR3_eIhm6SOY-CW3p5XDSYVhRTlWvlPLjfXYo9t_PxgnA";
     jwtAuthenticationService.decodeJwt(jwt).onComplete(handler -> {
       if (handler.succeeded()) {
         testContext.failNow(handler.cause());
@@ -176,11 +185,11 @@ public class JwtAuthServiceTest {
     JsonObject authInfo = new JsonObject();
 
     String id =
-        "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";
+            "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";
 
     authInfo.put("token", consumerJwt);
     authInfo.put("id", id);
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("apiEndpoint", api.getApiFileDownload());
     authInfo.put("method", Method.GET);
 
     JwtData jwtData = new JwtData();
@@ -189,7 +198,7 @@ public class JwtAuthServiceTest {
     jwtData.setExp(1627408865L);
     jwtData.setIat(1627408865L);
     jwtData.setIid(
-        "ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+            "ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("consumer");
     jwtData.setCons(new JsonObject().put("access", new JsonArray().add("file")));
 
@@ -211,18 +220,18 @@ public class JwtAuthServiceTest {
     JsonObject authInfo = new JsonObject();
 
     String id =
-        "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta";
+            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta";
 
     authInfo.put("token", openResourceToken);
     authInfo.put("id", id);
-    authInfo.put("apiEndpoint", Api.QUERY.getApiEndpoint());
+    authInfo.put("apiEndpoint", api.getApiTemporal());
     authInfo.put("method", Method.GET);
 
     JsonObject request = new JsonObject();
 
     doAnswer(Answer -> Future.succeededFuture(true)).when(catalogueServiceMock).isItemExist(any());
     doAnswer(Answer -> Future.succeededFuture(true)).when(jwtAuthImplSpy)
-        .isValidAudienceValue(any());
+            .isValidAudienceValue(any());
     doAnswer(Answer -> Future.succeededFuture("CLOSE")).when(jwtAuthImplSpy).isOpenResource(any());
 
 
@@ -247,8 +256,8 @@ public class JwtAuthServiceTest {
       }
     });
   }
-  
- 
+
+
   @Test
   @DisplayName("success - allow  access to query endpoint for close token")
   public void access4QueryAPICloseToken(VertxTestContext testContext) {
@@ -256,18 +265,18 @@ public class JwtAuthServiceTest {
     JsonObject authInfo = new JsonObject();
 
     String id =
-        "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta";
+            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta";
 
     authInfo.put("token", closedResourceToken);
     authInfo.put("id", id);
-    authInfo.put("apiEndpoint", Api.QUERY.getApiEndpoint());
+    authInfo.put("apiEndpoint", api.getApiTemporal());
     authInfo.put("method", Method.GET);
 
     JsonObject request = new JsonObject();
 
     doAnswer(Answer -> Future.succeededFuture(true)).when(catalogueServiceMock).isItemExist(any());
     doAnswer(Answer -> Future.succeededFuture(true)).when(jwtAuthImplSpy)
-        .isValidAudienceValue(any());
+            .isValidAudienceValue(any());
     doAnswer(Answer -> Future.succeededFuture("CLOSE")).when(jwtAuthImplSpy).isOpenResource(any());
 
 
@@ -293,7 +302,7 @@ public class JwtAuthServiceTest {
     });
   }
 
-  //@Disabled  
+  //@Disabled
   @Test
   @DisplayName("success - allow  access to query open endpoint for open token")
   public void access4QueryOpenTokenOpenResource(VertxTestContext testContext) {
@@ -301,18 +310,18 @@ public class JwtAuthServiceTest {
     JsonObject authInfo = new JsonObject();
 
     String id =
-        "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";
+            "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";
 
     authInfo.put("token", openResourceToken);
     authInfo.put("id", id);
-    authInfo.put("apiEndpoint", Api.QUERY.getApiEndpoint());
+    authInfo.put("apiEndpoint", api.getApiTemporal());
     authInfo.put("method", Method.GET);
 
     JsonObject request = new JsonObject();
 
     doAnswer(Answer -> Future.succeededFuture(true)).when(catalogueServiceMock).isItemExist(any());
     doAnswer(Answer -> Future.succeededFuture(true)).when(jwtAuthImplSpy)
-        .isValidAudienceValue(any());
+            .isValidAudienceValue(any());
     doAnswer(Answer -> Future.succeededFuture("OPEN")).when(jwtAuthImplSpy).isOpenResource(any());
 
 
@@ -347,8 +356,8 @@ public class JwtAuthServiceTest {
 
     authInfo.put("token", consumerJwt);
     authInfo.put("id",
-        "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+            "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    authInfo.put("apiEndpoint", api.getApiFileDownload());
     authInfo.put("method", Method.GET);
 
     JwtData jwtData = new JwtData();
@@ -357,7 +366,7 @@ public class JwtAuthServiceTest {
     jwtData.setExp(1627408865L);
     jwtData.setIat(1627408865L);
     jwtData.setIid(
-        "ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+            "ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("consumer");
     jwtData.setCons(null);
 
@@ -380,8 +389,8 @@ public class JwtAuthServiceTest {
 
     authInfo.put("token", consumerJwt);
     authInfo.put("id",
-        "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+            "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    authInfo.put("apiEndpoint", api.getApiFileDownload());
     authInfo.put("method", Method.GET);
 
     JwtData jwtData = new JwtData();
@@ -390,7 +399,7 @@ public class JwtAuthServiceTest {
     jwtData.setExp(1627408865L);
     jwtData.setIat(1627408865L);
     jwtData.setIid(
-        "ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+            "ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("delegate");
     jwtData.setCons(null);
 
@@ -414,8 +423,8 @@ public class JwtAuthServiceTest {
 
     authInfo.put("token", consumerJwt);
     authInfo.put("id",
-        "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+            "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    authInfo.put("apiEndpoint", api.getApiFileDownload());
     authInfo.put("method", Method.GET);
 
     JwtData jwtData = new JwtData();
@@ -424,7 +433,7 @@ public class JwtAuthServiceTest {
     jwtData.setExp(1627408865L);
     jwtData.setIat(1627408865L);
     jwtData.setIid(
-        "ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+            "ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("consumer");
     jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api")));
 
@@ -446,8 +455,8 @@ public class JwtAuthServiceTest {
 
     authInfo.put("token", consumerJwt);
     authInfo.put("id",
-        "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+            "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    authInfo.put("apiEndpoint", api.getApiFileDownload());
     authInfo.put("method", Method.GET);
 
     JwtData jwtData = new JwtData();
@@ -456,7 +465,7 @@ public class JwtAuthServiceTest {
     jwtData.setExp(1627408865L);
     jwtData.setIat(1627408865L);
     jwtData.setIid(
-        "ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+            "ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("provider");
     jwtData.setCons(new JsonObject().put("access", new JsonArray().add("file")));
 
@@ -477,15 +486,15 @@ public class JwtAuthServiceTest {
 
     authInfo.put("token", consumerJwt);
     authInfo.put("id",
-        "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+            "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    authInfo.put("apiEndpoint", api.getApiFileDownload());
     authInfo.put("method", Method.GET);
 
     JsonObject request = new JsonObject();
 
     doAnswer(Answer -> Future.succeededFuture(true)).when(catalogueServiceMock).isItemExist(any());
     doAnswer(Answer -> Future.succeededFuture(true)).when(jwtAuthImplSpy)
-        .isValidAudienceValue(any());
+            .isValidAudienceValue(any());
     doAnswer(Answer -> Future.succeededFuture("OPEN")).when(jwtAuthImplSpy).isOpenResource(any());
 
 
@@ -518,14 +527,14 @@ public class JwtAuthServiceTest {
 
     authInfo.put("token", consumerJwt);
     authInfo.put("id", "example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group");
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("apiEndpoint", api.getApiFileDownload());
     authInfo.put("method", Method.GET);
 
     JsonObject request = new JsonObject();
 
     doAnswer(Answer -> Future.succeededFuture(true)).when(catalogueServiceMock).isItemExist(any());
     doAnswer(Answer -> Future.succeededFuture(true)).when(jwtAuthImplSpy)
-        .isValidAudienceValue(any());
+            .isValidAudienceValue(any());
 
     JsonObject cacheresponse = new JsonObject();
     JsonArray responseArray = new JsonArray();
@@ -563,7 +572,7 @@ public class JwtAuthServiceTest {
 
     authInfo.put("token", consumerJwt);
     authInfo.put("id", "example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group");
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("apiEndpoint", api.getApiFileDownload());
     authInfo.put("method", Method.GET);
 
     JsonObject request = new JsonObject();
@@ -571,8 +580,8 @@ public class JwtAuthServiceTest {
     doAnswer(Answer -> Future.succeededFuture(true)).when(catalogueServiceMock).isItemExist(any());
 
     doAnswer(Answer -> Future.failedFuture("invalid audience value"))
-        .when(jwtAuthImplSpy)
-        .isValidAudienceValue(any());
+            .when(jwtAuthImplSpy)
+            .isValidAudienceValue(any());
 
     jwtAuthImplSpy.tokenInterospect(request, authInfo, handler -> {
       if (handler.succeeded()) {
@@ -590,18 +599,18 @@ public class JwtAuthServiceTest {
 
     authInfo.put("token", consumerJwt);
     authInfo.put("id", "example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group");
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("apiEndpoint", api.getApiFileDownload());
     authInfo.put("method", Method.GET);
 
     JsonObject request = new JsonObject();
 
     doAnswer(Answer -> Future.failedFuture("resource doesn't exist"))
-        .when(catalogueServiceMock)
-        .isItemExist(any());
+            .when(catalogueServiceMock)
+            .isItemExist(any());
 
     doAnswer(Answer -> Future.succeededFuture(true))
-        .when(jwtAuthImplSpy)
-        .isValidAudienceValue(any());
+            .when(jwtAuthImplSpy)
+            .isValidAudienceValue(any());
 
     AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
     when(asyncResult.succeeded()).thenReturn(false);
@@ -693,11 +702,11 @@ public class JwtAuthServiceTest {
     JsonObject authInfo = new JsonObject();
 
     String id =
-        "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";
+            "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";
 
     authInfo.put("token", consumerJwt);
     authInfo.put("id", id);
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("apiEndpoint", api.getApiFileDownload());
     authInfo.put("method", Method.GET);
 
     JwtData jwtData = new JwtData();
@@ -706,7 +715,7 @@ public class JwtAuthServiceTest {
     jwtData.setExp(1627408865L);
     jwtData.setIat(1627408865L);
     jwtData.setIid(
-        "ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+            "ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("consumer");
     jwtData.setCons(new JsonObject().put("access", new JsonArray().add("file")));
 
@@ -730,7 +739,7 @@ public class JwtAuthServiceTest {
 
     authInfo.put("token", consumerJwt);
     authInfo.put("id", id);
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("apiEndpoint", api.getApiFileDownload());
     authInfo.put("method", Method.GET);
 
     JwtData jwtData = new JwtData();
@@ -754,16 +763,16 @@ public class JwtAuthServiceTest {
   @Test
   @DisplayName("authRequest should not equal")
   public void authRequestShouldNotEquals() {
-    AuthorizationRequest authR1 = new AuthorizationRequest(POST, UPLOAD);
-    AuthorizationRequest authR2 = new AuthorizationRequest(GET, UPLOAD);
+    AuthorizationRequest authR1 = new AuthorizationRequest(POST, api.getApiFileUpload());
+    AuthorizationRequest authR2 = new AuthorizationRequest(GET, api.getApiFileUpload());
     assertFalse(authR1.equals(authR2));
   }
 
   @Test
   @DisplayName("authRequest should have same hashcode")
   public void authRequestShouldhaveSamehash() {
-    AuthorizationRequest authR1 = new AuthorizationRequest(POST, UPLOAD);
-    AuthorizationRequest authR2 = new AuthorizationRequest(POST, UPLOAD);
+    AuthorizationRequest authR1 = new AuthorizationRequest(POST, api.getApiFileUpload());
+    AuthorizationRequest authR2 = new AuthorizationRequest(POST, api.getApiFileUpload());
     assertEquals(authR1.hashCode(), authR2.hashCode());
   }
 
@@ -786,7 +795,7 @@ public class JwtAuthServiceTest {
     jwtAuthenticationService.catWebClient = mock(WebClient.class);
 
     when(jwtAuthenticationService.catWebClient.get(anyInt(), anyString(), anyString()))
-        .thenReturn(httpRequestMock);
+            .thenReturn(httpRequestMock);
     when(httpRequestMock.addQueryParam(anyString(), anyString())).thenReturn(httpRequestMock);
     when(httpRequestMock.expect(any())).thenReturn(httpRequestMock);
     when(asyncResultMock.result()).thenReturn(httpResponseMock);
@@ -807,7 +816,7 @@ public class JwtAuthServiceTest {
         vertxTestContext.completeNow();
       } else {
         vertxTestContext
-            .failNow("open resource validation failed : " + openResourceHandler.cause());
+                .failNow("open resource validation failed : " + openResourceHandler.cause());
 
       }
     });
@@ -832,7 +841,7 @@ public class JwtAuthServiceTest {
     jwtAuthenticationService.catWebClient = mock(WebClient.class);
 
     when(jwtAuthenticationService.catWebClient.get(anyInt(), anyString(), anyString()))
-        .thenReturn(httpRequestMock);
+            .thenReturn(httpRequestMock);
     when(httpRequestMock.addQueryParam(anyString(), anyString())).thenReturn(httpRequestMock);
     when(httpRequestMock.expect(any())).thenReturn(httpRequestMock);
     when(asyncResultMock.result()).thenReturn(httpResponseMock);
@@ -850,7 +859,7 @@ public class JwtAuthServiceTest {
     jwtAuthenticationService.isOpenResource(id).onComplete(openResourceHandler -> {
       if (openResourceHandler.succeeded()) {
         vertxTestContext
-            .failNow("open resource validation failed : " + openResourceHandler.cause());
+                .failNow("open resource validation failed : " + openResourceHandler.cause());
       } else {
         assertNull(openResourceHandler.result());
         vertxTestContext.completeNow();
