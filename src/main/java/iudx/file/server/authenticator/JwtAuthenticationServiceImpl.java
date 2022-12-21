@@ -11,6 +11,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
+
+import iudx.file.server.authenticator.authorization.*;
+import iudx.file.server.common.Api;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,12 +32,6 @@ import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
-import iudx.file.server.authenticator.authorization.Api;
-import iudx.file.server.authenticator.authorization.AuthorizationContextFactory;
-import iudx.file.server.authenticator.authorization.AuthorizationRequest;
-import iudx.file.server.authenticator.authorization.AuthorizationStrategy;
-import iudx.file.server.authenticator.authorization.JwtAuthorization;
-import iudx.file.server.authenticator.authorization.Method;
 import iudx.file.server.authenticator.utilities.Constants;
 import iudx.file.server.authenticator.utilities.JwtData;
 import iudx.file.server.cache.CacheService;
@@ -55,6 +52,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   final String path;
   final CatalogueService catalogueService;
   final CacheService cache;
+  final Api api;
 
   // resourceGroupCache will contains ACL info about all resource group in a resource server
   private final Cache<String, String> resourceGroupCache = CacheBuilder
@@ -70,7 +68,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       .build();
 
   JwtAuthenticationServiceImpl(Vertx vertx, final JWTAuth jwtAuth, final JsonObject config,
-      final CatalogueService catalogueService, final CacheService cacheService) {
+      final CatalogueService catalogueService, final CacheService cacheService, Api api) {
     this.jwtAuth = jwtAuth;
     this.audience = config.getString("audience");
     this.catalogueService = catalogueService;
@@ -78,6 +76,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     host = config.getString("catalogueHost");
     port = config.getInteger("cataloguePort");
     this.path = Constants.CAT_RSG_PATH;
+    this.api = api;
 
     WebClientOptions options = new WebClientOptions();
     options.setTrustAll(true).setVerifyHost(false).setSsl(true);
@@ -97,7 +96,6 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
 
     ResultContainer result = new ResultContainer();
-
     jwtDecodeFuture.compose(decodeHandler -> {
       result.jwtData = decodeHandler;
       return isValidAudienceValue(result.jwtData);
@@ -117,11 +115,11 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       }
     }).compose(openResourceHandler -> {
       result.isOpen = openResourceHandler.equalsIgnoreCase("OPEN");
-      if (result.isOpen && OPEN_ENDPOINTS.contains(endPoint)) {
+      if (result.isOpen && checkOpenEndPoints(endPoint)) {
         JsonObject json = new JsonObject()
             .put(JSON_USERID, result.jwtData.getSub());
         return Future.succeededFuture(true);
-      } else if (QUERY_ENDPOINTS.contains(endPoint)) {
+      } else if (checkQueryEndPoints(endPoint)) {
         JsonObject json = new JsonObject()
             .put(JSON_USERID, result.jwtData.getSub());
         return Future.succeededFuture(true);
@@ -157,6 +155,28 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     });
 
     return this;
+  }
+
+  private boolean checkQueryEndPoints(String endPoint) {
+    for (String item : QUERY_ENDPOINTS)
+    {
+      if (endPoint.contains(item))
+      {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean checkOpenEndPoints(String endPoint) {
+    for(String item : OPEN_ENDPOINTS)
+    {
+      if(endPoint.contains(item))
+      {
+        return true;
+      }
+    }
+    return false;
   }
 
   public Future<String> isOpenResource(String id) {
@@ -324,32 +344,31 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     LOGGER.trace("validateAccess() started");
     Promise<JsonObject> promise = Promise.promise();
     String jwtId = jwtData.getIid().split(":")[1];
-
-    if (openResource && OPEN_ENDPOINTS.contains(authInfo.getString("apiEndpoint"))) {
+    if (openResource && checkOpenEndPoints(authInfo.getString("apiEndpoint"))) {
       LOGGER.info("User access is allowed.");
       JsonObject jsonResponse = new JsonObject();
       jsonResponse.put(JSON_IID, jwtId);
       jsonResponse.put(JSON_USERID, jwtData.getSub());
       return Future.succeededFuture(jsonResponse);
     }
-    
-    if(QUERY_ENDPOINTS.contains(authInfo.getString("apiEndpoint"))){
+
+    if(checkQueryEndPoints(authInfo.getString("apiEndpoint"))){
       LOGGER.info("User access is allowed. [Query endpoints]");
       JsonObject jsonResponse = new JsonObject();
       jsonResponse.put(JSON_IID, jwtId);
       jsonResponse.put(JSON_USERID, jwtData.getSub());
       return Future.succeededFuture(jsonResponse);
     }
-    
 
     Method method = Method.valueOf(authInfo.getString("method"));
-    Api api = Api.fromEndpoint(authInfo.getString("apiEndpoint"));
+    String api = authInfo.getString("apiEndpoint");
     AuthorizationRequest authRequest = new AuthorizationRequest(method, api);
-
-    AuthorizationStrategy authStrategy = AuthorizationContextFactory.create(jwtData.getRole());
+    AuthorizationStrategy authStrategy = AuthorizationContextFactory.create(jwtData.getRole(), this.api);
     LOGGER.info("strategy : " + authStrategy.getClass().getSimpleName());
     JwtAuthorization jwtAuthStrategy = new JwtAuthorization(authStrategy);
     LOGGER.info("endPoint : " + authInfo.getString("apiEndpoint"));
+    LOGGER.info("authRequest : " + authRequest);
+    LOGGER.info("jwtData " + jwtData);
     if (jwtAuthStrategy.isAuthorized(authRequest, jwtData)) {
       JsonObject jsonResponse = new JsonObject();
       jsonResponse.put("userID", jwtData.getSub());
@@ -365,6 +384,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   Future<Boolean> isValidAudienceValue(JwtData jwtData) {
     Promise<Boolean> promise = Promise.promise();
     if (audience != null && audience.equalsIgnoreCase(jwtData.getAud())) {
+
       promise.complete(true);
     } else {
       LOGGER.error("Incorrect audience value in jwt");
@@ -375,6 +395,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
   Future<Boolean> isValidId(JwtData jwtData, String id) {
     Promise<Boolean> promise = Promise.promise();
+    LOGGER.info("jwt data : "+jwtData.getIid());
+    LOGGER.info("id : " + id);
     String jwtId = jwtData.getIid().split(":")[1];
     LOGGER.info("id : {}, jwtID : {}", id, jwtId);
     if (id.equalsIgnoreCase(jwtId)) {
@@ -388,12 +410,12 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   }
 
   Future<Boolean> isRevokedClientToken(JwtData jwtData) {
+
     LOGGER.debug("isRevokedClientToken started");
     Promise<Boolean> promise = Promise.promise();
     CacheType cacheType = CacheType.REVOKED_CLIENT;
     String subId = jwtData.getSub();
     JsonObject requestJson = new JsonObject().put("type", cacheType).put("key", subId);
-
     LOGGER.debug("requestJson : " + requestJson);
     cache.get(requestJson, handler -> {
       if (handler.succeeded()) {
