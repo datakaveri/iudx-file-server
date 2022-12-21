@@ -26,57 +26,57 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class AuditingServiceTest {
-  private static Vertx vertxObj;
-  private static JsonObject dbConfig;
+    private static Vertx vertxObj;
+    private static JsonObject dbConfig;
 
-  @BeforeAll
-  @DisplayName("Deploying Verticle")
-  static void startVertex(Vertx vertx, VertxTestContext vertxTestContext) {
-    vertxObj = vertx;
-    AuditingService auditingService = new AuditingServiceImpl(vertxObj);
-    vertxTestContext.completeNow();
-  }
+    @BeforeAll
+    @DisplayName("Deploying Verticle")
+    static void startVertex(Vertx vertx, VertxTestContext vertxTestContext) {
+        vertxObj = vertx;
+        AuditingService auditingService = new AuditingServiceImpl(vertxObj);
+        vertxTestContext.completeNow();
+    }
 
-  @Test
-  @DisplayName("Testing Write Query Successful")
-  void writeDataSuccessful(VertxTestContext vertxTestContext) {
-    JsonObject request = new JsonObject();
-    ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
-    long time = zst.toInstant().toEpochMilli();
-    String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
-    request.put(EPOCH_TIME, time);
-    request.put(ISO_TIME, isoTime);
-    request.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
-    request.put(ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
-    request.put(API, "/iudx/v1/list");
-    request.put(RESPONSE_SIZE, 12);
-    AuditingServiceImpl auditingService = new AuditingServiceImpl(vertxObj);
+    @Test
+    @DisplayName("Testing Write Query Successful")
+    void writeDataSuccessful(VertxTestContext vertxTestContext) {
+        JsonObject request = new JsonObject();
+        ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+        long time = zst.toInstant().toEpochMilli();
+        String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
+        request.put(EPOCH_TIME, time);
+        request.put(ISO_TIME, isoTime);
+        request.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
+        request.put(ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
+        request.put(API, "/iudx/v1/list");
+        request.put(RESPONSE_SIZE, 12);
+        AuditingServiceImpl auditingService = new AuditingServiceImpl(vertxObj);
 
-    AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
-    AuditingServiceImpl.rmqService = mock(DataBrokerService.class);
+        AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+        AuditingServiceImpl.rmqService = mock(DataBrokerService.class);
 
-    when(asyncResult.succeeded()).thenReturn(true);
-    doAnswer(
-            new Answer<AsyncResult<JsonObject>>() {
-              @Override
-              public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
-                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(3)).handle(asyncResult);
-                return null;
-              }
-            })
-        .when(auditingService.rmqService)
-        .publishMessage(any(), anyString(), anyString(), any());
+        when(asyncResult.succeeded()).thenReturn(true);
+        doAnswer(
+                new Answer<AsyncResult<JsonObject>>() {
+                    @Override
+                    public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+                        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(3)).handle(asyncResult);
+                        return null;
+                    }
+                })
+                .when(auditingService.rmqService)
+                .publishMessage(any(), anyString(), anyString(), any());
 
-    auditingService.executeWriteQuery(
-        request,
-        handler -> {
-          if (handler.succeeded()) {
-            vertxTestContext.completeNow();
-          } else {
-            vertxTestContext.failNow("Failed");
-          }
-        });
-    verify(auditingService.rmqService, times(1))
-        .publishMessage(any(), anyString(), anyString(), any());
-  }
+        auditingService.executeWriteQuery(
+                request,
+                handler -> {
+                    if (handler.succeeded()) {
+                        vertxTestContext.completeNow();
+                    } else {
+                        vertxTestContext.failNow("Failed");
+                    }
+                });
+        verify(auditingService.rmqService, times(1))
+                .publishMessage(any(), anyString(), anyString(), any());
+    }
 }
