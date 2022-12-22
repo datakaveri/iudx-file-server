@@ -4,9 +4,9 @@ public final class AuthorizationRequest {
 
 
   private final Method method;
-  private final Api api;
+  private final String api;
 
-  public AuthorizationRequest(final Method method, final Api api) {
+  public AuthorizationRequest(final Method method, final String api) {
     this.method = method;
     this.api = api;
   }
@@ -15,7 +15,7 @@ public final class AuthorizationRequest {
     return method;
   }
 
-  public Api getApi() {
+  public String getApi() {
     return api;
   }
 

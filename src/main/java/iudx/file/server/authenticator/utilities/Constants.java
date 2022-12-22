@@ -7,10 +7,10 @@ public class Constants extends iudx.file.server.common.Constants {
   public static final long CACHE_TIMEOUT = 30;
   public static final String FILE_SERVER_REGEX = "(.*)file(.*)";
   public static final List<String> OPEN_ENDPOINTS =
-          List.of("ngsi-ld/v1/download");
+          List.of("/download");
   
   public static final List<String> QUERY_ENDPOINTS =
-      List.of("/ngsi-ld/v1/temporal/entities","/ngsi-ld/v1/entities","/iudx/v1/list");
+      List.of("/temporal/entities","/entities","/list");
 
   public static final String JSON_IID = "iid";
   public static final String JSON_EXPIRY = "expiry";

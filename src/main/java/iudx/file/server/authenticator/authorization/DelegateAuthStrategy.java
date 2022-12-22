@@ -1,6 +1,5 @@
 package iudx.file.server.authenticator.authorization;
 
-import static iudx.file.server.authenticator.authorization.Api.*;
 import static iudx.file.server.authenticator.authorization.Method.*;
 
 import java.util.ArrayList;
@@ -8,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import iudx.file.server.common.Api;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,13 +18,19 @@ public class DelegateAuthStrategy implements AuthorizationStrategy {
 
   private static final Logger LOGGER = LogManager.getLogger(DelegateAuthStrategy.class);
 
+  private final Api api;
   static Map<String, List<AuthorizationRequest>> delegateAuthorizationRules = new HashMap<>();
-  static {
+  public DelegateAuthStrategy(Api api)
+  {
+    this.api = api;
+    buildPermissions(api);
+  }
+  private void buildPermissions(Api api) {
 
     // file access list/rules
     List<AuthorizationRequest> fileAccessList = new ArrayList<>();
-    fileAccessList.add(new AuthorizationRequest(POST, UPLOAD));
-    fileAccessList.add(new AuthorizationRequest(DELETE, DELETE_FILE));
+    fileAccessList.add(new AuthorizationRequest(POST, api.getApiFileUpload()));
+    fileAccessList.add(new AuthorizationRequest(DELETE, api.getApiFileDelete()));
     delegateAuthorizationRules.put("file", fileAccessList);
   }
 

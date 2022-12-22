@@ -11,18 +11,18 @@
             "verticleInstances": 1,
             "ssl": true,
             "httpPort": 8443,
-            
+
             "automaticRecoveryEnabled": true,
-            
+
             "catalogueHost": "",
             "cataloguePort": 443,
-            
+
             "keystore": "secrets/keystore-file.jks",
             "keystorePassword": "",
-            
+
             "tmp_dir": "storage/temp-dir/",
             "upload_dir": "storage/upload-dir/",
-            
+
             "allowedContentType": {
                 "text/plain": "txt",
                 "text/csv": "csv",
@@ -38,13 +38,13 @@
             "id": "iudx.file.server.authenticator.AuthenticationVerticle",
             "verticleInstances": 1,
             "audience": "rs.iudx.io",
-            
+
             "catalogueHost": "",
             "cataloguePort": 443,
-            
+
             "authHost": "",
             "authPort": 443,
-            
+
 	       "jwtIgnoreExpiry": true
         },
         {
@@ -75,11 +75,11 @@
             "verticleInstances": 1,
             "dataBrokerIP": "localhost",
             "dataBrokerPort": 123,
-            
-            "prodVhost":"IUDX", 
+
+            "prodVhost":"IUDX",
             "internalVhost": "IUDX-INTERNAL",
             "externalVhost":"IUDX-EXTERNAL",
-            
+
             "dataBrokerUserName": "",
             "dataBrokerPassword": "",
             "dataBrokerManagementPort": 30042,
