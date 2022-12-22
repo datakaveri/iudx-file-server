@@ -1,6 +1,5 @@
 package iudx.file.server.authenticator;
 
-import static iudx.file.server.authenticator.authorization.Api.UPLOAD;
 import static iudx.file.server.authenticator.authorization.Method.GET;
 import static iudx.file.server.authenticator.authorization.Method.POST;
 import static org.junit.Assert.assertFalse;
@@ -17,6 +16,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
+import iudx.file.server.common.Api;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
@@ -40,7 +40,6 @@ import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import iudx.file.server.authenticator.authorization.Api;
 import iudx.file.server.authenticator.authorization.AuthorizationRequest;
 import iudx.file.server.authenticator.utilities.JwtData;
 import iudx.file.server.cache.CacheService;
@@ -81,12 +80,20 @@ public class JwtAuthServiceTest {
   private String id =
       "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";
 
+  private static String dxApiBasePath;
+  private static String iudxApiBasePath;
+  private static Api api;
+
   @BeforeAll
   @DisplayName("Initialize Vertx and deploy Auth Verticle")
   static void init(Vertx vertx, VertxTestContext testContext) {
     config = new Configuration();
     authConfig = config.configLoader(1, vertx);
     authConfig.put("host", "rs.iudx.io");
+    authConfig.put("dxApiBasePath","/ngsi-ld/v1");
+    authConfig.put("iudxApiBasePath","/iudx/v1");
+
+
 
     JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
     jwtAuthOptions.addPubSecKey(
@@ -105,8 +112,11 @@ public class JwtAuthServiceTest {
     // catalogueService = new CatalogueServiceImpl(vertx, webClientFactory, authConfig);
     catalogueServiceMock = mock(CatalogueServiceImpl.class);
     cacheServiceMock = mock(CacheService.class);
+    dxApiBasePath = authConfig.getString("dxApiBasePath");
+    iudxApiBasePath = authConfig.getString("iudxApiBasePath");
+    api = new Api(dxApiBasePath,iudxApiBasePath);
     jwtAuthenticationService = new JwtAuthenticationServiceImpl(vertx, jwtAuth, authConfig,
-        catalogueServiceMock, cacheServiceMock);
+        catalogueServiceMock, cacheServiceMock, api);
     jwtAuthImplSpy = spy(jwtAuthenticationService);
 
     LOGGER.info("Auth tests setup complete");
@@ -180,7 +190,7 @@ public class JwtAuthServiceTest {
 
     authInfo.put("token", consumerJwt);
     authInfo.put("id", id);
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("apiEndpoint", api.getApiFileDownload());
     authInfo.put("method", Method.GET);
 
     JwtData jwtData = new JwtData();
@@ -215,7 +225,7 @@ public class JwtAuthServiceTest {
 
     authInfo.put("token", openResourceToken);
     authInfo.put("id", id);
-    authInfo.put("apiEndpoint", Api.QUERY.getApiEndpoint());
+    authInfo.put("apiEndpoint", api.getApiTemporal());
     authInfo.put("method", Method.GET);
 
     JsonObject request = new JsonObject();
@@ -260,7 +270,7 @@ public class JwtAuthServiceTest {
 
     authInfo.put("token", closedResourceToken);
     authInfo.put("id", id);
-    authInfo.put("apiEndpoint", Api.QUERY.getApiEndpoint());
+    authInfo.put("apiEndpoint", api.getApiTemporal());
     authInfo.put("method", Method.GET);
 
     JsonObject request = new JsonObject();
@@ -305,7 +315,7 @@ public class JwtAuthServiceTest {
 
     authInfo.put("token", openResourceToken);
     authInfo.put("id", id);
-    authInfo.put("apiEndpoint", Api.QUERY.getApiEndpoint());
+    authInfo.put("apiEndpoint", api.getApiTemporal());
     authInfo.put("method", Method.GET);
 
     JsonObject request = new JsonObject();
@@ -348,7 +358,7 @@ public class JwtAuthServiceTest {
     authInfo.put("token", consumerJwt);
     authInfo.put("id",
         "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("apiEndpoint", api.getApiFileDownload());
     authInfo.put("method", Method.GET);
 
     JwtData jwtData = new JwtData();
@@ -381,7 +391,7 @@ public class JwtAuthServiceTest {
     authInfo.put("token", consumerJwt);
     authInfo.put("id",
         "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("apiEndpoint", api.getApiFileDownload());
     authInfo.put("method", Method.GET);
 
     JwtData jwtData = new JwtData();
@@ -415,7 +425,7 @@ public class JwtAuthServiceTest {
     authInfo.put("token", consumerJwt);
     authInfo.put("id",
         "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("apiEndpoint", api.getApiFileDownload());
     authInfo.put("method", Method.GET);
 
     JwtData jwtData = new JwtData();
@@ -447,7 +457,7 @@ public class JwtAuthServiceTest {
     authInfo.put("token", consumerJwt);
     authInfo.put("id",
         "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("apiEndpoint", api.getApiFileDownload());
     authInfo.put("method", Method.GET);
 
     JwtData jwtData = new JwtData();
@@ -478,7 +488,7 @@ public class JwtAuthServiceTest {
     authInfo.put("token", consumerJwt);
     authInfo.put("id",
         "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("apiEndpoint", api.getApiFileDownload());
     authInfo.put("method", Method.GET);
 
     JsonObject request = new JsonObject();
@@ -518,7 +528,7 @@ public class JwtAuthServiceTest {
 
     authInfo.put("token", consumerJwt);
     authInfo.put("id", "example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group");
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("apiEndpoint", api.getApiFileDownload());
     authInfo.put("method", Method.GET);
 
     JsonObject request = new JsonObject();
@@ -563,7 +573,7 @@ public class JwtAuthServiceTest {
 
     authInfo.put("token", consumerJwt);
     authInfo.put("id", "example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group");
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("apiEndpoint", api.getApiFileDownload());
     authInfo.put("method", Method.GET);
 
     JsonObject request = new JsonObject();
@@ -590,7 +600,7 @@ public class JwtAuthServiceTest {
 
     authInfo.put("token", consumerJwt);
     authInfo.put("id", "example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group");
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("apiEndpoint", api.getApiFileDownload());
     authInfo.put("method", Method.GET);
 
     JsonObject request = new JsonObject();
@@ -697,7 +707,7 @@ public class JwtAuthServiceTest {
 
     authInfo.put("token", consumerJwt);
     authInfo.put("id", id);
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("apiEndpoint", api.getApiFileDownload());
     authInfo.put("method", Method.GET);
 
     JwtData jwtData = new JwtData();
@@ -730,7 +740,7 @@ public class JwtAuthServiceTest {
 
     authInfo.put("token", consumerJwt);
     authInfo.put("id", id);
-    authInfo.put("apiEndpoint", Api.DOWNLOAD.getApiEndpoint());
+    authInfo.put("apiEndpoint", api.getApiFileDownload());
     authInfo.put("method", Method.GET);
 
     JwtData jwtData = new JwtData();
@@ -754,16 +764,16 @@ public class JwtAuthServiceTest {
   @Test
   @DisplayName("authRequest should not equal")
   public void authRequestShouldNotEquals() {
-    AuthorizationRequest authR1 = new AuthorizationRequest(POST, UPLOAD);
-    AuthorizationRequest authR2 = new AuthorizationRequest(GET, UPLOAD);
+    AuthorizationRequest authR1 = new AuthorizationRequest(POST, api.getApiFileUpload());
+    AuthorizationRequest authR2 = new AuthorizationRequest(GET, api.getApiFileUpload());
     assertFalse(authR1.equals(authR2));
   }
 
   @Test
   @DisplayName("authRequest should have same hashcode")
   public void authRequestShouldhaveSamehash() {
-    AuthorizationRequest authR1 = new AuthorizationRequest(POST, UPLOAD);
-    AuthorizationRequest authR2 = new AuthorizationRequest(POST, UPLOAD);
+    AuthorizationRequest authR1 = new AuthorizationRequest(POST, api.getApiFileUpload());
+    AuthorizationRequest authR2 = new AuthorizationRequest(POST, api.getApiFileUpload());
     assertEquals(authR1.hashCode(), authR2.hashCode());
   }
 

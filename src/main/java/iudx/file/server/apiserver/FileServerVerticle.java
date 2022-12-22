@@ -22,7 +22,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import io.vertx.ext.web.Route;
 import iudx.file.server.apiserver.response.ResponseType;
+import iudx.file.server.common.Api;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -111,7 +113,8 @@ public class FileServerVerticle extends AbstractVerticle {
   private ContentTypeValidator contentTypeValidator;
   private WebClientFactory webClientFactory;
   private CatalogueService catalogueService;
-
+  private String dxApiBasePath;
+  private String dxV1BasePath;
   private final ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
 
   @Override
@@ -136,6 +139,10 @@ public class FileServerVerticle extends AbstractVerticle {
     allowedMethods.add(HttpMethod.DELETE);
     allowedMethods.add(HttpMethod.PATCH);
     allowedMethods.add(HttpMethod.PUT);
+
+    dxApiBasePath = config().getString("dxApiBasePath");
+    dxV1BasePath = config().getString("iudxApiBasePath");
+    Api api = new Api(dxApiBasePath,dxV1BasePath);
 
     router = Router.router(vertx);
     router.route().handler(
@@ -166,13 +173,13 @@ public class FileServerVerticle extends AbstractVerticle {
 
     ValidationsHandler temporalQueryVaidationHandler =
         new ValidationsHandler(RequestType.TEMPORAL_QUERY);
-    router.get(API_TEMPORAL).handler(BodyHandler.create())
+    router.get(api.getApiTemporal()).handler(BodyHandler.create())
         .handler(temporalQueryVaidationHandler)
         .handler(AuthHandler.create(vertx))
         .handler(this::query).failureHandler(validationsFailureHandler);
 
     ValidationsHandler uploadValidationHandler = new ValidationsHandler(RequestType.UPLOAD);
-    router.post(API_FILE_UPLOAD)
+    router.post(api.getApiFileUpload())
         .handler(BodyHandler.create().setUploadsDirectory(temp_directory).setBodyLimit(MAX_SIZE)
             .setDeleteUploadedFilesOnEnd(false))
         .handler(uploadValidationHandler)
@@ -180,25 +187,25 @@ public class FileServerVerticle extends AbstractVerticle {
         .handler(this::upload).failureHandler(validationsFailureHandler);
 
     ValidationsHandler downloadValidationHandler = new ValidationsHandler(RequestType.DOWNLOAD);
-    router.get(API_FILE_DOWNLOAD).handler(BodyHandler.create())
+    router.get(api.getApiFileDownload()).handler(BodyHandler.create())
         .handler(downloadValidationHandler)
         .handler(AuthHandler.create(vertx))
         .handler(this::download).failureHandler(validationsFailureHandler);
 
     ValidationsHandler deleteValidationHandler = new ValidationsHandler(RequestType.DELETE);
-    router.delete(API_FILE_DELETE).handler(BodyHandler.create())
+    router.delete(api.getApiFileDelete()).handler(BodyHandler.create())
         .handler(deleteValidationHandler)
         .handler(AuthHandler.create(vertx))
         .handler(this::delete).failureHandler(validationsFailureHandler);
 
     ValidationsHandler listQueryValidationHandler = new ValidationsHandler(RequestType.LIST_QUERY);
-    router.get(API_LIST_METADATA).handler(BodyHandler.create())
+    router.get(api.getListMetaData()).handler(BodyHandler.create())
         .handler(listQueryValidationHandler)
         .handler(AuthHandler.create(vertx))
         .handler(this::listMetadata).failureHandler(validationsFailureHandler);
 
     ValidationsHandler geoQueryValidationHandler = new ValidationsHandler(RequestType.GEO_QUERY);
-    router.get(API_SPATIAL).handler(BodyHandler.create())
+    router.get(api.getApiSpatial()).handler(BodyHandler.create())
         .handler(geoQueryValidationHandler)
         .handler(AuthHandler.create(vertx))
         .handler(this::query).failureHandler(validationsFailureHandler);
@@ -277,6 +284,17 @@ public class FileServerVerticle extends AbstractVerticle {
       }
     });
     LOGGER.info("FileServerVerticle started successfully");
+
+    /* Print the deployed endpoints */
+    printDeployedEndpoints(router);
+  }
+
+  private void printDeployedEndpoints(Router router) {
+    for(Route route:router.getRoutes()) {
+      if(route.getPath() != null) {
+        LOGGER.info("API Endpoints deployed : "+ route.methods() +" : "+ route.getPath());
+      }
+    }
   }
 
   /**
