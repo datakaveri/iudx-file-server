@@ -45,7 +45,7 @@
             "authHost": "",
             "authPort": 443,
 
-	       "jwtIgnoreExpiry": true
+            "jwtIgnoreExpiry": true
         },
         {
             "id": "iudx.file.server.database.elasticdb.DatabaseVerticle",

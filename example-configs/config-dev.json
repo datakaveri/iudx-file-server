@@ -70,11 +70,11 @@
 			"verticleInstances": 1,
 			"dataBrokerIP": "localhost",
 			"dataBrokerPort": 123,
-			
-			"prodVhost":"", 
+
+			"prodVhost":"",
 			"internalVhost": "",
 			"externalVhost":"",
-			
+
 			"dataBrokerUserName": "",
 			"dataBrokerPassword": "",
 			"dataBrokerManagementPort": 30042,

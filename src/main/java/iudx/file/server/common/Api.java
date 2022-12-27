@@ -22,12 +22,16 @@ public class Api {
     private StringBuilder listMetaDataEndpoint;
     private static final Logger LOG = LogManager.getLogger(Api.class);
 
-    public Api(String dxApiBasePath, String iudxApiBasePath) {
+    private Api(String dxApiBasePath, String iudxApiBasePath) {
         this.dxApiBasePath = dxApiBasePath;
         this.iudxApiBasePath = iudxApiBasePath;
         buildEndpoints();
     }
 
+    public static Api getInstance(String dxApiBasePath, String iudxApiBasePath)
+    {
+        return new Api(dxApiBasePath,iudxApiBasePath);
+    }
 
     public void buildEndpoints() {
         temporalEndpoint = new StringBuilder(dxApiBasePath).append(API_TEMPORAL);

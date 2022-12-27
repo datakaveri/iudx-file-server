@@ -20,10 +20,14 @@ public class DelegateAuthStrategy implements AuthorizationStrategy {
 
   private final Api api;
   static Map<String, List<AuthorizationRequest>> delegateAuthorizationRules = new HashMap<>();
-  public DelegateAuthStrategy(Api api)
+  private DelegateAuthStrategy(Api api)
   {
     this.api = api;
     buildPermissions(api);
+  }
+  public static DelegateAuthStrategy getInstance(Api apis)
+  {
+    return new DelegateAuthStrategy(apis);
   }
   private void buildPermissions(Api api) {
 

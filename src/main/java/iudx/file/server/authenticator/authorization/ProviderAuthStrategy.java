@@ -22,10 +22,14 @@ public class ProviderAuthStrategy implements AuthorizationStrategy {
 
   private final Api api;
   static Map<String, List<AuthorizationRequest>> providerAuthorizationRules = new HashMap<>();
-  public ProviderAuthStrategy(Api api)
+  private ProviderAuthStrategy(Api api)
   {
     this.api = api;
     buildPermissions(api);
+  }
+  public static ProviderAuthStrategy getInstance(Api apis)
+  {
+    return new ProviderAuthStrategy(apis);
   }
   private void buildPermissions(Api api) {
 
