@@ -114,7 +114,7 @@ public class JwtAuthServiceTest {
     cacheServiceMock = mock(CacheService.class);
     dxApiBasePath = authConfig.getString("dxApiBasePath");
     iudxApiBasePath = authConfig.getString("iudxApiBasePath");
-    api = new Api(dxApiBasePath,iudxApiBasePath);
+    api = Api.getInstance(dxApiBasePath,iudxApiBasePath);
     jwtAuthenticationService = new JwtAuthenticationServiceImpl(vertx, jwtAuth, authConfig,
         catalogueServiceMock, cacheServiceMock, api);
     jwtAuthImplSpy = spy(jwtAuthenticationService);

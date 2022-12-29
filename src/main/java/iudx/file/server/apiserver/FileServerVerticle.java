@@ -142,7 +142,7 @@ public class FileServerVerticle extends AbstractVerticle {
 
     dxApiBasePath = config().getString("dxApiBasePath");
     dxV1BasePath = config().getString("iudxApiBasePath");
-    Api api = new Api(dxApiBasePath,dxV1BasePath);
+    Api api = Api.getInstance(dxApiBasePath,dxV1BasePath);
 
     router = Router.router(vertx);
     router.route().handler(
