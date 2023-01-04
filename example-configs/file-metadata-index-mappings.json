@@ -1,0 +1,40 @@
+{
+  "mappings": {
+    "dynamic": "strict",
+    "properties": {
+      "file-download-url": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "fileId": {
+        "type": "keyword",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "id": {
+        "type": "keyword",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "location": {
+        "type": "geo_shape"
+      },
+      "timeRange": {
+        "type": "date_range"
+      }
+    }
+  }
+}
