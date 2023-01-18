@@ -12,7 +12,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-       repository: tharak1242/iudx-deployment
+       repository: datakaveri/iudx-deployment
        token: "${{ secrets.JENKINS_UPDATE }}"
        fetch-depth: 0
     - name: Update file-server docker image tags
