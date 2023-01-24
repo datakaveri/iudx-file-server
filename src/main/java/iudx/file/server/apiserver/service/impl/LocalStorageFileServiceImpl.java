@@ -44,7 +44,14 @@ public class LocalStorageFileServiceImpl implements FileService {
     final JsonObject metadata = new JsonObject();
     final JsonObject finalResponse = new JsonObject();
     LOGGER.info(directory + filePath);
-    fileSystem.mkdirsBlocking(directory + filePath);
+    if(directory.charAt(directory.length()-1) != '/')
+    {
+      fileSystem.mkdirsBlocking(directory + "/" +filePath);
+    }
+    else
+    {
+      fileSystem.mkdirsBlocking(directory + filePath);
+    }
     Iterator<FileUpload> fileUploadIterator = files.iterator();
     while (fileUploadIterator.hasNext()) {
       FileUpload fileUpload = fileUploadIterator.next();
