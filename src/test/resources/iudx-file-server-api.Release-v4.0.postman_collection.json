@@ -476,8 +476,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"upload"
 							]
 						}
@@ -552,8 +551,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"upload"
 							]
 						}
@@ -628,8 +626,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"upload"
 							]
 						}
@@ -704,8 +701,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"upload"
 							]
 						}
@@ -788,8 +784,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"upload"
 							]
 						}
@@ -889,8 +884,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"upload"
 							]
 						}
@@ -974,8 +968,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"upload"
 							]
 						}
@@ -1065,8 +1058,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"upload"
 							]
 						}
@@ -1146,8 +1138,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"upload"
 							]
 						}
@@ -1226,8 +1217,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"upload"
 							]
 						}
@@ -1321,8 +1311,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"upload"
 							]
 						}
@@ -1365,8 +1354,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"download"
 							],
 							"query": [
@@ -1419,8 +1407,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"download"
 							],
 							"query": [
@@ -1464,8 +1451,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"download"
 							],
 							"query": [
@@ -1509,8 +1495,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"download"
 							],
 							"query": [
@@ -1565,8 +1550,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"download"
 							],
 							"query": [
@@ -1620,8 +1604,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"download"
 							],
 							"query": [
@@ -1675,8 +1658,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"download"
 							],
 							"query": [
@@ -1720,8 +1702,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"download"
 							],
 							"query": [
@@ -1776,8 +1757,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"download"
 							],
 							"query": [
@@ -1830,8 +1810,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"download"
 							],
 							"query": [
@@ -1888,8 +1867,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{dxApiBasePath}}",
 								"temporal",
 								"entities"
 							],
@@ -1954,8 +1932,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{dxApiBasePath}}",
 								"temporal",
 								"entities"
 							],
@@ -2020,8 +1997,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{dxApiBasePath}}",
 								"temporal",
 								"entities"
 							],
@@ -2086,8 +2062,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{dxApiBasePath}}",
 								"temporal",
 								"entities"
 							],
@@ -2148,8 +2123,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{dxApiBasePath}}",
 								"temporal",
 								"entities"
 							],
@@ -2214,8 +2188,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{dxApiBasePath}}",
 								"temporal",
 								"entities"
 							],
@@ -2280,8 +2253,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{dxApiBasePath}}",
 								"entities"
 							],
 							"query": [
@@ -2354,8 +2326,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{dxApiBasePath}}",
 								"entities"
 							],
 							"query": [
@@ -2424,8 +2395,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{dxApiBasePath}}",
 								"temporal",
 								"entities"
 							],
@@ -2505,8 +2475,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{dxApiBasePath}}",
 								"temporal",
 								"entities"
 							],
@@ -2583,8 +2552,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"list"
 							],
 							"query": [
@@ -2636,8 +2604,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"list"
 							],
 							"query": [
@@ -2689,8 +2656,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"list"
 							],
 							"query": [
@@ -2742,8 +2708,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"list"
 							],
 							"query": [
@@ -2798,8 +2763,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"list"
 							],
 							"query": [
@@ -2848,8 +2812,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"delete"
 							],
 							"query": [
@@ -2902,8 +2865,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"delete"
 							],
 							"query": [
@@ -2947,8 +2909,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"delete"
 							],
 							"query": [
@@ -2992,8 +2953,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"delete"
 							],
 							"query": [
@@ -3046,8 +3006,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"delete"
 							],
 							"query": [
@@ -3091,8 +3050,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"delete"
 							],
 							"query": [
@@ -3145,8 +3103,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"delete"
 							],
 							"query": [
@@ -3195,8 +3152,7 @@
 								"{{base_url}}"
 							],
 							"path": [
-								"iudx",
-								"v1",
+								"{{iudxApiBasePath}}",
 								"delete"
 							],
 							"query": [
