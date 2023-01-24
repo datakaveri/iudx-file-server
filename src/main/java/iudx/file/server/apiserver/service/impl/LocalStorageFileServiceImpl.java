@@ -98,13 +98,22 @@ public class LocalStorageFileServiceImpl implements FileService {
       HttpServerResponse response) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject finalResponse = new JsonObject();
-    String path = directory + uploadDir + "/" + fileName;
+    String path = "";
+    if(directory.charAt(directory.length()-1) != '/')
+    {
+      path = directory + "/"  + uploadDir + "/" + fileName;
+    }
+    else
+    {
+      path = directory + uploadDir + "/" + fileName;
+    }
     LOGGER.info(path);
     response.setChunked(true);
+    String finalPath = path;
     fileSystem.exists(path, existHandler -> {
       if (existHandler.succeeded()) {
         if (existHandler.result()) {
-          fileSystem.open(path, new OpenOptions().setCreate(true), readEvent -> {
+          fileSystem.open(finalPath, new OpenOptions().setCreate(true), readEvent -> {
             if (readEvent.failed()) {
               finalResponse.put("statusCode", HttpStatus.SC_BAD_REQUEST);
               promise.complete(finalResponse);
