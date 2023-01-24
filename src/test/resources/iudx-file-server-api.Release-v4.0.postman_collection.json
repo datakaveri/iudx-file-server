@@ -409,7 +409,7 @@
 			"name": "upload",
 			"item": [
 				{
-					"name": "IUDX file upload - Resource level (sample)",
+					"name": "200 (Success) DX file upload - Resource level (sample)",
 					"event": [
 						{
 							"listen": "test",
@@ -485,7 +485,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file upload - 401 Resource level (sample)",
+					"name": "401 (not authorized) DX file upload - Resource level (sample)",
 					"event": [
 						{
 							"listen": "test",
@@ -561,7 +561,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file upload - Group level (sample)",
+					"name": "200 (Success) DX file upload - Group level (sample)",
 					"event": [
 						{
 							"listen": "test",
@@ -637,7 +637,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file upload - 401 Group level (sample)",
+					"name": "401 (not authorized) DX file upload - Group level (sample)",
 					"event": [
 						{
 							"listen": "test",
@@ -713,7 +713,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file upload - Resource level (Archive)",
+					"name": "200 (Success) DX file upload - Resource level (Archive)",
 					"event": [
 						{
 							"listen": "test",
@@ -797,7 +797,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file upload - 401 Resource level (Archive)",
+					"name": "401 (not authorized) DX file upload - Resource level (Archive)",
 					"event": [
 						{
 							"listen": "test",
@@ -898,7 +898,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file upload - Group level (Archive)",
+					"name": "200 (Success) DX file upload - Group level (Archive)",
 					"event": [
 						{
 							"listen": "test",
@@ -983,7 +983,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file upload - 401 Group level (Archive)",
+					"name": "401 (not authorized) DX file upload - Group level (Archive)",
 					"event": [
 						{
 							"listen": "test",
@@ -1074,7 +1074,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file upload - 400 (No id param in request)",
+					"name": "400 (No id param in request) DX file upload",
 					"event": [
 						{
 							"listen": "test",
@@ -1155,7 +1155,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file upload - 400 (Invalid isSample value)",
+					"name": "400 (Invalid isSample value) DX file upload",
 					"event": [
 						{
 							"listen": "test",
@@ -1235,7 +1235,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file upload - Resource level (External Storage)",
+					"name": "200 (Success) DX file upload - Resource level (External Storage)",
 					"event": [
 						{
 							"listen": "test",
@@ -1335,7 +1335,7 @@
 			"name": "download",
 			"item": [
 				{
-					"name": "IUDX file download - RL (Sample file )",
+					"name": "200 (Success) DX file download - RL (Sample file )",
 					"event": [
 						{
 							"listen": "test",
@@ -1380,7 +1380,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file download -400 (invalid file id)",
+					"name": "400 (invalid file id) DX file download",
 					"event": [
 						{
 							"listen": "test",
@@ -1434,7 +1434,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file download - GL (Sample file )",
+					"name": "200 (Success) DX file download - GL (Sample file )",
 					"event": [
 						{
 							"listen": "test",
@@ -1479,7 +1479,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file download -Resource level (Archive file )",
+					"name": "200 (Success) DX file download -Resource level (Archive file )",
 					"event": [
 						{
 							"listen": "test",
@@ -1524,7 +1524,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file download - 401 (No Token) RL (Archive file )",
+					"name": "401 (not authorized) DX file download - RL (Archive file )",
 					"event": [
 						{
 							"listen": "test",
@@ -1580,7 +1580,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file download - 401 (Invalid Token) RL (Archive file ) Copy",
+					"name": "401 (not authorized)  DX file download -RL (Archive file )",
 					"event": [
 						{
 							"listen": "test",
@@ -1635,7 +1635,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file download 404 -Resource level (Archive file )",
+					"name": "404 (Not Found) DX file download -Resource level (Archive file )",
 					"event": [
 						{
 							"listen": "test",
@@ -1690,7 +1690,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file download -Group level (Archive file )",
+					"name": "200 (Success) DX file download -Group level (Archive file )",
 					"event": [
 						{
 							"listen": "test",
@@ -1735,7 +1735,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file download - 401 (No Token) GL (Archive file )",
+					"name": "401 (not authorized) DX file download - GL (Archive file )",
 					"event": [
 						{
 							"listen": "test",
@@ -1791,7 +1791,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file download 404 -Group level (Archive file )",
+					"name": "404 (Not Found) DX file download -Group level (Archive file )",
 					"event": [
 						{
 							"listen": "test",
@@ -1850,7 +1850,7 @@
 			"name": "query",
 			"item": [
 				{
-					"name": "Search for Files of an open resource (using openToken)",
+					"name": "200 (Success) Search for Files of an open resource (using openToken)",
 					"event": [
 						{
 							"listen": "test",
@@ -1916,7 +1916,7 @@
 					"response": []
 				},
 				{
-					"name": "Search for Files of an open resource group (using openToken)",
+					"name": "200 (Success) Search for Files of an open resource group (using openToken)",
 					"event": [
 						{
 							"listen": "test",
@@ -1982,7 +1982,7 @@
 					"response": []
 				},
 				{
-					"name": "Search for Files  of a secure resource (using secureToken)",
+					"name": "200 (Success) Search for Files  of a secure resource (using secureToken)",
 					"event": [
 						{
 							"listen": "test",
@@ -2048,7 +2048,7 @@
 					"response": []
 				},
 				{
-					"name": "Search for Files of a secure resource group  (using secureRGToken)",
+					"name": "200 (Success) Search for Files of a secure resource group  (using secureRGToken)",
 					"event": [
 						{
 							"listen": "test",
@@ -2114,7 +2114,7 @@
 					"response": []
 				},
 				{
-					"name": "Search for Files - 401 (No Token)",
+					"name": "401 (not authorized) Search for Files",
 					"event": [
 						{
 							"listen": "test",
@@ -2176,7 +2176,7 @@
 					"response": []
 				},
 				{
-					"name": "Search for Files using Temporal parameters",
+					"name": "200 (Success) Search for Files using Temporal parameters",
 					"event": [
 						{
 							"listen": "test",
@@ -2242,7 +2242,7 @@
 					"response": []
 				},
 				{
-					"name": "Search for Files using Spatial [geo(circle)]",
+					"name": "200 (Success) Search for Files using Spatial [geo(circle)]",
 					"event": [
 						{
 							"listen": "test",
@@ -2307,7 +2307,7 @@
 					"response": []
 				},
 				{
-					"name": "Search for Files using Spatial [geo(polygon)]",
+					"name": "200 (Success) Search for Files using Spatial [geo(polygon)]",
 					"event": [
 						{
 							"listen": "prerequest",
@@ -2386,7 +2386,7 @@
 					"response": []
 				},
 				{
-					"name": "Complex Search [temporal+geo(Circle) search]",
+					"name": "200 (Success) Complex Search [temporal+geo(Circle) search]",
 					"event": [
 						{
 							"listen": "test",
@@ -2464,7 +2464,7 @@
 					"response": []
 				},
 				{
-					"name": "Complex Search [temporal+geo(Circle) search] - 401 (No Token)",
+					"name": "401 (not authorized) Complex Search [temporal+geo(Circle) search]",
 					"event": [
 						{
 							"listen": "test",
@@ -2545,7 +2545,7 @@
 					"response": []
 				},
 				{
-					"name": "List metadata of an open resource (using openToken)",
+					"name": "200 (Success) List metadata of an open resource (using openToken)",
 					"event": [
 						{
 							"listen": "test",
@@ -2598,7 +2598,7 @@
 					"response": []
 				},
 				{
-					"name": "List metadata of an open resource group (using openToken)",
+					"name": "200 (Success) List metadata of an open resource group (using openToken)",
 					"event": [
 						{
 							"listen": "test",
@@ -2651,7 +2651,7 @@
 					"response": []
 				},
 				{
-					"name": "List metadata of a secure resource (using secureToken)",
+					"name": "200 (Success) List metadata of a secure resource (using secureToken)",
 					"event": [
 						{
 							"listen": "test",
@@ -2704,7 +2704,7 @@
 					"response": []
 				},
 				{
-					"name": "List metadata of a secure resource group (using secureRGToken)",
+					"name": "200 (Success) List metadata of a secure resource group (using secureRGToken)",
 					"event": [
 						{
 							"listen": "test",
@@ -2757,7 +2757,7 @@
 					"response": []
 				},
 				{
-					"name": "List metadata - 401 (No Token)",
+					"name": "401 (not authorized) List metadata",
 					"event": [
 						{
 							"listen": "test",
@@ -2818,7 +2818,7 @@
 			"name": "delete",
 			"item": [
 				{
-					"name": "IUDX file delete -RL  (sample file)",
+					"name": "200 (Success) DX file delete -RL  (sample file)",
 					"event": [
 						{
 							"listen": "test",
@@ -2863,7 +2863,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file delete - RL 404 (sample file)",
+					"name": "404 (Not Found) DX file delete - RL  (sample file)",
 					"event": [
 						{
 							"listen": "test",
@@ -2917,7 +2917,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file delete -GL (sample file)",
+					"name": "200 (Success) DX file delete -GL (sample file)",
 					"event": [
 						{
 							"listen": "test",
@@ -2962,7 +2962,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file delete - RL  (Archive file)",
+					"name": "200 (Success) DX file delete - RL  (Archive file)",
 					"event": [
 						{
 							"listen": "test",
@@ -3007,7 +3007,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file delete 404 - RL (Archive file)",
+					"name": "404 (Not Found) DX file delete - RL (Archive file)",
 					"event": [
 						{
 							"listen": "test",
@@ -3061,7 +3061,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file delete - GL (Archive file)",
+					"name": "200 (Success) DX file delete - GL (Archive file)",
 					"event": [
 						{
 							"listen": "test",
@@ -3106,7 +3106,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file delete 404 - GL (Archive file)",
+					"name": "404 (Not Found) IUDX file delete - GL (Archive file)",
 					"event": [
 						{
 							"listen": "test",
@@ -3160,7 +3160,7 @@
 					"response": []
 				},
 				{
-					"name": "IUDX file delete - RL  (External Storage)",
+					"name": "200 (Success) DX file delete - RL  (External Storage)",
 					"event": [
 						{
 							"listen": "test",
