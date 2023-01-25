@@ -13,31 +13,58 @@ consumes:
   - "text/plain"
 
 info:
-  title: "IUDX File Server APIs"
+  title: "Data Exchange File Server APIs"
   version: 4.0.0
+  x-logo:
+    url: "https://iudx.org.in/wp-content/uploads/2020/12/iudx-ideal.png"
+    backgroundColor: "#FFFFFF"
+    altText: "IUDX logo"
   description: |
     
     # Introduction
-    The File Server is IUDX File store which allows upload, download and discovery of Files.
+    The File Server is DX(Data Exchange) File store which allows upload, download and discovery of Files.
     For Upload it allows uploading Files with group id or resource item id, it also allow user to attach additional metadata fields to the uploaded file.
     For Discovery it allows temporal queries to search files data within time ranges, geo parameters. It also allows user to list file metadata using resource group id or resourfce item id. 
     
-    # API HTTP Responses
-    Apart from the response codes specified in each API, the API server may respond with certain 4xx and 5xx error codes which are related to common API Gateway behaviours. The application should address them accordingly.
+    # Configurations
+    - **Server**: 
+      - In the doc, we display the server url to be https://example-fs.com with the hostname as example-fs.com
+      - This could be configured according to the deployment
+    - **Base path**:
+      - Base path is the path on which API is served, relative to the host
+      - It is the initial part of the API
+      - The base path value could be configured according to the deployment
+      - Currently, the following APIs have `/ngsi-ld/v1` base path
+          -  /temporal/entities
+          -  /entities
+      - The following APIs have `/iudx/v1` base path
+          -  /upload
+          -  /download
+          -  /list
+          -  /delete
+      <br>
+    - **Request Samples**:
+      - The `<tokeValue>` in the header of request sample could be replaced with respective token value [Also refer Tokens section [here](#section/Tokens)]
+    
+    
+    
+    # Tokens
+    All the <b>upload, download and delete</b> for archival calls to the file server should now contain a valid DX auth token presented in the query header. 
+    To upload, download and delete for archival files a consumer must get a token along with the associated constraints from the DX Auth Server.
     
     # Pagination
     File server also offers way to paginate the result for queries. If a query returns large number of records then user can use additional parameters in query parameters to limit numbers of records to be returned.
     
-    `*Pagination is applicable only for /temporal/entities API`
+    Pagination is applicable only for `/temporal/entities` API
     
     additional parameters to be used:
       - <b>offset</b> : The from parameter defines the offset from the first result you want to fetch,  ( <i>default : 0</i> ,<i>minValue: 0</i>, <i>maxValue: 49999</i> )
       - <b>limit</b> : The size parameter allows you to configure the maximum results to be returned  ( <i>default: 5000</i> ,<i>minValue: 0</i>, <i>maxValue: 5000</i> )
     
-    
-    # Tokens
-    All the <b>*upload, download and delete*</b> for archival calls to the file server should now contain a valid IUDX auth token presented in the query header. 
-    To upload, download and delete for archival files a consumer must get a token along with the associated constraints from the IUDX Auth Server.
+    # API HTTP Responses
+    Apart from the response codes specified in each API, the API server may respond with certain 4xx and 5xx error codes which are related to common API Gateway behaviours. The application should address them accordingly.
+  
+
   contact:
     name: For support contact IUDX Team at
     email: support@iudx.org.in
@@ -51,18 +78,23 @@ tags:
      x-displayName: Discovery
      description: Search APIs to discover files or metadata.
 
+servers:
+  - url: 'https://example-fs.com/iudx/v1'
+    description: 'Development Server URL'
+
+
 paths:
-  /iudx/v1/upload:
+  /upload:
     post:
       tags:
         - Files
       summary: Upload a File
       operationId: upload-document
-      description: Allows user to upload documents to IUDX system, it also allows user to attach additional metadata fields using form-parameters.
+      description: Allows user to upload documents to DX system, it also allows user to attach additional metadata fields using form-parameters.
       parameters:
         - name: token
           in: header
-          description: A valid <b> IUDX Auth token </b> to process the requests.
+          description: A valid <b> DX Auth token </b> to process the requests.
           required: true
           schema:
             type: string
@@ -75,11 +107,27 @@ paths:
           required: false
           schema:
             type: boolean
+
+      x-codeSamples:
+        - lang: 'cURL'
+          label: 'upload file (request URL + payload) '
+          source: |
+            curl --location --request POST 'https://example-fs.com/iudx/v1/upload' \
+            --header 'token: <tokenValue>' \
+            --form 'file=@"/home/user/uploadFile.txt"' \
+            --form 'id="iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"' \
+            --form 'isSample="true"'
+
       requestBody:
         content:
-          multipart/form-data:
+          application/octet-stream:
             schema:
+              required:
+                - id
               properties:
+                id:
+                  type: string
+                  description: valid DX group or resource id
                 file:
                   type: string
                   description: file to upload
@@ -130,7 +178,7 @@ paths:
           description: 'Unauthorized'
 
 
-  /iudx/v1/download/{file-id}:
+  /download:
     get:
       tags:
         - Files
@@ -139,7 +187,7 @@ paths:
       parameters:
         - name: token
           in: header
-          description: A valid <b> IUDX Auth token </b> to process the requests. token is mandatory to download files.
+          description: A valid <b> DX Auth token </b> to process the requests. token is mandatory to download files.
           required: true
           schema:
             type: string
@@ -147,17 +195,26 @@ paths:
             maxLength: 512
             pattern: '^[a-zA-Z0-9\/\@\.]*$'
         - name: 'file-id'
-          in: path
-          description: valid IUDX uploaded file name
+          in: query
+          description: valid DX uploaded file name
           required: true
           schema:
             type: string
             maxLength: 512
+
+      x-codeSamples:
+        - lang: 'cURL'
+          label: 'download a file'
+          source: |
+            curl --location --request GET 'https://example-fs.com/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/sample.txt' \
+            --header 'token: <tokenValue>'
+            
+
       responses:
         '200':
           description: 'Successfully downloaded a file'
           content:
-            application/octate-stream:
+            application/octet-stream:
               schema:
                 type: string
                 format: binary
@@ -180,7 +237,7 @@ paths:
                 "$ref": "#/components/schemas/standardFileNotFoundErrorResponse"
           description: 'File not found'
 
-  /iudx/v1/delete/{file-id}:
+  /delete:
     delete:
       tags:
         - Files
@@ -189,7 +246,7 @@ paths:
       parameters:
         - name: token
           in: header
-          description: A valid <b> IUDX Auth token </b> to process the requests.
+          description: A valid <b> DX Auth token </b> to process the requests.
           required: true
           schema:
             type: string
@@ -197,12 +254,21 @@ paths:
             maxLength: 512
             pattern: '^[a-zA-Z0-9\/\@\.]*$'
         - name: 'file-id'
-          in: path
-          description: valid IUDX uploaded file name
+          in: query
+          description: valid DX uploaded file name
           required: true
           schema:
             type: string
             maxLength: 512
+
+      x-codeSamples:
+        - lang: 'cURL'
+          label: 'delete file'
+          source: |
+              curl --location --request DELETE 'https://example-fs.com/iudx/v1/delete?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/dbc537b3-8b52-4651-ae3c-1835528b94fe' \
+              --header 'token: <tokenValue>' \
+              --header 'externalStorage: true'
+
       responses:
         '200':
           description: 'Successfully deleted a file'
@@ -229,8 +295,11 @@ paths:
                 "$ref": "#/components/schemas/standardFileNotFoundErrorResponse"
           description: 'File not found'
 
-  /ngsi-ld/v1/temporal/entities:
+  /temporal/entities:
     get:
+      servers:
+        - url: 'https://example.com/ngsi-ld/v1'
+          description: 'Development Server URL'
       tags:
         - Discovery
       summary: search for files
@@ -238,7 +307,7 @@ paths:
       parameters:
         - name: id
           in: query
-          description: valid IUDX group or resource id
+          description: valid DX group or resource id
           required: true
           schema:
             type: string
@@ -264,7 +333,7 @@ paths:
             enum: [between]
         - name: geoproperty
           in: query
-          description: 'Name of the <b> geospatial </b> property in the <b> IUDX data descriptor </b>. <br /> The current version of the API <b> mandates </b> it to be equal to `location`'
+          description: 'Name of the <b> geospatial </b> property in the <b> DX data descriptor </b>. <br /> The current version of the API <b> mandates </b> it to be equal to `location`'
           schema:
             type: string
             enum: [location]
@@ -290,6 +359,15 @@ paths:
             items:
               type: number
             format: double
+
+      x-codeSamples:
+        - lang: 'cURL'
+          label: 'search for a file'
+          source: |
+            curl --location --request GET 'https://example-fs.com/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&time=2020-09-10T00:00:00Z&endTime=2020-09-15T00:00:00Z&timerel=between' \
+            --header 'token: <tokenValue>'
+
+
       responses:
         '200':
           description: 'Query result'
@@ -310,7 +388,7 @@ paths:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
           description: 'Unauthorized'
 
-  /iudx/v1/list:
+  /list:
     get:
       tags:
         - Discovery
@@ -319,11 +397,20 @@ paths:
       parameters:
         - name: id
           in: query
-          description: valid IUDX group or resource id
+          description: valid DX group or resource id
           required: true
           schema:
             type: string
             maxLength: 512
+
+      x-codeSamples:
+        - lang: 'cURL'
+          label: 'list metadata'
+          source: |
+            curl --location --request GET 'https://example-fs.com/iudx/v1/list?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055' \
+            --header 'token: <tokenValue>'
+
+
       responses:
         '200':
           description: 'Query result'
@@ -367,8 +454,7 @@ components:
         title:
           type: string
         results:
-          type: object
-      type: object
+          type: array of fields
       example:
         type: urn:dx:rs:success
         title: Success
@@ -409,27 +495,30 @@ components:
         title:
           type: string
         results:
-          type: object
-        limit:
-          type: string
-        offset:
-          type: string
-        totalHits:
-          type: string
+          type: array of fields
       example:
         type: urn:dx:rs:success
         title: Success
-        results: [{
-          "id":"suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta",
-          "timeRange":{
-            "startTime":"2020-06-01T14:20:00Z",
-            "endTime":"2020-06-10T14:20:00Z"
-          },
-          "fileID":"suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta/sample.txt"
-          }]
-        limit: 5000
-        offset: 0
-        totalHits: 9091
+        results: [
+          {
+            "id": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055",
+            "timeRange": {
+              "gte": "2020-09-05T00:00:00Z",
+              "lte": "2020-09-15T00:00:00Z"
+            },
+            "fileId": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055/0cb04afb-32f5-44dd-982d-323b5900bcca.txt",
+            "location": {
+              "type": "point",
+              "coordinates": [
+                72.81,
+                21.16
+              ]
+            }
+          }
+        ]
+        "limit": 5000,
+        "offset": 0,
+        "totalHits": 1
     standardDeleteSuccessResponse:
       title: standardDeleteSuccessResponse
       properties:
@@ -440,6 +529,6 @@ components:
         detail:
           type: string
       example:
-        type: urn:dx:rs:success
-        title: deleted successfully
-        detail: successfully deleted file <<file-id>>
+        type: "urn:dx:rs:success"
+        title: "Successful Operation"
+        detail: "File with id : <<file-id>> deleted successfully"
