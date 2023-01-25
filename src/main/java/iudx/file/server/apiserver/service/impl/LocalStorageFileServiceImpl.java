@@ -44,14 +44,7 @@ public class LocalStorageFileServiceImpl implements FileService {
     final JsonObject metadata = new JsonObject();
     final JsonObject finalResponse = new JsonObject();
     LOGGER.info(directory + filePath);
-    if(directory.charAt(directory.length()-1) != '/')
-    {
-      fileSystem.mkdirsBlocking(directory + "/" +filePath);
-    }
-    else
-    {
-      fileSystem.mkdirsBlocking(directory + filePath);
-    }
+    createLocalDirectory(filePath);
     Iterator<FileUpload> fileUploadIterator = files.iterator();
     while (fileUploadIterator.hasNext()) {
       FileUpload fileUpload = fileUploadIterator.next();
@@ -85,6 +78,14 @@ public class LocalStorageFileServiceImpl implements FileService {
     return promise.future();
   }
 
+  private void createLocalDirectory(String filePath) {
+    if (directory.charAt(directory.length() - 1) != '/') {
+      fileSystem.mkdirsBlocking(directory + "/" + filePath);
+    } else {
+      fileSystem.mkdirsBlocking(directory + filePath);
+    }
+  }
+
   @Override
   public Future<JsonObject> upload(List<FileUpload> files, String filePath) {
     return upload(files, UUID.randomUUID().toString(), filePath);
@@ -98,15 +99,7 @@ public class LocalStorageFileServiceImpl implements FileService {
       HttpServerResponse response) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject finalResponse = new JsonObject();
-    String path = "";
-    if(directory.charAt(directory.length()-1) != '/')
-    {
-      path = directory + "/"  + uploadDir + "/" + fileName;
-    }
-    else
-    {
-      path = directory + uploadDir + "/" + fileName;
-    }
+    String path = getLocalDirectory(fileName, uploadDir);
     LOGGER.info(path);
     response.setChunked(true);
     String finalPath = path;
@@ -142,6 +135,16 @@ public class LocalStorageFileServiceImpl implements FileService {
       }
     });
     return promise.future();
+  }
+
+  private String getLocalDirectory(String fileName, String uploadDir) {
+    String path;
+    if (directory.charAt(directory.length() - 1) != '/') {
+      path = directory + "/" + uploadDir + "/" + fileName;
+    } else {
+      path = directory + uploadDir + "/" + fileName;
+    }
+    return path;
   }
 
   /**
