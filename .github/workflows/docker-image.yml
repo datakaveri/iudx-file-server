@@ -3,6 +3,8 @@ name: Update file-server docker image tags
 on:
   registry_package:
     types: [published]
+permissions:
+  packages: read
 
 jobs:
 
@@ -16,6 +18,8 @@ jobs:
        token: "${{ secrets.JENKINS_UPDATE }}"
        fetch-depth: 0
     - name: Update file-server docker image tags
+      env: 
+        GH_TOKEN: ${{ secrets.JENKINS_UPDATE}}
       run: | 
         export newtag4_5_0=`(head -n1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/fs-depl/versions | jq ' .[].metadata.container.tags[0]'  | grep 4.5.0-alpha | sed -e 's/^"//' -e 's/"$//'))`
         export oldtag4_5_0=`yq -r .services.file-server.image Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml | cut -d : -f 2`
@@ -24,7 +28,6 @@ jobs:
         export oldtag4_0=$(yq -r .services.file-server.image Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml | cut -d : -f 2)      
         git config --global user.name 'jenkins-datakaveri'
         git config --global user.email "admin.jenkins@datakaveri.org"
-        echo ${{ secrets.JENKINS_UPDATE }} | gh auth login --with-token
 
 
 
