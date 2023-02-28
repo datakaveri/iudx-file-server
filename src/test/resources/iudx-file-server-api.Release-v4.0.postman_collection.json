@@ -49,14 +49,13 @@
 							}
 						},
 						"url": {
-							"raw": "https://{{auth-url}}/auth/v1/token",
+							"raw": "https://{{auth-url}}/{{dxApiBasePath}}/token",
 							"protocol": "https",
 							"host": [
 								"{{auth-url}}"
 							],
 							"path": [
-								"auth",
-								"v1",
+								"{{dxApiBasePath}}",
 								"token"
 							]
 						}
@@ -117,14 +116,13 @@
 							}
 						},
 						"url": {
-							"raw": "https://{{auth-url}}/auth/v1/token",
+							"raw": "https://{{auth-url}}/{{dxApiBasePath}}/token",
 							"protocol": "https",
 							"host": [
 								"{{auth-url}}"
 							],
 							"path": [
-								"auth",
-								"v1",
+								"{{dxApiBasePath}}",
 								"token"
 							]
 						}
@@ -185,14 +183,13 @@
 							}
 						},
 						"url": {
-							"raw": "https://{{auth-url}}/auth/v1/token",
+							"raw": "https://{{auth-url}}/{{dxApiBasePath}}/token",
 							"protocol": "https",
 							"host": [
 								"{{auth-url}}"
 							],
 							"path": [
-								"auth",
-								"v1",
+								"{{dxApiBasePath}}",
 								"token"
 							]
 						}
@@ -253,14 +250,13 @@
 							}
 						},
 						"url": {
-							"raw": "https://{{auth-url}}/auth/v1/token",
+							"raw": "https://{{auth-url}}/{{dxApiBasePath}}/token",
 							"protocol": "https",
 							"host": [
 								"{{auth-url}}"
 							],
 							"path": [
-								"auth",
-								"v1",
+								"{{dxApiBasePath}}",
 								"token"
 							]
 						}
@@ -321,14 +317,13 @@
 							}
 						},
 						"url": {
-							"raw": "https://{{auth-url}}/auth/v1/token",
+							"raw": "https://{{auth-url}}/{{dxApiBasePath}}/token",
 							"protocol": "https",
 							"host": [
 								"{{auth-url}}"
 							],
 							"path": [
-								"auth",
-								"v1",
+								"{{dxApiBasePath}}",
 								"token"
 							]
 						}
@@ -389,14 +384,13 @@
 							}
 						},
 						"url": {
-							"raw": "https://{{auth-url}}/auth/v1/token",
+							"raw": "https://{{auth-url}}/{{dxApiBasePath}}/token",
 							"protocol": "https",
 							"host": [
 								"{{auth-url}}"
 							],
 							"path": [
-								"auth",
-								"v1",
+								"{{dxApiBasePath}}",
 								"token"
 							]
 						}

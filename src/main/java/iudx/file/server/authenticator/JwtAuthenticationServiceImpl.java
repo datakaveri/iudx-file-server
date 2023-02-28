@@ -6,6 +6,8 @@ import static iudx.file.server.authenticator.utilities.Constants.JSON_IID;
 import static iudx.file.server.authenticator.utilities.Constants.JSON_USERID;
 import static iudx.file.server.authenticator.utilities.Constants.OPEN_ENDPOINTS;
 import static iudx.file.server.authenticator.utilities.Constants.QUERY_ENDPOINTS;
+import static iudx.file.server.common.Constants.CAT_SEARCH_PATH;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -54,6 +56,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   final int port;;
   final String audience;
   final String path;
+  final String catBasePath;
   final CatalogueService catalogueService;
   final CacheService cache;
   final Api api;
@@ -80,7 +83,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     this.cache = cacheService;
     host = config.getString("catalogueHost");
     port = config.getInteger("cataloguePort");
-    this.path = Constants.CAT_RSG_PATH;
+    this.catBasePath = config.getString("dxCatalogueBasePath");
+    this.path = catBasePath + CAT_SEARCH_PATH;
     this.api = api;
 
     WebClientOptions options = new WebClientOptions();

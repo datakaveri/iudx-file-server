@@ -82,7 +82,8 @@ public class AuthenticationVerticle extends AbstractVerticle {
   private Future<String> getJwtPublicKey(Vertx vertx, JsonObject config) {
     Promise<String> promise = Promise.promise();
     webClient = createWebClient(vertx, config);
-    webClient.get(443, config.getString("authHost"), "/auth/v1/cert").send(handler -> {
+    String authCert = config.getString("dxAuthBasePath") + AUTH_CERTIFICATE_PATH;
+    webClient.get(443, config.getString("authHost"), authCert).send(handler -> {
       if (handler.succeeded()) {
         JsonObject json = handler.result().bodyAsJsonObject();
         promise.complete(json.getString("cert"));

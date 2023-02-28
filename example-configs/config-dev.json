@@ -6,7 +6,9 @@
 	"clusterId": "iudx-fs-cluster",
 	"commonConfig" :  {
 		"dxApiBasePath" : "/ngsi-ld/v1",
-		"iudxApiBasePath" : "/iudx/v1"
+		"iudxApiBasePath" : "/iudx/v1",
+		"dxCatalogueBasePath": "/iudx/cat/v1",
+		"dxAuthBasePath": "/auth/v1"
 	},
 	"modules": [
 		{

@@ -115,6 +115,8 @@ public class FileServerVerticle extends AbstractVerticle {
   private CatalogueService catalogueService;
   private String dxApiBasePath;
   private String dxV1BasePath;
+  private String dxCatalogueBasePath;
+  private String dxAuthBasePath;
   private final ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
 
   @Override
@@ -142,6 +144,8 @@ public class FileServerVerticle extends AbstractVerticle {
 
     dxApiBasePath = config().getString("dxApiBasePath");
     dxV1BasePath = config().getString("iudxApiBasePath");
+    dxCatalogueBasePath = config().getString("dxCatalogueBasePath");
+    dxAuthBasePath = config().getString("dxAuthBasePath");
     Api api = Api.getInstance(dxApiBasePath,dxV1BasePath);
 
     router = Router.router(vertx);

@@ -33,7 +33,9 @@ public class CatalogueServiceImpl implements CatalogueService {
   private String host;
   private int port;
 
-
+  private String catBasePath;
+  private String catItemPath;
+  private String catSearchPath;
   private final Cache<String, List<String>> applicableFilterCache =
       CacheBuilder.newBuilder().maximumSize(1000)
           .expireAfterAccess(CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
@@ -42,6 +44,9 @@ public class CatalogueServiceImpl implements CatalogueService {
     this.webClient = webClientFactory.getWebClientFor(ServerType.FILE_SERVER);
     this.host = config.getString("catalogueHost");
     this.port = config.getInteger("cataloguePort");
+    catBasePath = config.getString("dxCatalogueBasePath");
+    catItemPath = catBasePath + CAT_ITEM_PATH;
+    catSearchPath = catBasePath + CAT_SEARCH_PATH;
   }
 
   @Override
@@ -130,8 +135,8 @@ public class CatalogueServiceImpl implements CatalogueService {
         });
         handler.handle(Future.succeededFuture(filters));
       } else if (catHandler.failed()) {
-        LOGGER.error("catalogue call(/iudx/cat/v1/item) failed for id" + id);
-        handler.handle(Future.failedFuture("catalogue call(/iudx/cat/v1/item) failed for id" + id));
+        LOGGER.error("catalogue call ("+ catItemPath + ") failed for id" + id);
+        handler.handle(Future.failedFuture("catalogue call(" + catItemPath + ") failed for id" + id));
       }
     });
   }
