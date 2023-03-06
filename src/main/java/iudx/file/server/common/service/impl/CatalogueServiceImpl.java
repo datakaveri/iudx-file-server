@@ -124,7 +124,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
   private void callCatalogueAPI(String id, Handler<AsyncResult<List<String>>> handler) {
     List<String> filters = new ArrayList<String>();
-    webClient.get(port, host, CAT_ITEM_PATH).addQueryParam("id", id).send(catHandler -> {
+    webClient.get(port, host, catItemPath).addQueryParam("id", id).send(catHandler -> {
       if (catHandler.succeeded()) {
         JsonArray response = catHandler.result().bodyAsJsonObject().getJsonArray("results");
         response.forEach(json -> {
@@ -154,7 +154,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     LOGGER.debug("isItemExist() started");
     Promise<Boolean> promise = Promise.promise();
     LOGGER.info("id : " + id);
-    webClient.get(port, host, CAT_ITEM_PATH).addQueryParam("id", id)
+    webClient.get(port, host, catItemPath).addQueryParam("id", id)
         .expect(ResponsePredicate.JSON).send(responseHandler -> {
           if (responseHandler.succeeded()) {
             HttpResponse<Buffer> response = responseHandler.result();
