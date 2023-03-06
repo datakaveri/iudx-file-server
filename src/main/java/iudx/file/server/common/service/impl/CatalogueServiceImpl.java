@@ -33,7 +33,9 @@ public class CatalogueServiceImpl implements CatalogueService {
   private String host;
   private int port;
 
-
+  private String catBasePath;
+  private String catItemPath;
+  private String catSearchPath;
   private final Cache<String, List<String>> applicableFilterCache =
       CacheBuilder.newBuilder().maximumSize(1000)
           .expireAfterAccess(CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
@@ -42,6 +44,9 @@ public class CatalogueServiceImpl implements CatalogueService {
     this.webClient = webClientFactory.getWebClientFor(ServerType.FILE_SERVER);
     this.host = config.getString("catalogueHost");
     this.port = config.getInteger("cataloguePort");
+    catBasePath = config.getString("dxCatalogueBasePath");
+    catItemPath = catBasePath + CAT_ITEM_PATH;
+    catSearchPath = catBasePath + CAT_SEARCH_PATH;
   }
 
   @Override
@@ -119,7 +124,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
   private void callCatalogueAPI(String id, Handler<AsyncResult<List<String>>> handler) {
     List<String> filters = new ArrayList<String>();
-    webClient.get(port, host, CAT_ITEM_PATH).addQueryParam("id", id).send(catHandler -> {
+    webClient.get(port, host, catItemPath).addQueryParam("id", id).send(catHandler -> {
       if (catHandler.succeeded()) {
         JsonArray response = catHandler.result().bodyAsJsonObject().getJsonArray("results");
         response.forEach(json -> {
@@ -130,8 +135,8 @@ public class CatalogueServiceImpl implements CatalogueService {
         });
         handler.handle(Future.succeededFuture(filters));
       } else if (catHandler.failed()) {
-        LOGGER.error("catalogue call(/iudx/cat/v1/item) failed for id" + id);
-        handler.handle(Future.failedFuture("catalogue call(/iudx/cat/v1/item) failed for id" + id));
+        LOGGER.error("catalogue call ("+ catItemPath + ") failed for id" + id);
+        handler.handle(Future.failedFuture("catalogue call(" + catItemPath + ") failed for id" + id));
       }
     });
   }
@@ -149,7 +154,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     LOGGER.debug("isItemExist() started");
     Promise<Boolean> promise = Promise.promise();
     LOGGER.info("id : " + id);
-    webClient.get(port, host, CAT_ITEM_PATH).addQueryParam("id", id)
+    webClient.get(port, host, catItemPath).addQueryParam("id", id)
         .expect(ResponsePredicate.JSON).send(responseHandler -> {
           if (responseHandler.succeeded()) {
             HttpResponse<Buffer> response = responseHandler.result();
