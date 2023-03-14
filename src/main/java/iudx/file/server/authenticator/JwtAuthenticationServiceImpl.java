@@ -382,7 +382,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     LOGGER.info("endPoint : " + authInfo.getString("apiEndpoint"));
     if (jwtAuthStrategy.isAuthorized(authRequest, jwtData)) {
       JsonObject jsonResponse = new JsonObject();
-      jsonResponse.put("userID", jwtData.getSub());
+      jsonResponse.put(JSON_USERID, jwtData.getSub());
       promise.complete(jsonResponse);
     } else {
       LOGGER.info("failed");
