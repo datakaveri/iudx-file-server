@@ -344,9 +344,10 @@ public class FileServerVerticle extends AbstractVerticle {
       saveRecordFuture.onComplete(saveRecordHandler -> {
         if (saveRecordHandler.succeeded()) {
           responseJson
-              .put("type", SUCCESS.getUrn())
-              .put("title", "Success")
-              .put("fileId", fileId);
+                  .put("type", SUCCESS.getUrn())
+                  .put("title", "Success")
+                  .put("results", new JsonArray().add(new JsonObject().put("fileId", fileId)));
+
           handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
           auditParams.put(RESPONSE_SIZE,0);
           updateAuditTable(auditParams);
@@ -384,9 +385,9 @@ public class FileServerVerticle extends AbstractVerticle {
         JsonObject responseJson = new JsonObject();
         String fileId = id + "/" + uploadResult.getString("file-id");
         responseJson
-            .put("type", SUCCESS.getUrn())
-            .put("title", "Success")
-            .put("fileId", fileId);
+                .put("type", SUCCESS.getUrn())
+                .put("title", "Success")
+                .put("results", new JsonArray().add(new JsonObject().put("fileId", fileId)));
         // insertFileRecord(params, fileId); no need to insert in DB
         handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
       } else {
@@ -427,11 +428,11 @@ public class FileServerVerticle extends AbstractVerticle {
     }).onComplete(handler -> {
       if (handler.succeeded()) {
         responseJson
-            .put("type", SUCCESS.getUrn())
-            .put("title", "Success")
-            .put("fileId", uploadJson.getString("fileId"));
+                .put("type", SUCCESS.getUrn())
+                .put("title", "Success")
+                .put("results", new JsonArray().add(new JsonObject().put("fileId", uploadJson.getString("fileId"))));
         handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
-        auditParams.put(RESPONSE_SIZE,0);
+        auditParams.put(RESPONSE_SIZE, 0);
         updateAuditTable(auditParams);
       } else {
         LOGGER.debug(handler.cause());
@@ -588,8 +589,8 @@ public class FileServerVerticle extends AbstractVerticle {
       if (handler.succeeded()) {
         LOGGER.info("Success: Search Success");
         handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
-        json.put(RESPONSE_SIZE, response.bytesWritten());
-        Future.future(fu -> updateAuditTable(json));
+        auditParams.put(RESPONSE_SIZE, response.bytesWritten());
+        Future.future(fu -> updateAuditTable(auditParams));
       } else if (handler.failed()) {
         LOGGER.error("Fail: Search Fail");
         processBackendResponse(response, handler.cause().getMessage());
@@ -608,11 +609,12 @@ public class FileServerVerticle extends AbstractVerticle {
     response.putHeader("content-type", "application/json");
     String id = request.getParam("file-id");
     Boolean isExternalStorage = Boolean.parseBoolean(request.getHeader("externalStorage"));
+    String resourceId = id.substring(0, id.indexOf('/', id.lastIndexOf('/')));
 
     JsonObject auditParams = new JsonObject()
         .put("api", request.path())
         .put(USER_ID, routingContext.data().get("AuthResult"))
-        .put(RESOURCE_ID, id);
+        .put(RESOURCE_ID, resourceId);
 
     String fileIdComponent[] = getFileIdComponents(id);
     StringBuilder uploadDir = new StringBuilder();
@@ -641,11 +643,16 @@ public class FileServerVerticle extends AbstractVerticle {
           HttpStatusCode code = HttpStatusCode.getByValue(resultType);
           ResponseUrn urn = ResponseUrn.fromCode(resultTitle);
           if (urn.equals(SUCCESS)) {
-            handleResponse(response, code, urn, ("File with id : " + id + " deleted successfully"));
-            auditParams.put(RESPONSE_SIZE,0);
+            JsonObject responseJson = new JsonObject()
+                    .put("type", SUCCESS.getUrn())
+                    .put("title", "Successful Operation")
+                    .put("results", new JsonArray().add(new JsonObject().put("detail", "File with id : " + id + " deleted successfully")));
+            handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
+            auditParams.put(RESPONSE_SIZE, 0);
             updateAuditTable(auditParams);
           } else if (urn.equals(RESOURCE_NOT_FOUND)) {
             String resultDetails = dbHandlerResult.getJsonObject("result").getString("details");
+            LOGGER.debug("resultDetails: "+resultDetails);
             handleResponse(response, code, urn, resultDetails);
           }
         }
@@ -691,10 +698,12 @@ public class FileServerVerticle extends AbstractVerticle {
     fileService.delete(fileUUID, uploadDir.toString())
         .onComplete(handler -> {
           if (handler.succeeded()) {
-            JsonObject deleteResult = handler.result();
-            ResponseUrn urn = ResponseUrn.fromCode(deleteResult.getString("title"));
-            handleResponse(response, HttpStatusCode.SUCCESS, urn,
-                ("File with id : " + id + " deleted successfully"));
+            JsonObject responseJson = new JsonObject()
+                    .put("type", SUCCESS.getUrn())
+                    .put("title", "Successful Operation")
+                    .put("results", new JsonArray().add(new JsonObject().put("detail", "File with id : " + id + " deleted successfully")));
+            handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
+
           } else {
             processResponse(response, handler.cause().getMessage());
           }
@@ -708,12 +717,12 @@ public class FileServerVerticle extends AbstractVerticle {
       if (handlers.succeeded()) {
         fileService.delete(fileUUID, uploadDir.toString()).onComplete(handler -> {
           if (handler.succeeded()) {
-            JsonObject deleteResult = handler.result();
-            ResponseUrn urn = ResponseUrn.fromCode(deleteResult.getString("title"));
-            LOGGER.info(deleteResult);
-            handleResponse(response, HttpStatusCode.SUCCESS, urn,
-                    ("File with id : " + id + " deleted successfully"));
-            auditParams.put(RESPONSE_SIZE,0);
+            JsonObject responseJson = new JsonObject()
+                    .put("type", SUCCESS.getUrn())
+                    .put("title", "Successful Operation")
+                    .put("results", new JsonArray().add(new JsonObject().put("detail", "File with id : " + id + " deleted successfully")));
+            handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
+            auditParams.put(RESPONSE_SIZE, 0);
             updateAuditTable(auditParams);
           } else {
             processResponse(response, handler.cause().getMessage());
@@ -896,6 +905,7 @@ public class FileServerVerticle extends AbstractVerticle {
   }
 
   private void handleSuccessResponse(HttpServerResponse response, int statusCode, String result) {
+    LOGGER.debug("result: "+result);
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(statusCode).end(result);
   }
 

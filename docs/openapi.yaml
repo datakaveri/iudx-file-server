@@ -206,7 +206,7 @@ paths:
           source: |
             curl --location --request GET 'https://example-fs.com/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/sample.txt' \
             --header 'token: <tokenValue>'
-            
+      
 
       responses:
         '200':
@@ -263,9 +263,9 @@ paths:
         - lang: 'cURL'
           label: 'delete file'
           source: |
-              curl --location --request DELETE 'https://example-fs.com/iudx/v1/delete?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/dbc537b3-8b52-4651-ae3c-1835528b94fe' \
-              --header 'token: <tokenValue>' \
-              --header 'externalStorage: true'
+            curl --location --request DELETE 'https://example-fs.com/iudx/v1/delete?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/dbc537b3-8b52-4651-ae3c-1835528b94fe' \
+            --header 'token: <tokenValue>' \
+            --header 'externalStorage: true'
 
       responses:
         '200':
@@ -461,7 +461,7 @@ components:
         title: Success
         results: [{
           "fileId": "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta/sample.txt"
-          }]
+        }]
     standardInvalidTokenErrorResponse:
       title: standardInvalidTokenErrorResponse
       properties:
@@ -530,9 +530,16 @@ components:
           type: string
         title:
           type: string
-        detail:
-          type: string
+        results:
+          description: An array of objects
+          type: array
+        items:
+          type: object
       example:
         type: "urn:dx:rs:success"
         title: "Successful Operation"
-        detail: "File with id : <<file-id>> deleted successfully"
+        results: [
+          {
+            "detail": "File with id : iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/sample.txt deleted successfully"
+          }
+        ]
