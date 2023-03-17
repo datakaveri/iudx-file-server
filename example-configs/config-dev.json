@@ -89,14 +89,7 @@
 		},
 		{
 			"id": "iudx.file.server.auditing.AuditingVerticle",
-			"verticleInstances": 1,
-			"auditingDatabaseIP": "",
-			"auditingDatabasePort": 32508,
-			"auditingDatabaseName": "",
-			"auditingDatabaseUserName": "",
-			"auditingDatabasePassword": "",
-			"auditingDatabaseTableName": "",
-			"auditingPoolSize": 25
+			"verticleInstances": 1
 		}
 	]
 }
