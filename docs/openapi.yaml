@@ -149,7 +149,7 @@ paths:
                   type: array
                   minItems: 2
                   maxItems: 10
-                  Items:
+                  items:
                     type: number
                   description: 'The coordinates for a specific geometry. <br/> This parameter accepts both <b> one dimentional array and multi dimentional arrays </b> based on the <b> geometry</b> type. <br/> For e.g, [longitude-1,latitude-1] should be used for geometry <b>point</b>.  <br/>[[[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]]] should be used for geometry <b>polygon</b>. <br/> [[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]] should be used for geometry <b>bbox and linestring </b>. <br/> Maximum of 10 latitude, longitude pairs can be used for geometry <b>polygon, bbox and linestring </b>. <br/> Note: The data-type of this field is a string, therefore the coordinates are a string encoded multidimensional array. <br/> Maximum precision allowed is upto 6 decimal places.'
                 file-download-url:
@@ -182,6 +182,7 @@ paths:
         - Files
       summary: Download a file
       operationId: download-file
+      description: Allows user to download documents from DX system using document id(fileId)
       parameters:
         - name: token
           in: header
@@ -206,7 +207,7 @@ paths:
           source: |
             curl --location --request GET 'https://example-fs.com/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/sample.txt' \
             --header 'token: <tokenValue>'
-            
+      
 
       responses:
         '200':
@@ -241,6 +242,7 @@ paths:
         - Files
       summary: Delete a file
       operationId: delete-file
+      description: Allows user to delete documents from DX system using document id(fileId)
       parameters:
         - name: token
           in: header
@@ -263,9 +265,9 @@ paths:
         - lang: 'cURL'
           label: 'delete file'
           source: |
-              curl --location --request DELETE 'https://example-fs.com/iudx/v1/delete?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/dbc537b3-8b52-4651-ae3c-1835528b94fe' \
-              --header 'token: <tokenValue>' \
-              --header 'externalStorage: true'
+            curl --location --request DELETE 'https://example-fs.com/iudx/v1/delete?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/dbc537b3-8b52-4651-ae3c-1835528b94fe' \
+            --header 'token: <tokenValue>' \
+            --header 'externalStorage: true'
 
       responses:
         '200':
@@ -461,7 +463,7 @@ components:
         title: Success
         results: [{
           "fileId": "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta/sample.txt"
-          }]
+        }]
     standardInvalidTokenErrorResponse:
       title: standardInvalidTokenErrorResponse
       properties:
@@ -500,6 +502,12 @@ components:
           type: array
           items:
             type: object
+        limit:
+          type: integer
+        offset:
+          type: integer
+        totalHits:
+          type: integer
       example:
         type: urn:dx:rs:success
         title: Success
@@ -530,9 +538,12 @@ components:
           type: string
         title:
           type: string
-        detail:
-          type: string
+        results:
+          description: An array of objects
+          type: array
       example:
-        type: "urn:dx:rs:success"
-        title: "Successful Operation"
-        detail: "File with id : <<file-id>> deleted successfully"
+        type: urn:dx:rs:success
+        title: Successful Operation
+        results:
+          - detail: 'File with id : iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/sample.txt deleted successfully'
+

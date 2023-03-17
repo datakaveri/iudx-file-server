@@ -1,10 +1,9 @@
 {
 	"info": {
-		"_postman_id": "13f6ea5b-5e11-4e34-aaa9-20318ca3595e",
+		"_postman_id": "9aaec2ef-ae36-4b93-8148-6df6bebef5d7",
 		"name": "IUDX-File-Server-APIs-V4.5.0",
 		"description": "iudx-file-server-api",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "3868286"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -417,12 +416,12 @@
 									"// Test the response",
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"fileId\");",
+									"    pm.expect(body).to.have.property(\"results\");",
 									"",
 									"});",
 									"",
 									"var jsonData = pm.response.json(); ",
-									"pm.environment.set(\"rl_sample\",jsonData.fileId);"
+									"pm.environment.set(\"rl_sample\",jsonData.results[0].fileId);"
 								],
 								"type": "text/javascript"
 							}
@@ -566,13 +565,13 @@
 									"// Test the response",
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"fileId\");",
+									"    pm.expect(body).to.have.property(\"results\");",
 									"",
 									"});",
 									"",
 									"",
 									"var jsonData = pm.response.json(); ",
-									"pm.environment.set(\"gl_sample\",jsonData.fileId);"
+									"pm.environment.set(\"gl_sample\",jsonData.results[0].fileId);"
 								],
 								"type": "text/javascript"
 							}
@@ -716,12 +715,12 @@
 									"// Test the response",
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"fileId\");",
+									"    pm.expect(body).to.have.property(\"results\");",
 									"",
 									"});",
 									"",
 									"var jsonData = pm.response.json(); ",
-									"pm.environment.set(\"rl_archive\",jsonData.fileId);"
+									"pm.environment.set(\"rl_archive\",jsonData.results[0].fileId);"
 								],
 								"type": "text/javascript"
 							}
@@ -899,13 +898,13 @@
 									"// Test the response",
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"fileId\");",
+									"    pm.expect(body).to.have.property(\"results\");",
 									"",
 									"});",
 									"",
 									"",
 									"var jsonData = pm.response.json(); ",
-									"pm.environment.set(\"gl_archive\",jsonData.fileId);"
+									"pm.environment.set(\"gl_archive\",jsonData.results[0].fileId);"
 								],
 								"type": "text/javascript"
 							}
@@ -1232,12 +1231,12 @@
 									"// Test the response",
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"fileId\");",
+									"    pm.expect(body).to.have.property(\"results\");",
 									"",
 									"});",
 									"",
 									"var jsonData = pm.response.json(); ",
-									"pm.environment.set(\"rl_external\",jsonData.fileId);"
+									"pm.environment.set(\"rl_external\",jsonData.results[0].fileId);"
 								],
 								"type": "text/javascript"
 							}
