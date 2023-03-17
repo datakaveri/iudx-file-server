@@ -149,7 +149,7 @@ paths:
                   type: array
                   minItems: 2
                   maxItems: 10
-                  Items:
+                  items:
                     type: number
                   description: 'The coordinates for a specific geometry. <br/> This parameter accepts both <b> one dimentional array and multi dimentional arrays </b> based on the <b> geometry</b> type. <br/> For e.g, [longitude-1,latitude-1] should be used for geometry <b>point</b>.  <br/>[[[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]]] should be used for geometry <b>polygon</b>. <br/> [[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]] should be used for geometry <b>bbox and linestring </b>. <br/> Maximum of 10 latitude, longitude pairs can be used for geometry <b>polygon, bbox and linestring </b>. <br/> Note: The data-type of this field is a string, therefore the coordinates are a string encoded multidimensional array. <br/> Maximum precision allowed is upto 6 decimal places.'
                 file-download-url:
@@ -182,6 +182,7 @@ paths:
         - Files
       summary: Download a file
       operationId: download-file
+      description: Allows user to download documents from DX system using document id(fileId)
       parameters:
         - name: token
           in: header
@@ -241,6 +242,7 @@ paths:
         - Files
       summary: Delete a file
       operationId: delete-file
+      description: Allows user to delete documents from DX system using document id(fileId)
       parameters:
         - name: token
           in: header
@@ -500,6 +502,12 @@ components:
           type: array
           items:
             type: object
+        limit:
+          type: integer
+        offset:
+          type: integer
+        totalHits:
+          type: integer
       example:
         type: urn:dx:rs:success
         title: Success
@@ -533,13 +541,9 @@ components:
         results:
           description: An array of objects
           type: array
-        items:
-          type: object
       example:
-        type: "urn:dx:rs:success"
-        title: "Successful Operation"
-        results: [
-          {
-            "detail": "File with id : iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/sample.txt deleted successfully"
-          }
-        ]
+        type: urn:dx:rs:success
+        title: Successful Operation
+        results:
+          - detail: 'File with id : iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/sample.txt deleted successfully'
+

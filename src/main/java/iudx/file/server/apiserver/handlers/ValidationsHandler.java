@@ -58,7 +58,7 @@ public class ValidationsHandler implements Handler<RoutingContext> {
     return new JsonObject()
         .put("type", 400)
         .put("title", "Bad Request")
-        .put("details", "Bad query");
+        .put("detail", "Bad query");
   }
 
 }

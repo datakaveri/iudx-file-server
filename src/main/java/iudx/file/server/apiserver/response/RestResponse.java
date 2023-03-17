@@ -18,7 +18,7 @@ public class RestResponse {
     JsonObject json = new JsonObject();
     json.put("type", type);
     json.put("title", title);
-    json.put("details", details);
+    json.put("detail", details);
     return json;
   }
 
