@@ -31,7 +31,7 @@ pipeline {
           sh 'docker-compose -f docker-compose.test.yml up test'
         }
         xunit (
-          thresholds: [ skipped(failureThreshold: '1'), failed(failureThreshold: '0') ],
+          thresholds: [ skipped(failureThreshold: '0'), failed(failureThreshold: '0') ],
           tools: [ JUnit(pattern: 'target/surefire-reports/*.xml') ]
         )
         jacoco classPattern: 'target/classes', execPattern: 'target/jacoco.exec', sourcePattern: 'src/main/java', exclusionPattern: 'iudx/file/server/apiserver/FileServerVerticle.class,iudx/file/server/apiserver/FileServerVerticle**,iudx/file/server/authenticator/AuthenticationService.class,iudx/file/server/database/DatabaseService.class,**/JwtDataConverter.class,**/*VertxEBProxy.class,**/Constants.class,**/*VertxProxyHandler.class,**/*Verticle.class,iudx/file/server/deploy/**,iudx/file/server/databroker/DataBrokerServiceImpl.class'
@@ -112,8 +112,8 @@ pipeline {
           steps {
             script {
               docker.withRegistry( registryUri, registryCredential ) {
-                devImage.push("4.5.0-alpha-${env.GIT_HASH}")
-                deplImage.push("4.5.0-alpha-${env.GIT_HASH}")
+                devImage.push("5.0.0-alpha-${env.GIT_HASH}")
+                deplImage.push("5.0.0-alpha-${env.GIT_HASH}")
               }
             }
           }
@@ -121,7 +121,7 @@ pipeline {
         stage('Docker Swarm deployment') {
           steps {
             script {
-              sh "ssh azureuser@docker-swarm 'docker service update file-server_file-server --image ghcr.io/datakaveri/fs-depl:4.5.0-alpha-${env.GIT_HASH}'"
+              sh "ssh azureuser@docker-swarm 'docker service update file-server_file-server --image ghcr.io/datakaveri/fs-depl:5.0.0-alpha-${env.GIT_HASH}'"
               sh 'sleep 10'
             }
           }
