@@ -1,4 +1,4 @@
-name: Update file-server docker image tags
+name: Update FS docker image tags
 
 on:
   registry_package:
@@ -17,48 +17,45 @@ jobs:
        repository: datakaveri/iudx-deployment
        token: "${{ secrets.JENKINS_UPDATE }}"
        fetch-depth: 0
-    - name: Update file-server docker image tags
+    - name: Update FS docker image tags
       env: 
         GH_TOKEN: ${{ secrets.JENKINS_UPDATE}}
       run: | 
-        export newtag4_5_0=`(head -n1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/fs-depl/versions | jq ' .[].metadata.container.tags[0]'  | grep 4.5.0-alpha | sed -e 's/^"//' -e 's/"$//'))`
-        export oldtag4_5_0=`yq -r .services.file-server.image Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml | cut -d : -f 2`
-        export newtag4_0=$(head -n1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/fs-depl/versions | jq ' .[].metadata.container.tags[0]' | grep 4.0.0 | sed -e 's/^"//' -e 's/"$//'))
-        git checkout 4.0.0
-        export oldtag4_0=$(yq -r .services.file-server.image Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml | cut -d : -f 2)      
+        export newtag4_5_0=`(head -n 1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/fs-depl/versions | jq ' .[].metadata.container.tags[0]'  | grep 4.5.0 | sed -e 's/^"//' -e 's/"$//'))`
+        export newtag5_0_0=`(head -n 1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/fs-depl/versions | jq ' .[].metadata.container.tags[0]'  | grep 5.0.0-alpha | sed -e 's/^"//' -e 's/"$//'))`
+        export oldtag5_0_0=`yq -r .services.auth.image Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml | cut -d : -f 2`
+        git checkout 4.5.0
+        export oldtag4_5_0=$(yq -r .services.auth.image Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml | cut -d : -f 2)      
         git config --global user.name 'jenkins-datakaveri'
         git config --global user.email "admin.jenkins@datakaveri.org"
 
 
 
-        if [ "$newtag4_0" != "$oldtag4_0" ]
-        then
-         git checkout -b file-server-4.0.0-automatic-updates/$newtag4_0
-         sed -i s/$oldtag4_0/$newtag4_0/g Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml
-         export oldappversion=`yq -r .version K8s-deployment/Charts/file-server/Chart.yaml`
-         export newappversion=`yq -r .version K8s-deployment/Charts/file-server/Chart.yaml | awk -F. -v OFS=. 'NF==1{print ++$NF}; NF>1{if(length($NF+1)>length($NF))$(NF-1)++; $NF=sprintf("%0*d", length($NF), ($NF+1)%(10^length($NF))); print}' `
-         sed -i s/$oldappversion/$newappversion/g K8s-deployment/Charts/file-server/Chart.yaml
-         sed -i s/$oldtag4_0/$newtag4_0/g K8s-deployment/Charts/file-server/values.yaml
-         git add Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml K8s-deployment/Charts/file-server/values.yaml K8s-deployment/Charts/file-server/Chart.yaml
-         git commit --allow-empty -m "updated file-server docker image tag to $newtag4_0"
-         git push --set-upstream origin file-server-4.0.0-automatic-updates/$newtag4_0
-         gh pr create -R datakaveri/iudx-deployment --base 4.0.0 --fill 
-        fi
-        
         if [ "$newtag4_5_0" != "$oldtag4_5_0" ]
         then
-         git checkout master
-         git checkout -b file-server-automatic-updates/$newtag4_5_0
+         git checkout -b fs-4.5.0-automatic-updates/$newtag4_5_0
          sed -i s/$oldtag4_5_0/$newtag4_5_0/g Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml
          export oldappversion=`yq -r .version K8s-deployment/Charts/file-server/Chart.yaml`
          export newappversion=`yq -r .version K8s-deployment/Charts/file-server/Chart.yaml | awk -F. -v OFS=. 'NF==1{print ++$NF}; NF>1{if(length($NF+1)>length($NF))$(NF-1)++; $NF=sprintf("%0*d", length($NF), ($NF+1)%(10^length($NF))); print}' `
          sed -i s/$oldappversion/$newappversion/g K8s-deployment/Charts/file-server/Chart.yaml
          sed -i s/$oldtag4_5_0/$newtag4_5_0/g K8s-deployment/Charts/file-server/values.yaml
          git add Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml K8s-deployment/Charts/file-server/values.yaml K8s-deployment/Charts/file-server/Chart.yaml
-         git commit --allow-empty -m "updated file-server docker image tag to $newtag4_5_0"
-         git push --set-upstream origin file-server-automatic-updates/$newtag4_5_0
+         git commit --allow-empty -m "updated FS docker image tag to $newtag4_5_0"
+         git push --set-upstream origin fs-4.5.0-automatic-updates/$newtag4_5_0
+         gh pr create -R datakaveri/iudx-deployment --base 4.5.0 --fill 
+        fi
+        
+        if [ "$newtag5_0_0" != "$oldtag5_0_0" ]
+        then
+         git checkout master
+         git checkout -b fs-automatic-updates/$newtag5_0_0
+         sed -i s/$oldtag5_0_0/$newtag5_0_0/g Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml
+         export oldappversion=`yq -r .version K8s-deployment/Charts/file-server/Chart.yaml`
+         export newappversion=`yq -r .version K8s-deployment/Charts/file-server/Chart.yaml | awk -F. -v OFS=. 'NF==1{print ++$NF}; NF>1{if(length($NF+1)>length($NF))$(NF-1)++; $NF=sprintf("%0*d", length($NF), ($NF+1)%(10^length($NF))); print}' `
+         sed -i s/$oldappversion/$newappversion/g K8s-deployment/Charts/file-server/Chart.yaml
+         sed -i s/$oldtag5_0_0/$newtag5_0_0/g K8s-deployment/Charts/file-server/values.yaml
+         git add Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml K8s-deployment/Charts/file-server/values.yaml K8s-deployment/Charts/file-server/Chart.yaml
+         git commit --allow-empty -m "updated FS docker image tag to $newtag5_0_0"
+         git push --set-upstream origin fs-automatic-updates/$newtag5_0_0
          gh pr create -R datakaveri/iudx-deployment --base master --fill 
         fi
-
-
-
