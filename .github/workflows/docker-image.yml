@@ -39,7 +39,7 @@ jobs:
         
         # Set Git user
         git config --global user.name 'jenkins-datakaveri'
-        git config --global user.email "admin.jenkins@datakaveri.org"
+        git config --global user.email "96175780+jenkins-datakaveri@users.noreply.github.com"
 
 
         # Update the YAML files and create a new branch for each tag update
