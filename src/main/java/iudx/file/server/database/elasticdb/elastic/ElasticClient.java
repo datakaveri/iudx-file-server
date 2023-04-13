@@ -57,18 +57,7 @@ public class ElasticClient {
    * @param databaseIP IP of the ElasticDB
    * @param databasePort Port of the ElasticDB
    */
-
-  private String ip;
-  private int port;
-  private String user;
-  private String password;
-
-
   public ElasticClient(String databaseIP, int databasePort, String user, String password) {
-    this.ip = databaseIP;
-    this.port = databasePort;
-    this.user = user;
-    this.password = password;
     CredentialsProvider credentials = new BasicCredentialsProvider();
     credentials.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(user, password));
     RestClientBuilder restClientBuilder = RestClient
@@ -103,7 +92,7 @@ public class ElasticClient {
       try {
         JsonArray dbResponse = new JsonArray();
         if (response.hits().total().value() == 0) {
-          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204);
+          responseBuilder = new ResponseBuilder().setTypeAndTitle(204);
           responseBuilder.setMessage(EMPTY_RESPONSE);
           promise.fail(responseBuilder.getResponse().toString());
           return;
@@ -117,13 +106,13 @@ public class ElasticClient {
                 .stream()
                 .forEach(hit -> dbResponse.add(new JsonObject(hit.source().toString())));
 
-        responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(200);
+        responseBuilder = new ResponseBuilder().setTypeAndTitle(200);
         responseBuilder.setMessage(dbResponse);
         promise.complete(responseBuilder.getResponse());
       } catch (Exception ex) {
         LOGGER.error("Exception occurred while executing query: {}", ex);
         JsonObject dbException = new JsonObject(ex.getMessage());
-        responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(dbException);
+        responseBuilder = new ResponseBuilder().setTypeAndTitle(400).setMessage(dbException);
         promise.fail(responseBuilder.getResponse().toString());
       }
     });
@@ -153,15 +142,15 @@ public class ElasticClient {
                String result =  response.result().toString();
 
                 if(result.equalsIgnoreCase("CREATED")){
-                  responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(200);
+                  responseBuilder = new ResponseBuilder().setTypeAndTitle(200);
                   promise.complete(responseBuilder.getResponse());
                 }else {
-                  responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
+                  responseBuilder = new ResponseBuilder().setTypeAndTitle(400)
                           .setMessage("Error while inserting.");
                   promise.fail(responseBuilder.getResponse().toString());
                 }
               }catch (Exception ex){
-                responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(ex.toString());
+                responseBuilder = new ResponseBuilder().setTypeAndTitle(400).setMessage(ex.toString());
                 promise.fail(responseBuilder.getResponse().toString());
               }
     });
@@ -183,20 +172,20 @@ public class ElasticClient {
       try {
         long deleteDocs = response.deleted();
         if(deleteDocs == 0) {
-          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(404)
+          responseBuilder = new ResponseBuilder().setTypeAndTitle(404)
                   .setMessage("File does not exist");
           promise.complete(responseBuilder.getResponse());
           return;
         }
         if (response.failures() != null && response.failures().size() > 0) {
-          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
+          responseBuilder = new ResponseBuilder().setTypeAndTitle(400)
                   .setMessage("Error while deleting.");
           promise.fail(responseBuilder.getResponse().toString());
         }
-        responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(200);
+        responseBuilder = new ResponseBuilder().setTypeAndTitle(200);
         promise.complete(responseBuilder.getResponse());
       } catch (Exception ex) {
-        responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(ex.getMessage());
+        responseBuilder = new ResponseBuilder().setTypeAndTitle(400).setMessage(ex.getMessage());
         promise.fail(responseBuilder.getResponse().toString());
       }
     });
@@ -207,7 +196,6 @@ public class ElasticClient {
 
     Promise<JsonObject> promise = Promise.promise();
 
-    CountRequest countRequest = CountRequest.of(e -> e.index(index).query(query));
 
     asyncClient.count(e -> e.index(index).query(query)).whenCompleteAsync((response, exception) -> {
       if (exception != null) {
@@ -220,19 +208,19 @@ public class ElasticClient {
 
         long count = response.count();
         if (count == 0) {
-          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204);
+          responseBuilder = new ResponseBuilder().setTypeAndTitle(204);
           responseBuilder.setMessage(EMPTY_RESPONSE);
           promise.fail(responseBuilder.getResponse().toString());
           return;
         }
-        responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(200);
+        responseBuilder = new ResponseBuilder().setTypeAndTitle(200);
         responseBuilder.setCount(count);
         promise.complete(responseBuilder.getResponse());
 
       } catch (Exception ex) {
         LOGGER.error("Exception occurred while executing query: {}", ex);
         JsonObject dbException = new JsonObject(ex.getMessage());
-        responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(dbException);
+        responseBuilder = new ResponseBuilder().setTypeAndTitle(400).setMessage(dbException);
         promise.fail(responseBuilder.getResponse().toString());
       }
 

@@ -20,7 +20,6 @@ public class Api {
     private StringBuilder fileDownloadEndpoint;
     private StringBuilder fileDeleteEndpoint;
     private StringBuilder listMetaDataEndpoint;
-    private static final Logger LOG = LogManager.getLogger(Api.class);
     private volatile static Api apiInstance;
 
     private Api(String dxApiBasePath, String iudxApiBasePath) {
@@ -29,20 +28,17 @@ public class Api {
         buildEndpoints();
     }
 
-    public static Api getInstance(String dxApiBasePath, String iudxApiBasePath)
-    {
-        if(apiInstance == null)
-        {
-            synchronized (Api.class)
-            {
-                if(apiInstance == null)
-                {
-                    apiInstance = new Api(dxApiBasePath,iudxApiBasePath);
+    public static Api getInstance(String dxApiBasePath, String iudxApiBasePath) {
+        if (apiInstance == null) {
+            synchronized (Api.class) {
+                if (apiInstance == null) {
+                    apiInstance = new Api(dxApiBasePath, iudxApiBasePath);
                 }
             }
         }
         return apiInstance;
     }
+
     public void buildEndpoints() {
         temporalEndpoint = new StringBuilder(dxApiBasePath).append(API_TEMPORAL);
         spatialEndpoint = new StringBuilder(dxApiBasePath).append(API_SPATIAL);

@@ -6,17 +6,14 @@ import org.apache.logging.log4j.Logger;
 import iudx.file.server.authenticator.utilities.JwtData;
 
 public final class JwtAuthorization {
+    private final AuthorizationStrategy authStrategy;
 
-  private static final Logger LOGGER = LogManager.getLogger(JwtAuthorization.class);
+    public JwtAuthorization(final AuthorizationStrategy authStrategy) {
+        this.authStrategy = authStrategy;
+    }
 
-  private final AuthorizationStrategy authStrategy;
+    public boolean isAuthorized(AuthorizationRequest authRequest, JwtData jwtData) {
+        return authStrategy.isAuthorized(authRequest, jwtData);
+    }
 
-  public JwtAuthorization(final AuthorizationStrategy authStrategy) {
-    this.authStrategy = authStrategy;
-  }
-
-  public boolean isAuthorized(AuthorizationRequest authRequest, JwtData jwtData) {
-    return authStrategy.isAuthorized(authRequest, jwtData);
-  }
-  
 }

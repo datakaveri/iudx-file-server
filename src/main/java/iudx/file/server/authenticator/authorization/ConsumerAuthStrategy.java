@@ -20,11 +20,9 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
   private static final Logger LOGGER = LogManager.getLogger(ConsumerAuthStrategy.class);
 
   static Map<String, List<AuthorizationRequest>> consumerAuthorizationRules = new HashMap<>();
-  private final Api api;
   private volatile static ConsumerAuthStrategy instance;
   private ConsumerAuthStrategy(Api api)
   {
-    this.api = api;
     buildPermissions(api);
   }
   public static ConsumerAuthStrategy getInstance(Api apis)

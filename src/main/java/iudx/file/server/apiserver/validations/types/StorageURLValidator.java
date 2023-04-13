@@ -48,7 +48,7 @@ public class StorageURLValidator implements Validator {
   private boolean isValidValue(String value) {
 
     try {
-      URL url = new URL(value);
+       new URL(value);
     } catch (MalformedURLException e) {
       LOGGER.error("MalformedURL : [ " + value + " ]");
       return false;

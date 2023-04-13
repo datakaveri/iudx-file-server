@@ -8,13 +8,12 @@ import iudx.file.server.apiserver.utilities.HttpStatusCode;
 
 public class ResponseBuilder {
 
-  private String status;
+
   private JsonObject response;
 
   /** Initialise the object with Success or Failure. */
 
-  public ResponseBuilder(String status) {
-    this.status = status;
+  public ResponseBuilder() {
     response = new JsonObject();
   }
 

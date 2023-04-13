@@ -18,41 +18,36 @@ import iudx.file.server.authenticator.utilities.JwtData;
 
 public class ProviderAuthStrategy implements AuthorizationStrategy {
 
-  private static final Logger LOGGER = LogManager.getLogger(ProviderAuthStrategy.class);
+    private volatile static ProviderAuthStrategy instance;
+    static Map<String, List<AuthorizationRequest>> providerAuthorizationRules = new HashMap<>();
 
-  private final Api api;
-  private volatile static ProviderAuthStrategy instance;
-  static Map<String, List<AuthorizationRequest>> providerAuthorizationRules = new HashMap<>();
-  private ProviderAuthStrategy(Api api)
-  {
-    this.api = api;
-    buildPermissions(api);
-  }
-  public static ProviderAuthStrategy getInstance(Api apis)
-  {
-    if(instance == null)
-    {
-      synchronized (ProviderAuthStrategy.class)
-      {
-        if(instance == null)
-        {
-          instance = new ProviderAuthStrategy(apis);
-        }
-      }
+    private ProviderAuthStrategy(Api api) {
+        buildPermissions(api);
     }
-    return instance;
-  }  private void buildPermissions(Api api) {
 
-    // file access list/rules
-    List<AuthorizationRequest> fileAccessList = new ArrayList<>();
-    fileAccessList.add(new AuthorizationRequest(POST, api.getApiFileUpload()));
-    fileAccessList.add(new AuthorizationRequest(DELETE, api.getApiFileDelete()));
-    providerAuthorizationRules.put("file", fileAccessList);
-  }
+    public static ProviderAuthStrategy getInstance(Api apis) {
+        if (instance == null) {
+            synchronized (ProviderAuthStrategy.class) {
+                if (instance == null) {
+                    instance = new ProviderAuthStrategy(apis);
+                }
+            }
+        }
+        return instance;
+    }
 
-  @Override
-  public boolean isAuthorized(AuthorizationRequest authRequest, JwtData jwtData) {
-    return true;
-  }
+    private void buildPermissions(Api api) {
+
+        // file access list/rules
+        List<AuthorizationRequest> fileAccessList = new ArrayList<>();
+        fileAccessList.add(new AuthorizationRequest(POST, api.getApiFileUpload()));
+        fileAccessList.add(new AuthorizationRequest(DELETE, api.getApiFileDelete()));
+        providerAuthorizationRules.put("file", fileAccessList);
+    }
+
+    @Override
+    public boolean isAuthorized(AuthorizationRequest authRequest, JwtData jwtData) {
+        return true;
+    }
 
 }

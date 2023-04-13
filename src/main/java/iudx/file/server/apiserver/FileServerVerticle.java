@@ -1,77 +1,60 @@
 package iudx.file.server.apiserver;
 
-import static iudx.file.server.apiserver.response.ResponseUrn.SUCCESS;
-import static iudx.file.server.apiserver.utilities.Constants.*;
-import static iudx.file.server.apiserver.response.ResponseUrn.*;
-import static iudx.file.server.apiserver.utilities.Utilities.getFileIdComponents;
-import static iudx.file.server.apiserver.utilities.Utilities.getQueryType;
-import static iudx.file.server.auditing.util.Constants.*;
-import static iudx.file.server.auditing.util.Constants.RESPONSE_SIZE;
-import static iudx.file.server.common.Constants.AUDIT_SERVICE_ADDRESS;
-import static iudx.file.server.common.Constants.DB_SERVICE_ADDRESS;
-import static iudx.file.server.database.elasticdb.utilities.Constants.STATUS;
-import static iudx.file.server.database.elasticdb.utilities.Constants.TYPE_KEY;
-
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-
-import io.vertx.ext.web.Route;
-import iudx.file.server.apiserver.response.ResponseType;
-import iudx.file.server.common.Api;
-import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import io.netty.handler.codec.http.HttpConstants;
 import io.netty.handler.codec.http.QueryStringDecoder;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.MultiMap;
-import io.vertx.core.Promise;
+import io.vertx.core.*;
 import io.vertx.core.file.FileSystem;
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.http.*;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.FileUpload;
+import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import iudx.file.server.apiserver.handlers.AuthHandler;
+import iudx.file.server.apiserver.handlers.ValidationFailureHandler;
 import iudx.file.server.apiserver.handlers.ValidationsHandler;
 import iudx.file.server.apiserver.query.QueryParams;
+import iudx.file.server.apiserver.response.ResponseType;
+import iudx.file.server.apiserver.response.ResponseUrn;
+import iudx.file.server.apiserver.response.RestResponse;
 import iudx.file.server.apiserver.service.FileService;
 import iudx.file.server.apiserver.service.impl.LocalStorageFileServiceImpl;
-import iudx.file.server.apiserver.response.RestResponse;
-import iudx.file.server.apiserver.response.ResponseUrn;
 import iudx.file.server.apiserver.utilities.HttpStatusCode;
 import iudx.file.server.apiserver.validations.ContentTypeValidator;
 import iudx.file.server.apiserver.validations.RequestType;
 import iudx.file.server.apiserver.validations.RequestValidator;
-import iudx.file.server.apiserver.handlers.ValidationFailureHandler;
+import iudx.file.server.auditing.AuditingService;
+import iudx.file.server.common.Api;
 import iudx.file.server.common.QueryType;
 import iudx.file.server.common.WebClientFactory;
 import iudx.file.server.common.service.CatalogueService;
 import iudx.file.server.common.service.impl.CatalogueServiceImpl;
 import iudx.file.server.database.elasticdb.DatabaseService;
-import iudx.file.server.auditing.AuditingService;
-import iudx.file.server.cache.CacheService;
-import iudx.file.server.cache.cacheImpl.CacheType;
+import org.apache.http.HttpStatus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+
+import static iudx.file.server.apiserver.response.ResponseUrn.SUCCESS;
+import static iudx.file.server.apiserver.response.ResponseUrn.*;
+import static iudx.file.server.apiserver.utilities.Constants.*;
+import static iudx.file.server.apiserver.utilities.Utilities.getFileIdComponents;
+import static iudx.file.server.apiserver.utilities.Utilities.getQueryType;
+import static iudx.file.server.auditing.util.Constants.RESPONSE_SIZE;
+import static iudx.file.server.auditing.util.Constants.*;
+import static iudx.file.server.common.Constants.AUDIT_SERVICE_ADDRESS;
+import static iudx.file.server.common.Constants.DB_SERVICE_ADDRESS;
+import static iudx.file.server.common.QueryType.TEMPORAL_GEO;
+import static iudx.file.server.database.elasticdb.utilities.Constants.TYPE_KEY;
 
 /**
  * The File Server API Verticle.
@@ -115,8 +98,6 @@ public class FileServerVerticle extends AbstractVerticle {
   private CatalogueService catalogueService;
   private String dxApiBasePath;
   private String dxV1BasePath;
-  private String dxCatalogueBasePath;
-  private String dxAuthBasePath;
   private final ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
 
   @Override
@@ -144,8 +125,6 @@ public class FileServerVerticle extends AbstractVerticle {
 
     dxApiBasePath = config().getString("dxApiBasePath");
     dxV1BasePath = config().getString("iudxApiBasePath");
-    dxCatalogueBasePath = config().getString("dxCatalogueBasePath");
-    dxAuthBasePath = config().getString("dxAuthBasePath");
     Api api = Api.getInstance(dxApiBasePath,dxV1BasePath);
 
     router = Router.router(vertx);
@@ -170,7 +149,7 @@ public class FileServerVerticle extends AbstractVerticle {
     webClientFactory = new WebClientFactory(vertx, config());
 
     // authService = new AuthServiceImpl(vertx, webClientFactory, config());
-    catalogueService = new CatalogueServiceImpl(vertx, webClientFactory, config());
+    catalogueService = new CatalogueServiceImpl(webClientFactory, config());
 
     directory = config().getString("upload_dir");
     temp_directory = config().getString("tmp_dir");
@@ -561,8 +540,8 @@ public class FileServerVerticle extends AbstractVerticle {
         boolean isValidFilters = true; // TODO :change to false once filters available in cat for
                                        // file
         List<String> applicableFilters = handler.result();
-        if (QueryType.TEMPORAL_GEO.equals(type)
-            && (applicableFilters.contains("SPATIAL") && applicableFilters.contains("TEMPORAL"))) {
+        if (TEMPORAL_GEO.equals(type)
+            && applicableFilters.contains("SPATIAL") && applicableFilters.contains("TEMPORAL")) {
           isValidFilters = true;
         } else if (QueryType.GEO.equals(type) && applicableFilters.contains("SPATIAL")) {
           isValidFilters = true;
@@ -641,7 +620,7 @@ public class FileServerVerticle extends AbstractVerticle {
           String resultTitle = dbHandlerResult.getJsonObject("result").getString("title");
           int resultType = dbHandlerResult.getJsonObject("result").getInteger("type");
           HttpStatusCode code = HttpStatusCode.getByValue(resultType);
-          ResponseUrn urn = ResponseUrn.fromCode(resultTitle);
+          ResponseUrn urn = fromCode(resultTitle);
           if (urn.equals(SUCCESS)) {
             JsonObject responseJson = new JsonObject()
                     .put("type", SUCCESS.getUrn())
@@ -776,9 +755,9 @@ public class FileServerVerticle extends AbstractVerticle {
       String urnTitle = json.getString(JSON_TITLE);
       ResponseUrn urn;
       if (urnTitle != null) {
-        urn = ResponseUrn.fromCode(urnTitle);
+        urn = fromCode(urnTitle);
       } else {
-        urn = ResponseUrn.fromCode(type + "");
+        urn = fromCode(type + "");
       }
 
       String message = json.getString(ERROR_MESSAGE);
@@ -808,12 +787,12 @@ public class FileServerVerticle extends AbstractVerticle {
   }
 
   private void handleResponse(HttpServerResponse response, HttpStatusCode code) {
-    ResponseUrn urn = ResponseUrn.fromCode(code.getUrn());
+    ResponseUrn urn = fromCode(code.getUrn());
     handleResponse(response, code, urn, code.getDescription());
   }
 
   private void handleResponse(HttpServerResponse response, HttpStatusCode code, String message) {
-    ResponseUrn urn = ResponseUrn.fromCode(code.getUrn());
+    ResponseUrn urn = fromCode(code.getUrn());
     handleResponse(response, code, urn, message);
   }
 
@@ -918,9 +897,9 @@ public class FileServerVerticle extends AbstractVerticle {
       String urnTitle = json.getString(JSON_TITLE);
       ResponseUrn urn;
       if (urnTitle != null) {
-        urn = ResponseUrn.fromCode(urnTitle);
+        urn = fromCode(urnTitle);
       } else {
-        urn = ResponseUrn.fromCode(type + "");
+        urn = fromCode(type + "");
       }
       // return urn in body
       response

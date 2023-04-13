@@ -34,5 +34,8 @@ public class CacheVerticle extends AbstractVerticle {
 
     LOGGER.info("Cache Verticle deployed.");
   }
-
+  @Override
+  public void stop() {
+    binder.unregister(consumer);
+  }
 }

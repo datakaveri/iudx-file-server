@@ -14,7 +14,6 @@ import static iudx.file.server.auditing.util.Constants.FAILED;
 import static iudx.file.server.auditing.util.Constants.SUCCESS;
 
 public class DataBrokerServiceImpl implements DataBrokerService {
-  private static final Logger LOGGER = LogManager.getLogger(DataBrokerServiceImpl.class);
 
   private RabbitMQClient client;
 

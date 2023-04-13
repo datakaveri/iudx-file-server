@@ -1,20 +1,18 @@
 package iudx.file.server.apiserver.handlers;
 
-import static iudx.file.server.apiserver.utilities.Constants.*;
-
-import iudx.file.server.apiserver.response.ResponseUrn;
-import iudx.file.server.apiserver.utilities.HttpStatusCode;
-import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import iudx.file.server.apiserver.response.ResponseUrn;
+import iudx.file.server.apiserver.utilities.HttpStatusCode;
 import iudx.file.server.authenticator.AuthenticationService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import static iudx.file.server.apiserver.utilities.Constants.*;
 
 public class AuthHandler implements Handler<RoutingContext> {
 

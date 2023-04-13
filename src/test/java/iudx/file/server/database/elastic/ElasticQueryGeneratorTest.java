@@ -118,7 +118,7 @@ public class ElasticQueryGeneratorTest {
     error.put("status", 404);
     error.put("error", new JsonObject().put("type", "index_not_found_exception"));
 
-    ResponseBuilder responseBuilder = new ResponseBuilder("success");
+    ResponseBuilder responseBuilder = new ResponseBuilder();
     responseBuilder.setMessage(error);
 
     assertEquals("Invalid resource id", responseBuilder.getResponse().getString("errorMessage"));
@@ -136,7 +136,7 @@ public class ElasticQueryGeneratorTest {
                 "root_cause",
                 new JsonArray().add(new JsonObject().put("reason", "backend connect failure"))));
 
-    ResponseBuilder responseBuilder = new ResponseBuilder("success");
+    ResponseBuilder responseBuilder = new ResponseBuilder();
     responseBuilder.setMessage(error);
 
     assertEquals(

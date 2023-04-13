@@ -23,11 +23,8 @@ import iudx.file.server.common.service.CatalogueService;
 import iudx.file.server.common.service.impl.CatalogueServiceImpl;
 
 public class AuthenticationVerticle extends AbstractVerticle {
-
-  private AuthenticationService auth;
   private CatalogueService catalogueService;
   private WebClientFactory webClientFactory;
-  private static final String authAddress = AUTH_SERVICE_ADDRESS;
   private ServiceBinder binder;
   private MessageConsumer<JsonObject> consumer;
   private AuthenticationService jwtAuthenticationService;
@@ -42,7 +39,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
   public void start() {
 
     webClientFactory = new WebClientFactory(vertx, config());
-    catalogueService = new CatalogueServiceImpl(vertx, webClientFactory, config());
+    catalogueService = new CatalogueServiceImpl(webClientFactory, config());
     getJwtPublicKey(vertx, config()).onSuccess(handler -> {
       String cert = handler;
       LOGGER.debug("cert : " + cert);
@@ -52,8 +49,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
       /*
        * Default jwtIgnoreExpiry is false. If set through config, then that value is taken
        */
-      boolean jwtIgnoreExpiry = config().getBoolean("jwtIgnoreExpiry") == null ? false
-          : config().getBoolean("jwtIgnoreExpiry");
+      boolean jwtIgnoreExpiry = config().getBoolean("jwtIgnoreExpiry") == null ? false : config().getBoolean("jwtIgnoreExpiry");
       if (jwtIgnoreExpiry) {
         jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);
         LOGGER

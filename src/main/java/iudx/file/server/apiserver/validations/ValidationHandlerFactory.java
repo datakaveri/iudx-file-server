@@ -28,13 +28,13 @@ public class ValidationHandlerFactory {
         validator = getDeleteRequestValidations(parameters, headers);
         break;
       case TEMPORAL_QUERY:
-        validator = getTemporalQueryRequestValidator(parameters, headers);
+        validator = getTemporalQueryRequestValidator(parameters);
         break;
       case LIST_QUERY:
-        validator = getListQueryRequestValidator(parameters, headers);
+        validator = getListQueryRequestValidator(parameters);
         break;
       case GEO_QUERY:
-        validator = getGeoQueryRequestValidator(parameters, headers);
+        validator = getGeoQueryRequestValidator(parameters);
         break;
       default:
         break;
@@ -89,8 +89,7 @@ public class ValidationHandlerFactory {
   }
 
 
-  private List<Validator> getTemporalQueryRequestValidator(final MultiMap parameters,
-      final MultiMap headers) {
+  private List<Validator> getTemporalQueryRequestValidator(final MultiMap parameters) {
     List<Validator> validators = new ArrayList<>();
     // temporal fields(mandatory)
     validators.add(new IDTypeValidator(parameters.get(PARAM_ID), true));
@@ -105,8 +104,7 @@ public class ValidationHandlerFactory {
     return validators;
   }
 
-  private List<Validator> getListQueryRequestValidator(final MultiMap parameters,
-      final MultiMap headers) {
+  private List<Validator> getListQueryRequestValidator(final MultiMap parameters) {
     List<Validator> validators = new ArrayList<>();
 
     validators.add(new IDTypeValidator(parameters.get(PARAM_ID), true));
@@ -114,8 +112,7 @@ public class ValidationHandlerFactory {
     return validators;
   }
 
-  private List<Validator> getGeoQueryRequestValidator(final MultiMap parameters,
-      final MultiMap headers) {
+  private List<Validator> getGeoQueryRequestValidator(final MultiMap parameters) {
     List<Validator> validators = new ArrayList<>();
 
     validators.add(new IDTypeValidator(parameters.get(PARAM_ID), true));

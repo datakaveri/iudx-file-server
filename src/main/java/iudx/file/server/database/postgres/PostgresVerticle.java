@@ -1,6 +1,8 @@
 package iudx.file.server.database.postgres;
 
 import static iudx.file.server.common.Constants.*;
+
+import iudx.file.server.database.elasticdb.DatabaseService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.AbstractVerticle;
@@ -15,9 +17,8 @@ public class PostgresVerticle extends AbstractVerticle {
   
   private static final Logger LOGGER = LogManager.getLogger(PostgresVerticle.class);
 
-  private static final String PGSQL_SERVICE_ADDRESS = PG_SERVICE_ADDRESS;
 
-  private MessageConsumer<JsonObject> consumer;
+
   private ServiceBinder binder;
 
   private PgConnectOptions connectOptions;
@@ -30,6 +31,7 @@ public class PostgresVerticle extends AbstractVerticle {
   private String databaseUserName;
   private String databasePassword;
   private int poolSize;
+  private MessageConsumer<JsonObject> consumer;
 
   private PostgresService pgService;
 
@@ -60,9 +62,14 @@ public class PostgresVerticle extends AbstractVerticle {
     pgService = new PostgresServiceImpl(this.pool);
 
     binder = new ServiceBinder(vertx);
-    consumer = binder.setAddress(PGSQL_SERVICE_ADDRESS).register(PostgresService.class, pgService);
+    consumer =
+            binder.setAddress(PG_SERVICE_ADDRESS)
+                    .register(PostgresService.class, pgService);
 
     LOGGER.info("Postgres Verticle deployed.");
   }
-
+  @Override
+  public void stop() {
+    binder.unregister(consumer);
+  }
 }

@@ -59,7 +59,7 @@ public class CatalogueServiceTest {
         config.put("catalogueHost", "asdas");
         config.put("cataloguePort", 123);
         doReturn(client).when(webClientFactory).getWebClientFor(any());
-        catalogueService = new CatalogueServiceImpl(vertx, webClientFactory, config);
+        catalogueService = new CatalogueServiceImpl(webClientFactory, config);
     }
 
 

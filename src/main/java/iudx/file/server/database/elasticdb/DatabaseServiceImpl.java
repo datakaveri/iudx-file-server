@@ -20,8 +20,6 @@ public class DatabaseServiceImpl implements DatabaseService {
   private static final Logger LOGGER = LogManager.getLogger(DatabaseServiceImpl.class);
   private final ElasticClient client;
   private final String fileMetadataIndex;
-  private ElasticQueryGenerator elasticQueryGenerator = new ElasticQueryGenerator();
-
   public DatabaseServiceImpl(JsonObject config) {
     this.fileMetadataIndex = config.getString("file-metadata-index");
     if (fileMetadataIndex == null) {
@@ -40,7 +38,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     Promise<JsonObject> promise = Promise.promise();
     if ((apiQuery == null || apiQuery.isEmpty()) || type == null) {
       ResponseBuilder responseBuilder =
-          new ResponseBuilder(FAILED)
+          new ResponseBuilder()
               .setTypeAndTitle(400)
               .setMessage("invalid parameters passed to search.");
       promise.fail(responseBuilder.getResponse().toString());
@@ -113,7 +111,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     Promise<JsonObject> promise = Promise.promise();
     if (document == null || document.isEmpty()) {
       ResponseBuilder responseBuilder =
-          new ResponseBuilder(FAILED)
+          new ResponseBuilder()
               .setTypeAndTitle(400)
               .setMessage("empty document passed to save.");
       promise.fail(responseBuilder.getResponse().toString());
@@ -142,7 +140,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     Promise<JsonObject> promise = Promise.promise();
     if (id == null || id.isBlank()) {
       ResponseBuilder responseBuilder =
-          new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage("empty id passed to delete.");
+          new ResponseBuilder().setTypeAndTitle(400).setMessage("empty id passed to delete.");
       promise.fail(responseBuilder.getResponse().toString());
     }
     ElasticQueryGenerator queryGenerator = new ElasticQueryGenerator();

@@ -15,15 +15,10 @@ import io.vertx.core.json.JsonArray;
 import iudx.file.server.authenticator.utilities.JwtData;
 
 public class DelegateAuthStrategy implements AuthorizationStrategy {
-
-  private static final Logger LOGGER = LogManager.getLogger(DelegateAuthStrategy.class);
-
-  private final Api api;
   private volatile static DelegateAuthStrategy instance;
   static Map<String, List<AuthorizationRequest>> delegateAuthorizationRules = new HashMap<>();
   private DelegateAuthStrategy(Api api)
   {
-    this.api = api;
     buildPermissions(api);
   }
   public static DelegateAuthStrategy getInstance(Api apis)

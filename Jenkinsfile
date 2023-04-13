@@ -37,6 +37,10 @@ pipeline {
         jacoco classPattern: 'target/classes', execPattern: 'target/jacoco.exec', sourcePattern: 'src/main/java', exclusionPattern: 'iudx/file/server/apiserver/FileServerVerticle.class,iudx/file/server/apiserver/FileServerVerticle**,iudx/file/server/authenticator/AuthenticationService.class,iudx/file/server/database/DatabaseService.class,**/JwtDataConverter.class,**/*VertxEBProxy.class,**/Constants.class,**/*VertxProxyHandler.class,**/*Verticle.class,iudx/file/server/deploy/**,iudx/file/server/databroker/DataBrokerServiceImpl.class'
       }
       post{
+            always {
+                      recordIssues enabledForFailure: true, tool: checkStyle(pattern: 'target/checkstyle-result.xml')
+                      recordIssues enabledForFailure: true, tool: pmdParser(pattern: 'target/pmd.xml')
+                    }
         failure{
           script{
             sh 'docker compose -f docker-compose.test.yml down --remove-orphans'

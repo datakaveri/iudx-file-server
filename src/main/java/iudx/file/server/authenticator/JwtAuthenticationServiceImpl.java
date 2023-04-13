@@ -53,7 +53,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   final JWTAuth jwtAuth;
   WebClient catWebClient;
   final String host;
-  final int port;;
+  final int port;
   final String audience;
   final String path;
   final String catBasePath;
@@ -96,7 +96,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   public AuthenticationService tokenInterospect(JsonObject request, JsonObject authenticationInfo,
       Handler<AsyncResult<JsonObject>> handler) {
     LOGGER.debug("token interospect called");
-    String id = authenticationInfo.getString("id");;
+    String id = authenticationInfo.getString("id");
     String token = authenticationInfo.getString("token");
     String endPoint = authenticationInfo.getString("apiEndpoint");
 
@@ -126,12 +126,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     }).compose(openResourceHandler -> {
       result.isOpen = openResourceHandler.equalsIgnoreCase("OPEN");
       if (result.isOpen && checkOpenEndPoints(endPoint)) {
-        JsonObject json = new JsonObject()
-            .put(JSON_USERID, result.jwtData.getSub());
         return Future.succeededFuture(true);
       } else if (checkQueryEndPoints(endPoint)) {
-        JsonObject json = new JsonObject()
-            .put(JSON_USERID, result.jwtData.getSub());
         return Future.succeededFuture(true);
       } else if (!result.isOpen) {
         return isValidId(result.jwtData, id);

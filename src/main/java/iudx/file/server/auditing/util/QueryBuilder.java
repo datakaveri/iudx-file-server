@@ -9,8 +9,6 @@ import java.util.UUID;
 import static iudx.file.server.auditing.util.Constants.*;
 
 public class QueryBuilder {
-  private static final Logger LOGGER = LogManager.getLogger(QueryBuilder.class);
-
   public JsonObject buildWriteQueryForRMQ(JsonObject request) {
 
     String primaryKey = UUID.randomUUID().toString().replace("-", "");

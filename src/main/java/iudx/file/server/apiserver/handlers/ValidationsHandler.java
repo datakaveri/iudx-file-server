@@ -45,7 +45,6 @@ public class ValidationsHandler implements Handler<RoutingContext> {
       }
     }
     context.next();
-    return;
   }
 
   private void error(RoutingContext context) {

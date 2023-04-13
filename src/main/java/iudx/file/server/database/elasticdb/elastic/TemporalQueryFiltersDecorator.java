@@ -12,7 +12,6 @@ import java.util.Map;
 import static iudx.file.server.database.elasticdb.utilities.Constants.*;
 
 public class TemporalQueryFiltersDecorator implements ElasticsearchQueryDecorator {
-  private static final Logger LOGGER = LogManager.getLogger(TemporalQueryFiltersDecorator.class);
   private Map<FilterType, List<Query>> queryFilters;
   private JsonObject requestQuery;
 

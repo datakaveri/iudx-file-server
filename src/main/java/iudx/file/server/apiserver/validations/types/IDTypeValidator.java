@@ -6,9 +6,6 @@ import iudx.file.server.apiserver.exceptions.DxRuntimeException;
 import iudx.file.server.apiserver.response.ResponseUrn;
 
 public class IDTypeValidator implements Validator {
-
-  private static final Logger LOGGER = LogManager.getLogger(IDTypeValidator.class);
-
   private final String value;
   private final boolean required;
 
