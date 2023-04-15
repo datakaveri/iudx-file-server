@@ -1,7 +1,19 @@
 package iudx.file.server.database.elasticdb.utilities;
 
 
-import static iudx.file.server.database.elasticdb.utilities.Constants.*;
+import static iudx.file.server.database.elasticdb.utilities.Constants.TITLE;
+import static iudx.file.server.database.elasticdb.utilities.Constants.ERROR_TYPE;
+import static iudx.file.server.database.elasticdb.utilities.Constants.RESULTS;
+import static iudx.file.server.database.elasticdb.utilities.Constants.DETAIL;
+import static iudx.file.server.database.elasticdb.utilities.Constants.STATUS;
+import static iudx.file.server.database.elasticdb.utilities.Constants.ERROR;
+import static iudx.file.server.database.elasticdb.utilities.Constants.TYPE_KEY;
+import static iudx.file.server.database.elasticdb.utilities.Constants.INDEX_NOT_FOUND;
+import static iudx.file.server.database.elasticdb.utilities.Constants.ERROR_MESSAGE;
+import static iudx.file.server.database.elasticdb.utilities.Constants.INVALID_RESOURCE_ID;
+import static iudx.file.server.database.elasticdb.utilities.Constants.REASON;
+import static iudx.file.server.database.elasticdb.utilities.Constants.ROOT_CAUSE;
+import static iudx.file.server.database.elasticdb.utilities.Constants.COUNT;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.file.server.apiserver.utilities.HttpStatusCode;

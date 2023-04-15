@@ -16,7 +16,9 @@ import iudx.file.server.common.VHosts;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static iudx.file.server.common.Constants.*;
+import static iudx.file.server.common.Constants.CACHE_SERVICE_ADDRESS;
+import static iudx.file.server.common.Constants.DATABROKER_SERVICE_ADDRESS;
+import static iudx.file.server.common.Constants.INVALID_SUB_Q;
 
 public class DataBrokerVerticle extends AbstractVerticle {
 
