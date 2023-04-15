@@ -1,10 +1,5 @@
 package iudx.file.server.database.postgres;
 
-import static iudx.file.server.common.Constants.*;
-
-import iudx.file.server.database.elasticdb.DatabaseService;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
@@ -12,6 +7,10 @@ import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.serviceproxy.ServiceBinder;
 import io.vertx.sqlclient.PoolOptions;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import static iudx.file.server.common.Constants.PG_SERVICE_ADDRESS;
 
 public class PostgresVerticle extends AbstractVerticle {
   

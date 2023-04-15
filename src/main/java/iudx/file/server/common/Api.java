@@ -1,8 +1,5 @@
 package iudx.file.server.common;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import static iudx.file.server.apiserver.utilities.Constants.*;
 
 /**

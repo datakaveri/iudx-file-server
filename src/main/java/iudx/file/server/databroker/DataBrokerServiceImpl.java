@@ -7,8 +7,6 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rabbitmq.RabbitMQClient;
 import iudx.file.server.common.Response;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import static iudx.file.server.auditing.util.Constants.FAILED;
 import static iudx.file.server.auditing.util.Constants.SUCCESS;

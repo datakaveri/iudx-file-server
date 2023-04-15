@@ -1,14 +1,15 @@
 package iudx.file.server.cache;
 
-import static iudx.file.server.common.Constants.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ServiceBinder;
-import iudx.file.server.cache.cacheImpl.CacheType;
 import iudx.file.server.database.postgres.PostgresService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import static iudx.file.server.common.Constants.CACHE_SERVICE_ADDRESS;
+import static iudx.file.server.common.Constants.PG_SERVICE_ADDRESS;
 
 public class CacheVerticle extends AbstractVerticle {
 

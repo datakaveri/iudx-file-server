@@ -1,13 +1,11 @@
 package iudx.file.server.apiserver.service;
 
-import java.util.List;
-import java.util.Set;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
+
+import java.util.List;
 
 public interface FileService {
 

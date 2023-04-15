@@ -1,20 +1,16 @@
 package iudx.file.server.authenticator.authorization;
 
 
-import static iudx.file.server.authenticator.authorization.Method.DELETE;
-import static iudx.file.server.authenticator.authorization.Method.POST;
+import iudx.file.server.authenticator.utilities.JwtData;
+import iudx.file.server.common.Api;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import iudx.file.server.common.Api;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import io.vertx.core.json.JsonArray;
-import iudx.file.server.authenticator.utilities.JwtData;
+import static iudx.file.server.authenticator.authorization.Method.DELETE;
+import static iudx.file.server.authenticator.authorization.Method.POST;
 
 public class ProviderAuthStrategy implements AuthorizationStrategy {
 

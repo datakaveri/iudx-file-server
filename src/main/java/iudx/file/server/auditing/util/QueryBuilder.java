@@ -1,8 +1,6 @@
 package iudx.file.server.auditing.util;
 
 import io.vertx.core.json.JsonObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.UUID;
 

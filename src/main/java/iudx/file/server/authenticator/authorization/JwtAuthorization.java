@@ -1,8 +1,5 @@
 package iudx.file.server.authenticator.authorization;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import iudx.file.server.authenticator.utilities.JwtData;
 
 public final class JwtAuthorization {

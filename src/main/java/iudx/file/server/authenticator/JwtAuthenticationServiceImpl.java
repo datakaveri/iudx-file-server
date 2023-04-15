@@ -1,30 +1,8 @@
 package iudx.file.server.authenticator;
 
-import static iudx.file.server.authenticator.utilities.Constants.CACHE_TIMEOUT;
-import static iudx.file.server.authenticator.utilities.Constants.JSON_EXPIRY;
-import static iudx.file.server.authenticator.utilities.Constants.JSON_IID;
-import static iudx.file.server.authenticator.utilities.Constants.JSON_USERID;
-import static iudx.file.server.authenticator.utilities.Constants.OPEN_ENDPOINTS;
-import static iudx.file.server.authenticator.utilities.Constants.QUERY_ENDPOINTS;
-import static iudx.file.server.common.Constants.CAT_SEARCH_PATH;
-
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
-
-import iudx.file.server.common.Api;
-import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.authentication.TokenCredentials;
@@ -33,16 +11,24 @@ import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
-import iudx.file.server.authenticator.authorization.AuthorizationContextFactory;
-import iudx.file.server.authenticator.authorization.AuthorizationRequest;
-import iudx.file.server.authenticator.authorization.AuthorizationStrategy;
-import iudx.file.server.authenticator.authorization.JwtAuthorization;
-import iudx.file.server.authenticator.authorization.Method;
-import iudx.file.server.authenticator.utilities.Constants;
+import iudx.file.server.authenticator.authorization.*;
 import iudx.file.server.authenticator.utilities.JwtData;
 import iudx.file.server.cache.CacheService;
 import iudx.file.server.cache.cacheImpl.CacheType;
+import iudx.file.server.common.Api;
 import iudx.file.server.common.service.CatalogueService;
+import org.apache.http.HttpStatus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+
+import static iudx.file.server.authenticator.utilities.Constants.*;
+import static iudx.file.server.common.Constants.CAT_SEARCH_PATH;
 
 
 public class JwtAuthenticationServiceImpl implements AuthenticationService {
