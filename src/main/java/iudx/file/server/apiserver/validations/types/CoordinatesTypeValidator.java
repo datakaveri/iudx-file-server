@@ -1,6 +1,7 @@
 package iudx.file.server.apiserver.validations.types;
 
-import static iudx.file.server.apiserver.utilities.Constants.*;
+import static iudx.file.server.apiserver.utilities.Constants.VALIDATION_ALLOWED_COORDINATES;
+import static iudx.file.server.apiserver.utilities.Constants.VALIDATION_COORDINATE_PRECISION_ALLOWED;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.List;
@@ -41,10 +42,10 @@ public class CoordinatesTypeValidator implements Validator {
     try {
       Float latitudeValue = Float.parseFloat(latitude);
       if (!df.format(latitudeValue).matches(LATITUDE_PATTERN)) {
-        message = ("Validation error : invalid latitude value " + latitude);
+        message = "Validation error : invalid latitude value " + latitude;
       }
     } catch (Exception ex) {
-      message = ("Validation error : invalid latitude value " + latitude);
+      message = "Validation error : invalid latitude value " + latitude;
     }
     if(message.isBlank()) {
       return true;
@@ -57,10 +58,10 @@ public class CoordinatesTypeValidator implements Validator {
     try {
       Float longitudeValue = Float.parseFloat(longitude);
       if (!df.format(longitudeValue).matches(LONGITUDE_PATTERN)) {
-        message = ("Validation error : invalid longitude value " + longitude);
+        message = "Validation error : invalid longitude value " + longitude;
       }
     } catch (Exception ex) {
-        message = ("Validation error : invalid longitude value " + longitude);
+        message = "Validation error : invalid longitude value " + longitude;
     }
     if(message.isBlank()) {
       return true;
@@ -71,7 +72,7 @@ public class CoordinatesTypeValidator implements Validator {
   private boolean isPricisonLengthAllowed(String value) {
     boolean result = false;
     try {
-      result = (new BigDecimal(value).scale() > VALIDATION_COORDINATE_PRECISION_ALLOWED);
+      result = new BigDecimal(value).scale() > VALIDATION_COORDINATE_PRECISION_ALLOWED;
     } catch (Exception ex) {
      throw new DxRuntimeException(failureCode(), ResponseUrn.INVALID_GEO_VALUE, "Validation error : invalid value " + value);
     }

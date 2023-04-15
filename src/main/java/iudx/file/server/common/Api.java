@@ -1,7 +1,12 @@
 package iudx.file.server.common;
 
-import static iudx.file.server.apiserver.utilities.Constants.*;
 
+import static iudx.file.server.apiserver.utilities.Constants.API_SPATIAL;
+import static iudx.file.server.apiserver.utilities.Constants.API_TEMPORAL;
+import static iudx.file.server.apiserver.utilities.Constants.API_FILE_UPLOAD;
+import static iudx.file.server.apiserver.utilities.Constants.API_FILE_DOWNLOAD;
+import static iudx.file.server.apiserver.utilities.Constants.API_FILE_DELETE;
+import static iudx.file.server.apiserver.utilities.Constants.API_LIST_METADATA;
 /**
  * This class is used to get complete endpoint by appending configurable base path with the APIs
  */

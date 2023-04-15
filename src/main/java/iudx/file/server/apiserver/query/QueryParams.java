@@ -1,6 +1,7 @@
 package iudx.file.server.apiserver.query;
 
-import static iudx.file.server.common.Constants.*;
+import static iudx.file.server.common.Constants.GEOM_POINT;
+import static iudx.file.server.common.Constants.JSON_NEAR;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;

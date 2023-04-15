@@ -4,7 +4,9 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.UUID;
 
-import static iudx.file.server.auditing.util.Constants.*;
+import static iudx.file.server.auditing.util.Constants.ORIGIN;
+import static iudx.file.server.auditing.util.Constants.PRIMARY_KEY;
+import static iudx.file.server.auditing.util.Constants.ORIGIN_SERVER;
 
 public class QueryBuilder {
   public JsonObject buildWriteQueryForRMQ(JsonObject request) {

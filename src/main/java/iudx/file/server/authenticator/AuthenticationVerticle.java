@@ -1,6 +1,8 @@
 package iudx.file.server.authenticator;
 
-import static iudx.file.server.common.Constants.*;
+import static iudx.file.server.common.Constants.CACHE_SERVICE_ADDRESS;
+import static iudx.file.server.common.Constants.AUTH_SERVICE_ADDRESS;
+import static iudx.file.server.common.Constants.AUTH_CERTIFICATE_PATH;
 
 import iudx.file.server.common.Api;
 import org.apache.logging.log4j.LogManager;

@@ -12,8 +12,16 @@ import iudx.file.server.authenticator.AuthenticationService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static iudx.file.server.apiserver.utilities.Constants.*;
-
+import static iudx.file.server.apiserver.utilities.Constants.HEADER_TOKEN;
+import static iudx.file.server.apiserver.utilities.Constants.AUTH_SERVICE_ADDRESS;
+import static iudx.file.server.apiserver.utilities.Constants.API_ENDPOINT;
+import static iudx.file.server.apiserver.utilities.Constants.API_METHOD;
+import static iudx.file.server.apiserver.utilities.Constants.USER_ID;
+import static iudx.file.server.apiserver.utilities.Constants.CONTENT_TYPE;
+import static iudx.file.server.apiserver.utilities.Constants.APPLICATION_JSON;
+import static iudx.file.server.apiserver.utilities.Constants.JSON_TYPE;
+import static iudx.file.server.apiserver.utilities.Constants.JSON_TITLE;
+import static iudx.file.server.apiserver.utilities.Constants.JSON_DETAIL;
 public class AuthHandler implements Handler<RoutingContext> {
 
   private static final Logger LOGGER = LogManager.getLogger(AuthHandler.class);

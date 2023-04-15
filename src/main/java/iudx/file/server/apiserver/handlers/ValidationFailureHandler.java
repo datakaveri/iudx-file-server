@@ -10,7 +10,12 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
-import static iudx.file.server.apiserver.utilities.Constants.*;
+import static iudx.file.server.apiserver.utilities.Constants.CONTENT_TYPE;
+import static iudx.file.server.apiserver.utilities.Constants.APPLICATION_JSON;
+import static iudx.file.server.apiserver.utilities.Constants.JSON_TYPE;
+import static iudx.file.server.apiserver.utilities.Constants.JSON_TITLE;
+import static iudx.file.server.apiserver.utilities.Constants.JSON_DETAIL;
+import static iudx.file.server.apiserver.utilities.Constants.MSG_BAD_QUERY;
 
 public class ValidationFailureHandler implements Handler<RoutingContext> {
 

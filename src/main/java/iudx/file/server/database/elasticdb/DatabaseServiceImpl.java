@@ -13,7 +13,12 @@ import iudx.file.server.database.elasticdb.utilities.ResponseBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static iudx.file.server.database.elasticdb.utilities.Constants.*;
+import static iudx.file.server.database.elasticdb.utilities.Constants.DEFAULT_FROM_VALUE;
+import static iudx.file.server.database.elasticdb.utilities.Constants.PARAM_LIMIT;
+import static iudx.file.server.database.elasticdb.utilities.Constants.DEFAULT_SIZE_VALUE;
+import static iudx.file.server.database.elasticdb.utilities.Constants.PARAM_OFFSET;
+import static iudx.file.server.database.elasticdb.utilities.Constants.TOTAL_HITS_KEY;
+
 
 public class DatabaseServiceImpl implements DatabaseService {
 
@@ -36,7 +41,7 @@ public class DatabaseServiceImpl implements DatabaseService {
   @Override
   public Future<JsonObject> search(JsonObject apiQuery, QueryType type) {
     Promise<JsonObject> promise = Promise.promise();
-    if ((apiQuery == null || apiQuery.isEmpty()) || type == null) {
+    if (apiQuery == null || apiQuery.isEmpty() || type == null) {
       ResponseBuilder responseBuilder =
           new ResponseBuilder()
               .setTypeAndTitle(400)

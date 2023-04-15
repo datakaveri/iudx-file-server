@@ -1,6 +1,5 @@
 package iudx.file.server.apiserver.utilities;
 
-import io.vertx.core.json.JsonObject;
 import iudx.file.server.apiserver.query.QueryParams;
 import iudx.file.server.common.QueryType;
 
