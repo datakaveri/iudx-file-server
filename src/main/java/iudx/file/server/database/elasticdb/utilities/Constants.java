@@ -34,30 +34,29 @@ public class Constants extends iudx.file.server.common.Constants {
   public static final String MALFORMED_ID = "Malformed Id ";
   public static final String RESPONSE_FILTER_REGEX = "(.*)responseFilter(.*)";
   public static final String RESPONSE_ATTRS = "attrs";
-  public static final String FILE_ID="fileId";
-  public static final String TIME_RANGE="timeRange";
-  public static final String TIME_RANGE_STARTTIME="startTime";
-  public static final String TIME_RANGE_ENDTIME="endTime";
-  public static final String TIME="time";
-  public static final String END_TIME="endTime";
-  public static final String LOCATION="location";
-  public static final String RADIUS="radius";
-  public static final String COORDINATES="coordinates";
-  public static final String GEO_REL="georel";
-  public static final String NEAR="near";
-  public static final String WITHIN="within";
-  public static final String CIRCLE="Circle";
-  public static final String GEOMETRY="geometry";
-  public static final String UNIT_METERS="m";
-  
-  
-  //pagination default values
-  public static final String FROM_KEY="from";
-  public static final String SIZE_KEY="size";
-  public static final int DEFAULT_SIZE_VALUE=5000;
-  public static final int DEFAULT_FROM_VALUE=0;
-  public static final String TOTAL_HITS_KEY="totalHits";
-  
+  public static final String FILE_ID = "fileId";
+  public static final String TIME_RANGE = "timeRange";
+  public static final String TIME_RANGE_STARTTIME = "startTime";
+  public static final String TIME_RANGE_ENDTIME = "endTime";
+  public static final String TIME = "time";
+  public static final String END_TIME = "endTime";
+  public static final String LOCATION = "location";
+  public static final String RADIUS = "radius";
+  public static final String COORDINATES = "coordinates";
+  public static final String GEO_REL = "georel";
+  public static final String NEAR = "near";
+  public static final String WITHIN = "within";
+  public static final String CIRCLE = "Circle";
+  public static final String GEOMETRY = "geometry";
+  public static final String UNIT_METERS = "m";
+
+  // pagination default values
+  public static final String FROM_KEY = "from";
+  public static final String SIZE_KEY = "size";
+  public static final int DEFAULT_SIZE_VALUE = 5000;
+  public static final int DEFAULT_FROM_VALUE = 0;
+  public static final String TOTAL_HITS_KEY = "totalHits";
+
   public static final String DB_ERROR_2XX = "Status code is not 2xx";
 
   // SQL

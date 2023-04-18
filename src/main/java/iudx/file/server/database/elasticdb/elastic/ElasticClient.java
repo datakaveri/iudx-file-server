@@ -34,25 +34,25 @@ import static iudx.file.server.database.elasticdb.utilities.Constants.EMPTY_RESP
 
 public class ElasticClient {
 
-  private RestClient client;
-  private ResponseBuilder responseBuilder;
+  private static final Logger LOGGER = LogManager.getLogger(ElasticClient.class);
   ElasticsearchClient esClient;
   ElasticsearchAsyncClient asyncClient;
-  private static final Logger LOGGER = LogManager.getLogger(ElasticClient.class);
+  private RestClient client;
+  private ResponseBuilder responseBuilder;
 
   /**
    * ElasticClient - Elastic Low level wrapper.
-   * 
-   * @param databaseIP IP of the ElasticDB
+   *
+   * @param databaseIp IP of the ElasticDB
    * @param databasePort Port of the ElasticDB
    */
-  public ElasticClient(String databaseIP, int databasePort, String user, String password) {
+  public ElasticClient(String databaseIp, int databasePort, String user, String password) {
     CredentialsProvider credentials = new BasicCredentialsProvider();
     credentials.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(user, password));
-    RestClientBuilder restClientBuilder = RestClient
-            .builder(new HttpHost(databaseIP, databasePort))
+    RestClientBuilder restClientBuilder =
+        RestClient.builder(new HttpHost(databaseIp, databasePort))
             .setHttpClientConfigCallback(
-                    httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentials));
+                httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentials));
     client = restClientBuilder.build();
 
     ElasticsearchTransport transport = new RestClientTransport(client, new JacksonJsonpMapper());
@@ -63,54 +63,54 @@ public class ElasticClient {
 
   /**
    * searchAsync - Wrapper around elasticsearch async search requests.
-   * 
+   *
    * @param index Index to search on
    * @param query Query
    * @param searchHandler JsonObject result {@link AsyncResult}
    */
-  public Future<JsonObject> asyncSearch(String index, Query query, int size, int from){
+  public Future<JsonObject> asyncSearch(String index, Query query, int size, int from) {
     Promise<JsonObject> promise = Promise.promise();
-    SearchRequest searchRequest = SearchRequest
-            .of(e -> e.index(index).query(query).size(size).from(from));
-    asyncClient.search(searchRequest, ObjectNode.class).whenCompleteAsync((response, exception) -> {
-      if (exception != null) {
-        LOGGER.error("async search query failed : {}", exception);
-        promise.fail(exception);
-        return;
-      }
-      try {
-        JsonArray dbResponse = new JsonArray();
-        if (response.hits().total().value() == 0) {
-          responseBuilder = new ResponseBuilder().setTypeAndTitle(204);
-          responseBuilder.setMessage(EMPTY_RESPONSE);
-          promise.fail(responseBuilder.getResponse().toString());
-          return;
-        }
+    SearchRequest searchRequest =
+        SearchRequest.of(e -> e.index(index).query(query).size(size).from(from));
+    asyncClient
+        .search(searchRequest, ObjectNode.class)
+        .whenCompleteAsync(
+            (response, exception) -> {
+              if (exception != null) {
+                LOGGER.error("async search query failed : {}", exception);
+                promise.fail(exception);
+                return;
+              }
+              try {
+                JsonArray dbResponse = new JsonArray();
+                if (response.hits().total().value() == 0) {
+                  responseBuilder = new ResponseBuilder().setTypeAndTitle(204);
+                  responseBuilder.setMessage(EMPTY_RESPONSE);
+                  promise.fail(responseBuilder.getResponse().toString());
+                  return;
+                }
 
-        // TODO : explore client API docs to directly get response, avoid loop over response to
-        // create a separate Json
-        response
-                .hits()
-                .hits()
-                .stream()
-                .forEach(hit -> dbResponse.add(new JsonObject(hit.source().toString())));
+                // TODO : explore client API docs to directly get response, avoid loop over response
+                // to
+                // create a separate Json
+                response.hits().hits().stream()
+                    .forEach(hit -> dbResponse.add(new JsonObject(hit.source().toString())));
 
-        responseBuilder = new ResponseBuilder().setTypeAndTitle(200);
-        responseBuilder.setMessage(dbResponse);
-        promise.complete(responseBuilder.getResponse());
-      } catch (Exception ex) {
-        LOGGER.error("Exception occurred while executing query: {}", ex);
-        JsonObject dbException = new JsonObject(ex.getMessage());
-        responseBuilder = new ResponseBuilder().setTypeAndTitle(400).setMessage(dbException);
-        promise.fail(responseBuilder.getResponse().toString());
-      }
-    });
+                responseBuilder = new ResponseBuilder().setTypeAndTitle(200);
+                responseBuilder.setMessage(dbResponse);
+                promise.complete(responseBuilder.getResponse());
+              } catch (Exception ex) {
+                LOGGER.error("Exception occurred while executing query: {}", ex);
+                JsonObject dbException = new JsonObject(ex.getMessage());
+                responseBuilder =
+                    new ResponseBuilder().setTypeAndTitle(400).setMessage(dbException);
+                promise.fail(responseBuilder.getResponse().toString());
+              }
+            });
     return promise.future();
   }
 
   public Future<JsonObject> insertAsync(String index, JsonObject document) {
-    Promise<JsonObject> promise = Promise.promise();
-
     StringBuilder putRequestIndex = new StringBuilder(index);
     putRequestIndex.append("/_doc/");
     putRequestIndex.append(UUID.randomUUID().toString());
@@ -118,66 +118,78 @@ public class ElasticClient {
     Request queryRequest = new Request("PUT", putRequestIndex.toString());
     queryRequest.setJsonEntity(document.toString());
 
-    Reader docs= new StringReader(document.toString());
-    asyncClient.index(i->i.index(index).withJson(docs)).
-            whenCompleteAsync((response,exception)->{
+    Reader docs = new StringReader(document.toString());
+    Promise<JsonObject> promise = Promise.promise();
+    asyncClient
+        .index(i -> i.index(index).withJson(docs))
+        .whenCompleteAsync(
+            (response, exception) -> {
               if (exception != null) {
                 LOGGER.error("saved query failed : {}", exception);
                 promise.fail(exception);
                 return;
               }
 
-              try{
-               String result =  response.result().toString();
+              try {
+                String result = response.result().toString();
 
-                if(result.equalsIgnoreCase("CREATED")){
+                if (result.equalsIgnoreCase("CREATED")) {
                   responseBuilder = new ResponseBuilder().setTypeAndTitle(200);
                   promise.complete(responseBuilder.getResponse());
-                }else {
-                  responseBuilder = new ResponseBuilder().setTypeAndTitle(400)
+                } else {
+                  responseBuilder =
+                      new ResponseBuilder()
+                          .setTypeAndTitle(400)
                           .setMessage("Error while inserting.");
                   promise.fail(responseBuilder.getResponse().toString());
                 }
-              }catch (Exception ex){
-                responseBuilder = new ResponseBuilder().setTypeAndTitle(400).setMessage(ex.toString());
+              } catch (Exception ex) {
+                responseBuilder =
+                    new ResponseBuilder().setTypeAndTitle(400).setMessage(ex.toString());
                 promise.fail(responseBuilder.getResponse().toString());
               }
-    });
+            });
     return promise.future();
   }
 
-  public Future<JsonObject> deleteAsync(String index, String id, Query query){
+  public Future<JsonObject> deleteAsync(String index, String id, Query query) {
 
     Promise<JsonObject> promise = Promise.promise();
-    DeleteByQueryRequest deleteByQueryRequest = DeleteByQueryRequest.of(d->d.index(index).query(query));
+    DeleteByQueryRequest deleteByQueryRequest =
+        DeleteByQueryRequest.of(d -> d.index(index).query(query));
 
-    asyncClient.deleteByQuery(deleteByQueryRequest).whenCompleteAsync((response, exception) -> {
-
-      if (exception != null) {
-        LOGGER.error("delete query failed : {}", exception);
-        promise.fail(exception);
-        return;
-      }
-      try {
-        long deleteDocs = response.deleted();
-        if(deleteDocs == 0) {
-          responseBuilder = new ResponseBuilder().setTypeAndTitle(404)
-                  .setMessage("File does not exist");
-          promise.complete(responseBuilder.getResponse());
-          return;
-        }
-        if (response.failures() != null && response.failures().size() > 0) {
-          responseBuilder = new ResponseBuilder().setTypeAndTitle(400)
-                  .setMessage("Error while deleting.");
-          promise.fail(responseBuilder.getResponse().toString());
-        }
-        responseBuilder = new ResponseBuilder().setTypeAndTitle(200);
-        promise.complete(responseBuilder.getResponse());
-      } catch (Exception ex) {
-        responseBuilder = new ResponseBuilder().setTypeAndTitle(400).setMessage(ex.getMessage());
-        promise.fail(responseBuilder.getResponse().toString());
-      }
-    });
+    asyncClient
+        .deleteByQuery(deleteByQueryRequest)
+        .whenCompleteAsync(
+            (response, exception) -> {
+              if (exception != null) {
+                LOGGER.error("delete query failed : {}", exception);
+                promise.fail(exception);
+                return;
+              }
+              try {
+                long deleteDocs = response.deleted();
+                if (deleteDocs == 0) {
+                  responseBuilder =
+                      new ResponseBuilder().setTypeAndTitle(404).setMessage("File does not exist");
+                  promise.complete(responseBuilder.getResponse());
+                  return;
+                }
+                if (response.failures() != null && response.failures().size() > 0) {
+                  responseBuilder =
+                      new ResponseBuilder()
+                          .setTypeAndTitle(400)
+                          .setMessage("Error while deleting.");
+                  promise.fail(responseBuilder.getResponse().toString());
+                }
+                responseBuilder = new ResponseBuilder().setTypeAndTitle(200);
+                promise.complete(responseBuilder.getResponse());
+              } catch (Exception ex) {
+                responseBuilder =
+                    new ResponseBuilder().setTypeAndTitle(400).setMessage(ex.getMessage());
+                promise.fail(responseBuilder.getResponse().toString());
+              }
+            });
     return promise.future();
   }
 
@@ -185,35 +197,37 @@ public class ElasticClient {
 
     Promise<JsonObject> promise = Promise.promise();
 
+    asyncClient
+        .count(e -> e.index(index).query(query))
+        .whenCompleteAsync(
+            (response, exception) -> {
+              if (exception != null) {
+                LOGGER.error("async count query failed : {}", exception);
+                promise.fail(exception);
+                return;
+              }
 
-    asyncClient.count(e -> e.index(index).query(query)).whenCompleteAsync((response, exception) -> {
-      if (exception != null) {
-        LOGGER.error("async count query failed : {}", exception);
-        promise.fail(exception);
-        return;
-      }
+              try {
 
-      try {
+                long count = response.count();
+                if (count == 0) {
+                  responseBuilder = new ResponseBuilder().setTypeAndTitle(204);
+                  responseBuilder.setMessage(EMPTY_RESPONSE);
+                  promise.fail(responseBuilder.getResponse().toString());
+                  return;
+                }
+                responseBuilder = new ResponseBuilder().setTypeAndTitle(200);
+                responseBuilder.setCount(count);
+                promise.complete(responseBuilder.getResponse());
 
-        long count = response.count();
-        if (count == 0) {
-          responseBuilder = new ResponseBuilder().setTypeAndTitle(204);
-          responseBuilder.setMessage(EMPTY_RESPONSE);
-          promise.fail(responseBuilder.getResponse().toString());
-          return;
-        }
-        responseBuilder = new ResponseBuilder().setTypeAndTitle(200);
-        responseBuilder.setCount(count);
-        promise.complete(responseBuilder.getResponse());
-
-      } catch (Exception ex) {
-        LOGGER.error("Exception occurred while executing query: {}", ex);
-        JsonObject dbException = new JsonObject(ex.getMessage());
-        responseBuilder = new ResponseBuilder().setTypeAndTitle(400).setMessage(dbException);
-        promise.fail(responseBuilder.getResponse().toString());
-      }
-
-    });
+              } catch (Exception ex) {
+                LOGGER.error("Exception occurred while executing query: {}", ex);
+                JsonObject dbException = new JsonObject(ex.getMessage());
+                responseBuilder =
+                    new ResponseBuilder().setTypeAndTitle(400).setMessage(dbException);
+                promise.fail(responseBuilder.getResponse().toString());
+              }
+            });
     return promise.future();
   }
 }

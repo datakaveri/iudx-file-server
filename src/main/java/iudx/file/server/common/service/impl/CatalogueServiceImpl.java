@@ -25,16 +25,16 @@ import static iudx.file.server.common.Constants.CAT_ITEM_PATH;
 public class CatalogueServiceImpl implements CatalogueService {
 
   private static final Logger LOGGER = LogManager.getLogger(CatalogueServiceImpl.class);
-
+  private final Cache<String, List<String>> applicableFilterCache =
+      CacheBuilder.newBuilder()
+          .maximumSize(1000)
+          .expireAfterAccess(CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES)
+          .build();
   private WebClient webClient;
   private String host;
   private int port;
-
   private String catBasePath;
   private String catItemPath;
-  private final Cache<String, List<String>> applicableFilterCache =
-      CacheBuilder.newBuilder().maximumSize(1000)
-          .expireAfterAccess(CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
 
   public CatalogueServiceImpl(WebClientFactory webClientFactory, JsonObject config) {
     this.webClient = webClientFactory.getWebClientFor(ServerType.FILE_SERVER);
@@ -62,13 +62,15 @@ public class CatalogueServiceImpl implements CatalogueService {
       filters = applicableFilterCache.getIfPresent(groupId + "/*");
     }
     if (filters == null) {
-      fetchFilters4Item(id, groupId).onComplete(handler -> {
-        if (handler.succeeded()) {
-          promise.complete(handler.result());
-        } else {
-          promise.fail("failed to fetch filters.");
-        }
-      });
+      fetchFilters4Item(id, groupId)
+          .onComplete(
+              handler -> {
+                if (handler.succeeded()) {
+                  promise.complete(handler.result());
+                } else {
+                  promise.fail("failed to fetch filters.");
+                }
+              });
     } else {
       promise.complete(filters);
     }
@@ -79,61 +81,73 @@ public class CatalogueServiceImpl implements CatalogueService {
     Promise<List<String>> promise = Promise.promise();
     Future<List<String>> getItemFilters = getFilterFromId(id);
     Future<List<String>> getGroupFilters = getFilterFromId(groupId);
-    getItemFilters.onComplete(itemHandler -> {
-      if (itemHandler.succeeded()) {
-        List<String> filters4Item = itemHandler.result();
-        if (filters4Item.isEmpty()) {
-          getGroupFilters.onComplete(groupHandler -> {
-            if (groupHandler.succeeded()) {
-              List<String> filters4Group = groupHandler.result();
-              applicableFilterCache.put(groupId + "/*", filters4Group);
-              promise.complete(filters4Group);
+    getItemFilters.onComplete(
+        itemHandler -> {
+          if (itemHandler.succeeded()) {
+            List<String> filters4Item = itemHandler.result();
+            if (filters4Item.isEmpty()) {
+              getGroupFilters.onComplete(
+                  groupHandler -> {
+                    if (groupHandler.succeeded()) {
+                      List<String> filters4Group = groupHandler.result();
+                      applicableFilterCache.put(groupId + "/*", filters4Group);
+                      promise.complete(filters4Group);
+                    } else {
+                      LOGGER.error(
+                          "Failed to fetch applicable filters for id: "
+                              + id
+                              + "or group id : "
+                              + groupId);
+                    }
+                  });
             } else {
-              LOGGER.error(
-                  "Failed to fetch applicable filters for id: " + id + "or group id : " + groupId);
+              applicableFilterCache.put(id, filters4Item);
+              promise.complete(filters4Item);
             }
-          });
-        } else {
-          applicableFilterCache.put(id, filters4Item);
-          promise.complete(filters4Item);
-        }
-      } else {
-        promise.fail(itemHandler.cause());
-      }
-    });
+          } else {
+            promise.fail(itemHandler.cause());
+          }
+        });
     return promise.future();
   }
-
 
   private Future<List<String>> getFilterFromId(String id) {
     Promise<List<String>> promise = Promise.promise();
-    callCatalogueAPI(id, handler -> {
-      if (handler.succeeded()) {
-        promise.complete(handler.result());
-      } else {
-        promise.fail("failed to fetch filters for id : " + id);
-      }
-    });
+    callCatalogueApi(
+        id,
+        handler -> {
+          if (handler.succeeded()) {
+            promise.complete(handler.result());
+          } else {
+            promise.fail("failed to fetch filters for id : " + id);
+          }
+        });
     return promise.future();
   }
 
-  private void callCatalogueAPI(String id, Handler<AsyncResult<List<String>>> handler) {
+  private void callCatalogueApi(String id, Handler<AsyncResult<List<String>>> handler) {
     List<String> filters = new ArrayList<String>();
-    webClient.get(port, host, catItemPath).addQueryParam("id", id).send(catHandler -> {
-      if (catHandler.succeeded()) {
-        JsonArray response = catHandler.result().bodyAsJsonObject().getJsonArray("results");
-        response.forEach(json -> {
-          JsonObject res = (JsonObject) json;
-          if (res.containsKey("iudxResourceAPIs")) {
-            filters.addAll(toList(res.getJsonArray("iudxResourceAPIs")));
-          }
-        });
-        handler.handle(Future.succeededFuture(filters));
-      } else if (catHandler.failed()) {
-        LOGGER.error("catalogue call ("+ catItemPath + ") failed for id" + id);
-        handler.handle(Future.failedFuture("catalogue call(" + catItemPath + ") failed for id" + id));
-      }
-    });
+    webClient
+        .get(port, host, catItemPath)
+        .addQueryParam("id", id)
+        .send(
+            catHandler -> {
+              if (catHandler.succeeded()) {
+                JsonArray response = catHandler.result().bodyAsJsonObject().getJsonArray("results");
+                response.forEach(
+                    json -> {
+                      JsonObject res = (JsonObject) json;
+                      if (res.containsKey("iudxResourceAPIs")) {
+                        filters.addAll(toList(res.getJsonArray("iudxResourceAPIs")));
+                      }
+                    });
+                handler.handle(Future.succeededFuture(filters));
+              } else if (catHandler.failed()) {
+                LOGGER.error("catalogue call (" + catItemPath + ") failed for id" + id);
+                handler.handle(
+                    Future.failedFuture("catalogue call(" + catItemPath + ") failed for id" + id));
+              }
+            });
   }
 
   private <T> List<T> toList(JsonArray arr) {
@@ -149,22 +163,25 @@ public class CatalogueServiceImpl implements CatalogueService {
     LOGGER.debug("isItemExist() started");
     Promise<Boolean> promise = Promise.promise();
     LOGGER.info("id : " + id);
-    webClient.get(port, host, catItemPath).addQueryParam("id", id)
-        .expect(ResponsePredicate.JSON).send(responseHandler -> {
-          if (responseHandler.succeeded()) {
-            HttpResponse<Buffer> response = responseHandler.result();
-            JsonObject responseBody = response.bodyAsJsonObject();
-            if (responseBody.getString("type").equalsIgnoreCase("urn:dx:cat:Success")
-                && responseBody.getInteger("totalHits") > 0) {
-              promise.complete(true);
-            } else {
-              promise.fail(responseHandler.cause());
-            }
-          } else {
-            promise.fail(responseHandler.cause());
-          }
-        });
+    webClient
+        .get(port, host, catItemPath)
+        .addQueryParam("id", id)
+        .expect(ResponsePredicate.JSON)
+        .send(
+            responseHandler -> {
+              if (responseHandler.succeeded()) {
+                HttpResponse<Buffer> response = responseHandler.result();
+                JsonObject responseBody = response.bodyAsJsonObject();
+                if (responseBody.getString("type").equalsIgnoreCase("urn:dx:cat:Success")
+                    && responseBody.getInteger("totalHits") > 0) {
+                  promise.complete(true);
+                } else {
+                  promise.fail(responseHandler.cause());
+                }
+              } else {
+                promise.fail(responseHandler.cause());
+              }
+            });
     return promise.future();
   }
-
 }

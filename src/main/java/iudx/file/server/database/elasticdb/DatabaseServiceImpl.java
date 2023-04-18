@@ -13,18 +13,14 @@ import iudx.file.server.database.elasticdb.utilities.ResponseBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static iudx.file.server.database.elasticdb.utilities.Constants.DEFAULT_FROM_VALUE;
-import static iudx.file.server.database.elasticdb.utilities.Constants.PARAM_LIMIT;
-import static iudx.file.server.database.elasticdb.utilities.Constants.DEFAULT_SIZE_VALUE;
-import static iudx.file.server.database.elasticdb.utilities.Constants.PARAM_OFFSET;
-import static iudx.file.server.database.elasticdb.utilities.Constants.TOTAL_HITS_KEY;
-
+import static iudx.file.server.database.elasticdb.utilities.Constants.*;
 
 public class DatabaseServiceImpl implements DatabaseService {
 
   private static final Logger LOGGER = LogManager.getLogger(DatabaseServiceImpl.class);
   private final ElasticClient client;
   private final String fileMetadataIndex;
+
   public DatabaseServiceImpl(JsonObject config) {
     this.fileMetadataIndex = config.getString("file-metadata-index");
     if (fileMetadataIndex == null) {
@@ -100,8 +96,8 @@ public class DatabaseServiceImpl implements DatabaseService {
                 promise.fail(failureHandler.getMessage());
               });
     } catch (ESQueryException ex) {
-      ResponseUrn exception_urn = ResponseUrn.BAD_REQUEST_URN;
-      promise.fail(new ESQueryException(exception_urn, ex.getMessage()).toString());
+      ResponseUrn exceptionUrn = ResponseUrn.BAD_REQUEST_URN;
+      promise.fail(new ESQueryException(exceptionUrn, ex.getMessage()).toString());
     } catch (Exception ex) {
       promise.fail(new ESQueryException("Exception occured executing query").toString());
     }
@@ -116,9 +112,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     Promise<JsonObject> promise = Promise.promise();
     if (document == null || document.isEmpty()) {
       ResponseBuilder responseBuilder =
-          new ResponseBuilder()
-              .setTypeAndTitle(400)
-              .setMessage("empty document passed to save.");
+          new ResponseBuilder().setTypeAndTitle(400).setMessage("empty document passed to save.");
       promise.fail(responseBuilder.getResponse().toString());
     }
     LOGGER.debug(fileMetadataIndex);

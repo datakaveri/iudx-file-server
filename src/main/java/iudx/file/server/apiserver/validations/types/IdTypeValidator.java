@@ -3,11 +3,11 @@ package iudx.file.server.apiserver.validations.types;
 import iudx.file.server.apiserver.exceptions.DxRuntimeException;
 import iudx.file.server.apiserver.response.ResponseUrn;
 
-public class IDTypeValidator implements Validator {
+public class IdTypeValidator implements Validator {
   private final String value;
   private final boolean required;
 
-  public IDTypeValidator(String value, boolean required) {
+  public IdTypeValidator(String value, boolean required) {
     this.value = value;
     this.required = required;
   }
@@ -21,17 +21,17 @@ public class IDTypeValidator implements Validator {
       if (value == null) {
         return true;
       }
-      if(value.isBlank()) {
+      if (value.isBlank()) {
         message = "Validation error : blank value for passed";
       }
     }
-    if(value!=null && !isValidLength(value)) {
+    if (value != null && !isValidLength(value)) {
       message = "Validation error: Value exceed max character limit";
     }
-    if (value!= null &&  !isValidId(value)) {
-      message = "Validation error : Invalid id [ "+value+" ]";
+    if (value != null && !isValidId(value)) {
+      message = "Validation error : Invalid id [ " + value + " ]";
     }
-    if(message.isBlank()) {
+    if (message.isBlank()) {
       return true;
     }
     throw new DxRuntimeException(failureCode(), ResponseUrn.INVALID_PAYLOAD_FORMAT, message);
@@ -46,7 +46,6 @@ public class IDTypeValidator implements Validator {
   public String failureMessage() {
     return "Invalid id";
   }
-
 
   private boolean isValidId(String id) {
     String[] idcomponents = id.split("/");

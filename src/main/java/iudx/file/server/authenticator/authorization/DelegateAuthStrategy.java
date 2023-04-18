@@ -12,26 +12,24 @@ import static iudx.file.server.authenticator.authorization.Method.DELETE;
 import static iudx.file.server.authenticator.authorization.Method.POST;
 
 public class DelegateAuthStrategy implements AuthorizationStrategy {
-  private volatile static DelegateAuthStrategy instance;
   static Map<String, List<AuthorizationRequest>> delegateAuthorizationRules = new HashMap<>();
-  private DelegateAuthStrategy(Api api)
-  {
+  private static volatile DelegateAuthStrategy instance;
+
+  private DelegateAuthStrategy(Api api) {
     buildPermissions(api);
   }
-  public static DelegateAuthStrategy getInstance(Api apis)
-  {
-    if(instance == null)
-    {
-      synchronized (DelegateAuthStrategy.class)
-      {
-        if(instance == null)
-        {
+
+  public static DelegateAuthStrategy getInstance(Api apis) {
+    if (instance == null) {
+      synchronized (DelegateAuthStrategy.class) {
+        if (instance == null) {
           instance = new DelegateAuthStrategy(apis);
         }
       }
     }
     return instance;
   }
+
   private void buildPermissions(Api api) {
 
     // file access list/rules

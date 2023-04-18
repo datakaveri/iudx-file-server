@@ -1,6 +1,5 @@
 package iudx.file.server.authenticator.authorization;
 
-
 import iudx.file.server.authenticator.utilities.JwtData;
 import iudx.file.server.common.Api;
 
@@ -14,36 +13,35 @@ import static iudx.file.server.authenticator.authorization.Method.POST;
 
 public class ProviderAuthStrategy implements AuthorizationStrategy {
 
-    private volatile static ProviderAuthStrategy instance;
-    static Map<String, List<AuthorizationRequest>> providerAuthorizationRules = new HashMap<>();
+  static Map<String, List<AuthorizationRequest>> providerAuthorizationRules = new HashMap<>();
+  private static volatile ProviderAuthStrategy instance;
 
-    private ProviderAuthStrategy(Api api) {
-        buildPermissions(api);
-    }
+  private ProviderAuthStrategy(Api api) {
+    buildPermissions(api);
+  }
 
-    public static ProviderAuthStrategy getInstance(Api apis) {
+  public static ProviderAuthStrategy getInstance(Api apis) {
+    if (instance == null) {
+      synchronized (ProviderAuthStrategy.class) {
         if (instance == null) {
-            synchronized (ProviderAuthStrategy.class) {
-                if (instance == null) {
-                    instance = new ProviderAuthStrategy(apis);
-                }
-            }
+          instance = new ProviderAuthStrategy(apis);
         }
-        return instance;
+      }
     }
+    return instance;
+  }
 
-    private void buildPermissions(Api api) {
+  private void buildPermissions(Api api) {
 
-        // file access list/rules
-        List<AuthorizationRequest> fileAccessList = new ArrayList<>();
-        fileAccessList.add(new AuthorizationRequest(POST, api.getApiFileUpload()));
-        fileAccessList.add(new AuthorizationRequest(DELETE, api.getApiFileDelete()));
-        providerAuthorizationRules.put("file", fileAccessList);
-    }
+    // file access list/rules
+    List<AuthorizationRequest> fileAccessList = new ArrayList<>();
+    fileAccessList.add(new AuthorizationRequest(POST, api.getApiFileUpload()));
+    fileAccessList.add(new AuthorizationRequest(DELETE, api.getApiFileDelete()));
+    providerAuthorizationRules.put("file", fileAccessList);
+  }
 
-    @Override
-    public boolean isAuthorized(AuthorizationRequest authRequest, JwtData jwtData) {
-        return true;
-    }
-
+  @Override
+  public boolean isAuthorized(AuthorizationRequest authRequest, JwtData jwtData) {
+    return true;
+  }
 }

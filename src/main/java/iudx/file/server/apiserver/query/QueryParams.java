@@ -1,12 +1,13 @@
 package iudx.file.server.apiserver.query;
 
-import static iudx.file.server.common.Constants.GEOM_POINT;
-import static iudx.file.server.common.Constants.JSON_NEAR;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import static iudx.file.server.common.Constants.GEOM_POINT;
+import static iudx.file.server.common.Constants.JSON_NEAR;
 
 @JsonInclude(Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -14,36 +15,52 @@ public class QueryParams {
 
   @JsonProperty("id")
   private String id;
+
   @JsonProperty("q")
   private String textQuery;
+
   @JsonProperty("georel")
   private String geoRel;
+
   @JsonProperty("maxdistance")
   private String maxDistance;
+
   @JsonProperty("geometry")
   private String geometry;
+
   @JsonProperty("coordinates")
   private String coordinates;
+
   @JsonProperty("geoproperty")
   private String geoProperty;
+
   @JsonProperty("timerel")
   private String temporalRelation;
+
   @JsonProperty("time")
   private String startTime;
+
   @JsonProperty("endTime")
   private String endTime;
+
   @JsonProperty("lat")
   private Double lat;
+
   @JsonProperty("lon")
   private Double lon;
+
   @JsonProperty("radius")
   private Double radius;
+
   @JsonProperty("offset")
   private Integer size;
+
   @JsonProperty("limit")
   private Integer from;
 
-
+  private QueryParams() {
+    super();
+  }
 
   public void setSize(Integer size) {
     this.size = size;
@@ -51,10 +68,6 @@ public class QueryParams {
 
   public void setFrom(Integer from) {
     this.from = from;
-  }
-
-  private QueryParams() {
-    super();
   }
 
   public void setId(String id) {
@@ -116,16 +129,12 @@ public class QueryParams {
 
   @JsonIgnore
   public boolean isGeoParamsPresent() {
-    return this.geoRel != null
-        && this.coordinates != null
-        && this.geometry != null;
+    return this.geoRel != null && this.coordinates != null && this.geometry != null;
   }
-
 
   @JsonIgnore
   public boolean isTemporalParamsPresent() {
-    return this.temporalRelation != null
-        && this.startTime != null;
+    return this.temporalRelation != null && this.startTime != null;
   }
 
   public QueryParams build() {

@@ -29,7 +29,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
     Buffer buffer = Buffer.buffer(request.toString());
 
-    if (!client.isConnected()) client.start();
+    if (!client.isConnected()) {
+      client.start();
+    }
 
     client.basicPublish(
         toExchange,

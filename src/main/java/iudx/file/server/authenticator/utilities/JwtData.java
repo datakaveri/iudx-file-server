@@ -6,7 +6,7 @@ import io.vertx.core.json.JsonObject;
 @DataObject(generateConverter = true, publicConverter = false)
 public final class JwtData {
 
-  private String access_token;
+  private String accessToken;
   private String sub;
   private String iss;
   private String aud;
@@ -16,12 +16,6 @@ public final class JwtData {
   private String role;
   private JsonObject cons;
 
-  public JsonObject toJson() {
-    JsonObject json = new JsonObject();
-    JwtDataConverter.toJson(this, json);
-    return json;
-  }
-
   public JwtData() {
     super();
   }
@@ -30,12 +24,18 @@ public final class JwtData {
     JwtDataConverter.fromJson(json, this);
   }
 
-  public String getAccess_token() {
-    return access_token;
+  public JsonObject toJson() {
+    JsonObject json = new JsonObject();
+    JwtDataConverter.toJson(this, json);
+    return json;
   }
 
-  public void setAccess_token(String access_token) {
-    this.access_token = access_token;
+  public String getAccessToken() {
+    return accessToken;
+  }
+
+  public void setAccessToken(String accessToken) {
+    this.accessToken = accessToken;
   }
 
   public String getSub() {
@@ -101,5 +101,4 @@ public final class JwtData {
   public void setIat(long iat) {
     this.iat = iat;
   }
-
 }

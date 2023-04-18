@@ -1,24 +1,23 @@
 package iudx.file.server.common;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class WebClientFactory {
 
   private static final Logger LOGGER = LogManager.getLogger(WebClientFactory.class);
-  
+
   private final Vertx vertx;
   private final JsonObject config;
-  
-  
-  public WebClientFactory(final Vertx vertx,final JsonObject config) {
-    this.vertx=vertx;
-    this.config=config;
+
+  public WebClientFactory(final Vertx vertx, final JsonObject config) {
+    this.vertx = vertx;
+    this.config = config;
   }
 
   public WebClient getWebClientFor(final ServerType serverType) {
@@ -32,10 +31,12 @@ public class WebClientFactory {
     }
   }
 
-
-  private WebClient getFileServerWebClient(final Vertx vertx,final JsonObject config) {
+  private WebClient getFileServerWebClient(final Vertx vertx, final JsonObject config) {
     WebClientOptions options =
-        new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true)
+        new WebClientOptions()
+            .setTrustAll(true)
+            .setVerifyHost(false)
+            .setSsl(true)
             .setKeyStoreOptions(
                 new JksOptions()
                     .setPath(config.getString("file-keystore"))
@@ -43,15 +44,16 @@ public class WebClientFactory {
     return WebClient.create(vertx, options);
   }
 
-
-  private WebClient getRSServerWebClient(final Vertx vertx,final JsonObject config) {
+  private WebClient getRSServerWebClient(final Vertx vertx, final JsonObject config) {
     WebClientOptions options =
-        new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true)
+        new WebClientOptions()
+            .setTrustAll(true)
+            .setVerifyHost(false)
+            .setSsl(true)
             .setKeyStoreOptions(
                 new JksOptions()
                     .setPath(config.getString("rs-keystore"))
                     .setPassword(config.getString("rs-keystorePassword")));
     return WebClient.create(vertx, options);
   }
-
 }

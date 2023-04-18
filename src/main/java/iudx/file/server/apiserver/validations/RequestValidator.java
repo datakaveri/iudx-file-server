@@ -1,34 +1,28 @@
 package iudx.file.server.apiserver.validations;
 
-import static iudx.file.server.apiserver.utilities.Constants.PARAM_COORDINATES;
-import static iudx.file.server.apiserver.utilities.Constants.PARAM_END_TIME;
-import static iudx.file.server.apiserver.utilities.Constants.PARAM_END_TIME_LOWERCASE;
-import static iudx.file.server.apiserver.utilities.Constants.PARAM_GEOMETRY;
-import static iudx.file.server.apiserver.utilities.Constants.PARAM_GEOPROPERTY;
-import static iudx.file.server.apiserver.utilities.Constants.PARAM_GEOREL;
-import static iudx.file.server.apiserver.utilities.Constants.PARAM_ID;
-import static iudx.file.server.apiserver.utilities.Constants.PARAM_START_TIME;
-import static iudx.file.server.apiserver.utilities.Constants.PARAM_TIME;
-import static iudx.file.server.apiserver.utilities.Constants.PARAM_TIME_REL;
-import static iudx.file.server.common.Constants.PARAM_LIMIT;
-import static iudx.file.server.common.Constants.PARAM_OFFSET;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import iudx.file.server.apiserver.response.ResponseUrn;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import static iudx.file.server.apiserver.utilities.Constants.*;
+import static iudx.file.server.common.Constants.PARAM_LIMIT;
+import static iudx.file.server.common.Constants.PARAM_OFFSET;
 
 public class RequestValidator {
 
   private static final Logger LOGGER = LogManager.getLogger(RequestValidator.class);
 
   private static Set<String> validParams = new HashSet<String>();
+
   static {
     validParams.add(PARAM_TIME);
     validParams.add(PARAM_ID);
@@ -42,9 +36,7 @@ public class RequestValidator {
     validParams.add(PARAM_OFFSET);
     validParams.add(PARAM_LIMIT);
     validParams.add(PARAM_END_TIME_LOWERCASE);
-
   }
-
 
   public Future<Boolean> isValid(MultiMap map) {
     Promise<Boolean> promise = Promise.promise();
@@ -58,7 +50,6 @@ public class RequestValidator {
     return promise.future();
   }
 
-
   private boolean isValidParams(MultiMap map) {
     final List<Entry<String, String>> entries = map.entries();
     for (final Entry<String, String> entry : entries) {
@@ -71,29 +62,31 @@ public class RequestValidator {
 
   public Future<Boolean> isValidArchiveRequest(MultiMap params) {
     Promise<Boolean> promise = Promise.promise();
-    if (params.contains(PARAM_GEOMETRY) && params.contains(PARAM_COORDINATES)
-        && params.contains(PARAM_START_TIME) && params.contains(PARAM_END_TIME)) {
+    if (params.contains(PARAM_GEOMETRY)
+        && params.contains(PARAM_COORDINATES)
+        && params.contains(PARAM_START_TIME)
+        && params.contains(PARAM_END_TIME)) {
       promise.complete(true);
     } else if (!params.contains(PARAM_GEOMETRY)) {
-      handleResponse(promise, "Missing Param : [ "+PARAM_GEOMETRY+" ]");
+      handleResponse(promise, "Missing Param : [ " + PARAM_GEOMETRY + " ]");
     } else if (!params.contains(PARAM_COORDINATES)) {
-      handleResponse(promise, "Missing Param : [ "+PARAM_COORDINATES+" ]");
+      handleResponse(promise, "Missing Param : [ " + PARAM_COORDINATES + " ]");
     } else if (!params.contains(PARAM_START_TIME)) {
-      handleResponse(promise, "Missing Param : [ "+PARAM_START_TIME+" ]");
+      handleResponse(promise, "Missing Param : [ " + PARAM_START_TIME + " ]");
     } else if (!params.contains(PARAM_END_TIME)) {
-      handleResponse(promise, "Missing Param : [ "+PARAM_END_TIME+" ]");
+      handleResponse(promise, "Missing Param : [ " + PARAM_END_TIME + " ]");
     }
 
     return promise.future();
   }
 
   public void handleResponse(Promise<Boolean> promise, String message) {
-    promise.fail(new JsonObject()
+    promise.fail(
+        new JsonObject()
             .put("type", 400)
             .put("title", ResponseUrn.INVALID_PAYLOAD_FORMAT.getUrn())
             .put("errorMessage", message)
             .toString());
     LOGGER.error("Invalid archieve request, All mandatory fields are required");
   }
-
 }

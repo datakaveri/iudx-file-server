@@ -1,6 +1,7 @@
 package iudx.file.server.apiserver.exceptions;
 
 import iudx.file.server.apiserver.response.ResponseUrn;
+
 public class DxRuntimeException extends RuntimeException {
 
   private static final long serialVersionUID = 1L; // TODO: ??

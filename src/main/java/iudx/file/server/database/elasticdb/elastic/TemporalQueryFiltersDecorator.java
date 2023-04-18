@@ -7,9 +7,7 @@ import io.vertx.core.json.JsonObject;
 import java.util.List;
 import java.util.Map;
 
-import static iudx.file.server.database.elasticdb.utilities.Constants.TIME;
-import static iudx.file.server.database.elasticdb.utilities.Constants.END_TIME;
-import static iudx.file.server.database.elasticdb.utilities.Constants.TIME_RANGE;
+import static iudx.file.server.database.elasticdb.utilities.Constants.*;
 
 public class TemporalQueryFiltersDecorator implements ElasticsearchQueryDecorator {
   private Map<FilterType, List<Query>> queryFilters;

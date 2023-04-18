@@ -11,7 +11,7 @@ public interface FileService {
 
   /**
    * upload file to server.
-   * 
+   *
    * @param file set of file (although there will always be a single file to upload)
    * @param handler
    */
@@ -19,7 +19,7 @@ public interface FileService {
 
   /**
    * upload file to server
-   * 
+   *
    * @param file set of file (although there will always be a single file to upload)
    * @param fileName uploaded filename
    * @param filePath path for uploaded file
@@ -29,17 +29,17 @@ public interface FileService {
 
   /**
    * download file from server
-   * 
+   *
    * @param fileName name of file to be downloaded.
    * @param response response object to send file as Content-Disposition header
    * @param handler Async handler
    */
-  Future<JsonObject> download(final String fileName, String filePath,
-      final HttpServerResponse response);
+  Future<JsonObject> download(
+      final String fileName, String filePath, final HttpServerResponse response);
 
   /**
    * delete file from server
-   * 
+   *
    * @param fileName name of file to be deleted
    * @param handler Async handler
    */

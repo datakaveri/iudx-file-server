@@ -1,15 +1,5 @@
 package iudx.file.server.apiserver.service.impl;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
-
-import iudx.file.server.apiserver.response.ResponseUrn;
-import iudx.file.server.apiserver.utilities.HttpStatusCode;
-import org.apache.commons.compress.utils.FileNameUtils;
-import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
@@ -20,23 +10,30 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.ext.web.FileUpload;
+import iudx.file.server.apiserver.response.ResponseUrn;
 import iudx.file.server.apiserver.service.FileService;
+import iudx.file.server.apiserver.utilities.HttpStatusCode;
+import org.apache.commons.compress.utils.FileNameUtils;
+import org.apache.http.HttpStatus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
 
 public class LocalStorageFileServiceImpl implements FileService {
 
   private static final Logger LOGGER = LogManager.getLogger(LocalStorageFileServiceImpl.class);
-
-  private FileSystem fileSystem;
   private final String directory;
+  private FileSystem fileSystem;
 
   public LocalStorageFileServiceImpl(FileSystem fileSystem, String directory) {
     this.fileSystem = fileSystem;
     this.directory = directory;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public Future<JsonObject> upload(List<FileUpload> files, String filename, String filePath) {
     Promise<JsonObject> promise = Promise.promise();
@@ -54,7 +51,10 @@ public class LocalStorageFileServiceImpl implements FileService {
       String fileUploadPath = directory + "/" + filePath + "/" + uuid + "." + fileExtension;
       CopyOptions copyOptions = new CopyOptions();
       copyOptions.setReplaceExisting(true);
-      fileSystem.move(fileUpload.uploadedFileName(), fileUploadPath, copyOptions,
+      fileSystem.move(
+          fileUpload.uploadedFileName(),
+          fileUploadPath,
+          copyOptions,
           fileMoveHandler -> {
             if (fileMoveHandler.succeeded()) {
               LOGGER.debug("uploaded");
@@ -78,63 +78,110 @@ public class LocalStorageFileServiceImpl implements FileService {
     return promise.future();
   }
 
-  private void createLocalDirectory(String filePath) {
-    if (directory.charAt(directory.length() - 1) != '/') {
-      fileSystem.mkdirsBlocking(directory + "/" + filePath);
-    } else {
-      fileSystem.mkdirsBlocking(directory + filePath);
-    }
-  }
-
   @Override
   public Future<JsonObject> upload(List<FileUpload> files, String filePath) {
     return upload(files, UUID.randomUUID().toString(), filePath);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
-  public Future<JsonObject> download(String fileName, String uploadDir,
-      HttpServerResponse response) {
+  public Future<JsonObject> download(
+      String fileName, String uploadDir, HttpServerResponse response) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject finalResponse = new JsonObject();
     String path = getLocalDirectory(fileName, uploadDir);
     LOGGER.info(path);
     response.setChunked(true);
     String finalPath = path;
-    fileSystem.exists(path, existHandler -> {
-      if (existHandler.succeeded()) {
-        if (existHandler.result()) {
-          fileSystem.open(finalPath, new OpenOptions().setCreate(true), readEvent -> {
-            if (readEvent.failed()) {
-              finalResponse.put("statusCode", HttpStatus.SC_BAD_REQUEST);
-              promise.complete(finalResponse);
+    fileSystem.exists(
+        path,
+        existHandler -> {
+          if (existHandler.succeeded()) {
+            if (existHandler.result()) {
+              fileSystem.open(
+                  finalPath,
+                  new OpenOptions().setCreate(true),
+                  readEvent -> {
+                    if (readEvent.failed()) {
+                      finalResponse.put("statusCode", HttpStatus.SC_BAD_REQUEST);
+                      promise.complete(finalResponse);
+                    }
+                    LOGGER.debug("sending file : " + fileName + " to client");
+                    ReadStream<Buffer> asyncFile = readEvent.result();
+                    response.putHeader("content-type", "application/octet-stream");
+                    response.putHeader("Content-Disposition", "attachment; filename=" + fileName);
+                    asyncFile.pipeTo(
+                        response,
+                        pipeHandler -> {
+                          promise.complete();
+                        });
+                  });
+            } else {
+              finalResponse.put("type", HttpStatus.SC_NOT_FOUND);
+              finalResponse.put("title", "urn:dx:rs:resourceNotFound");
+              finalResponse.put("details", "File does not exist");
+              LOGGER.error("File does not exist");
+              promise.fail(finalResponse.toString());
             }
-            LOGGER.debug("sending file : " + fileName + " to client");
-            ReadStream<Buffer> asyncFile = readEvent.result();
-            response.putHeader("content-type", "application/octet-stream");
-            response.putHeader("Content-Disposition", "attachment; filename=" + fileName);
-            asyncFile.pipeTo(response, pipeHandler -> {
-                promise.complete();
-            });
-          });
-        } else {
-          finalResponse.put("type", HttpStatus.SC_NOT_FOUND);
-          finalResponse.put("title", "urn:dx:rs:resourceNotFound");
-          finalResponse.put("details", "File does not exist");
-          LOGGER.error("File does not exist");
-          promise.fail(finalResponse.toString());
-        }
-      } else {
-        LOGGER.error(existHandler.cause());
-        finalResponse.put("type", HttpStatus.SC_INTERNAL_SERVER_ERROR);
-        finalResponse.put("title", "Something went wrong while downloading file.");
-        finalResponse.put("details", existHandler.cause());
-        promise.fail(finalResponse.toString());
-      }
-    });
+          } else {
+            LOGGER.error(existHandler.cause());
+            finalResponse.put("type", HttpStatus.SC_INTERNAL_SERVER_ERROR);
+            finalResponse.put("title", "Something went wrong while downloading file.");
+            finalResponse.put("details", existHandler.cause());
+            promise.fail(finalResponse.toString());
+          }
+        });
     return promise.future();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Future<JsonObject> delete(String fileName, String filePath) {
+    Promise<JsonObject> promise = Promise.promise();
+    JsonObject finalResponse = new JsonObject();
+    String path = directory + filePath + "/" + fileName;
+    LOGGER.info("filePath : " + path);
+    fileSystem.exists(
+        path,
+        existHandler -> {
+          if (existHandler.succeeded()) {
+            if (existHandler.result()) {
+              fileSystem.delete(
+                  path,
+                  readEvent -> {
+                    if (readEvent.failed()) {
+                      finalResponse.put("type", HttpStatus.SC_INTERNAL_SERVER_ERROR);
+                      finalResponse.put("title", readEvent.cause().toString());
+                      promise.fail(finalResponse.toString());
+                    } else {
+                      LOGGER.info("File deleted");
+                      finalResponse.put("type", HttpStatus.SC_OK);
+                      finalResponse.put("title", "urn:dx:rs:Success");
+                      finalResponse.put("details", "File Deleted");
+                      promise.complete(finalResponse);
+                    }
+                  });
+            } else {
+              LOGGER.error("File does not exist");
+              finalResponse.put("type", HttpStatus.SC_NOT_FOUND);
+              finalResponse.put("title", ResponseUrn.RESOURCE_NOT_FOUND.getUrn());
+              finalResponse.put("details", "File does not exist");
+              promise.fail(finalResponse.toString());
+            }
+          } else {
+            LOGGER.error(existHandler.cause());
+            promise.fail(existHandler.cause());
+          }
+        });
+    return promise.future();
+  }
+
+  private void createLocalDirectory(String filePath) {
+    if (directory.charAt(directory.length() - 1) != '/') {
+      fileSystem.mkdirsBlocking(directory + "/" + filePath);
+    } else {
+      fileSystem.mkdirsBlocking(directory + filePath);
+    }
   }
 
   private String getLocalDirectory(String fileName, String uploadDir) {
@@ -147,48 +194,7 @@ public class LocalStorageFileServiceImpl implements FileService {
     return path;
   }
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public Future<JsonObject> delete(String fileName, String filePath) {
-    Promise<JsonObject> promise = Promise.promise();
-    JsonObject finalResponse = new JsonObject();
-    String path = directory + filePath + "/" + fileName;
-    LOGGER.info("filePath : " + path);
-    fileSystem.exists(path, existHandler -> {
-      if (existHandler.succeeded()) {
-        if (existHandler.result()) {
-          fileSystem.delete(path, readEvent -> {
-            if (readEvent.failed()) {
-              finalResponse.put("type", HttpStatus.SC_INTERNAL_SERVER_ERROR);
-              finalResponse.put("title", readEvent.cause().toString());
-              promise.fail(finalResponse.toString());
-            } else {
-              LOGGER.info("File deleted");
-              finalResponse.put("type", HttpStatus.SC_OK);
-              finalResponse.put("title", "urn:dx:rs:Success");
-              finalResponse.put("details", "File Deleted");
-              promise.complete(finalResponse);
-            }
-          });
-        } else {
-          LOGGER.error("File does not exist");
-          finalResponse.put("type", HttpStatus.SC_NOT_FOUND);
-          finalResponse.put("title", ResponseUrn.RESOURCE_NOT_FOUND.getUrn());
-          finalResponse.put("details", "File does not exist");
-          promise.fail(finalResponse.toString());
-        }
-      } else {
-        LOGGER.error(existHandler.cause());
-        promise.fail(existHandler.cause());
-      }
-    });
-    return promise.future();
-  }
-  
   public String getFileExtension(String fileName) {
     return FileNameUtils.getExtension(fileName);
   }
-
 }

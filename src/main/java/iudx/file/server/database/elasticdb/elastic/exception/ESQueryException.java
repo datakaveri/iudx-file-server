@@ -14,22 +14,22 @@ public class ESQueryException extends RuntimeException {
   private static final long serialVersionUID = 1L;
 
   private final int statusCode;
-  ResponseUrn urn;
   private final String message;
+  ResponseUrn urn;
 
   public ESQueryException(final String message) {
-    this(ResponseUrn.BAD_REQUEST_URN,message,HttpStatus.SC_BAD_REQUEST);
+    this(ResponseUrn.BAD_REQUEST_URN, message, HttpStatus.SC_BAD_REQUEST);
   }
 
   public ESQueryException(final ResponseUrn urn, final String message) {
-    this(urn,message,HttpStatus.SC_BAD_REQUEST);
+    this(urn, message, HttpStatus.SC_BAD_REQUEST);
   }
 
   public ESQueryException(final ResponseUrn urn, final String message, final int statusCode) {
     super(message);
     this.urn = urn;
     this.message = message;
-    this.statusCode=statusCode;
+    this.statusCode = statusCode;
   }
 
   public String toString() {

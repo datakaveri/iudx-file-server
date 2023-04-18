@@ -1,25 +1,23 @@
-package iudx.file.server.cache.cacheImpl;
+package iudx.file.server.cache.cacheimpl;
 
-import java.util.concurrent.TimeUnit;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.file.server.database.postgres.PostgresConstants;
 import iudx.file.server.database.postgres.PostgresService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.concurrent.TimeUnit;
 
 public class RevokedClientCache implements IudxCache {
 
   private static final Logger LOGGER = LogManager.getLogger(RevokedClientCache.class);
-  private final static CacheType cacheType = CacheType.REVOKED_CLIENT;
+  private static final CacheType cacheType = CacheType.REVOKED_CLIENT;
 
   private final Cache<String, String> cache =
-      CacheBuilder.newBuilder()
-          .maximumSize(5000)
-          .expireAfterWrite(1L, TimeUnit.DAYS)
-          .build();
+      CacheBuilder.newBuilder().maximumSize(5000).expireAfterWrite(1L, TimeUnit.DAYS).build();
 
   private PostgresService pgService;
 
@@ -42,22 +40,21 @@ public class RevokedClientCache implements IudxCache {
   public void refreshCache() {
     LOGGER.debug(cacheType + " refreshCache() called");
     String query = PostgresConstants.SELECT_REVOKE_TOKEN_SQL;
-    pgService.executeQuery(query, handler -> {
-      if (handler.succeeded()) {
-        LOGGER.debug("result : cache refreshed");
-        JsonArray clientIdArray = handler.result().getJsonArray("result");
+    pgService.executeQuery(
+        query,
+        handler -> {
+          if (handler.succeeded()) {
+            LOGGER.debug("result : cache refreshed");
+            JsonArray clientIdArray = handler.result().getJsonArray("result");
 
-        clientIdArray.forEach(e -> {
-          JsonObject clientInfo = (JsonObject) e;
-          String key = clientInfo.getString("_id");
-          String value = clientInfo.getString("expiry");
-          this.cache.put(key, value);
+            clientIdArray.forEach(
+                e -> {
+                  JsonObject clientInfo = (JsonObject) e;
+                  String key = clientInfo.getString("_id");
+                  String value = clientInfo.getString("expiry");
+                  this.cache.put(key, value);
+                });
+          }
         });
-
-      }
-    });
   }
-
-
-
 }

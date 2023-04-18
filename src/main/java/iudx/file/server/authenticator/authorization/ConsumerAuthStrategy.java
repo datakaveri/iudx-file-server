@@ -18,19 +18,16 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
   private static final Logger LOGGER = LogManager.getLogger(ConsumerAuthStrategy.class);
 
   static Map<String, List<AuthorizationRequest>> consumerAuthorizationRules = new HashMap<>();
-  private volatile static ConsumerAuthStrategy instance;
-  private ConsumerAuthStrategy(Api api)
-  {
+  private static volatile ConsumerAuthStrategy instance;
+
+  private ConsumerAuthStrategy(Api api) {
     buildPermissions(api);
   }
-  public static ConsumerAuthStrategy getInstance(Api apis)
-  {
-    if(instance == null)
-    {
-      synchronized (ConsumerAuthStrategy.class)
-      {
-        if(instance == null)
-        {
+
+  public static ConsumerAuthStrategy getInstance(Api apis) {
+    if (instance == null) {
+      synchronized (ConsumerAuthStrategy.class) {
+        if (instance == null) {
           instance = new ConsumerAuthStrategy(apis);
         }
       }
@@ -47,9 +44,7 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
     fileAccessList.add(new AuthorizationRequest(GET, api.getListMetaData()));
     fileAccessList.add(new AuthorizationRequest(GET, api.getApiSpatial()));
     consumerAuthorizationRules.put("file", fileAccessList);
-
   }
-
 
   @Override
   public boolean isAuthorized(AuthorizationRequest authRequest, JwtData jwtData) {
@@ -68,5 +63,4 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
     }
     return result;
   }
-
 }

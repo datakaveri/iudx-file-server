@@ -12,16 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import static iudx.file.server.common.Constants.GEOM_POINT;
-import static iudx.file.server.database.elasticdb.utilities.Constants.GEOMETRY;
-import static iudx.file.server.database.elasticdb.utilities.Constants.CIRCLE;
-import static iudx.file.server.database.elasticdb.utilities.Constants.NEAR;
-import static iudx.file.server.database.elasticdb.utilities.Constants.WITHIN;
-import static iudx.file.server.database.elasticdb.utilities.Constants.GEO_REL;
-import static iudx.file.server.database.elasticdb.utilities.Constants.LOCATION;
-import static iudx.file.server.database.elasticdb.utilities.Constants.RADIUS;
-import static iudx.file.server.database.elasticdb.utilities.Constants.UNIT_METERS;
-import static iudx.file.server.database.elasticdb.utilities.Constants.COORDINATES;
-import static iudx.file.server.database.elasticdb.utilities.Constants.TYPE_KEY;
+import static iudx.file.server.database.elasticdb.utilities.Constants.*;
 
 public class GeoQueryFiltersDecorator implements ElasticsearchQueryDecorator {
   private static final Logger LOGGER = LogManager.getLogger(GeoQueryFiltersDecorator.class);
