@@ -1,10 +1,9 @@
 package iudx.file.server.auditing.util;
 
-import io.vertx.core.json.JsonObject;
-
-import java.util.UUID;
-
 import static iudx.file.server.auditing.util.Constants.*;
+
+import io.vertx.core.json.JsonObject;
+import java.util.UUID;
 
 public class QueryBuilder {
   public JsonObject buildWriteQueryForRmq(JsonObject request) {

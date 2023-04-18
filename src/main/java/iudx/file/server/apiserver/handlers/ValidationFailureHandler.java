@@ -1,5 +1,7 @@
 package iudx.file.server.apiserver.handlers;
 
+import static iudx.file.server.apiserver.utilities.Constants.*;
+
 import com.github.dockerjava.zerodep.shaded.org.apache.hc.core5.http.HttpStatus;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
@@ -9,8 +11,6 @@ import iudx.file.server.apiserver.response.RestResponse;
 import iudx.file.server.apiserver.utilities.HttpStatusCode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import static iudx.file.server.apiserver.utilities.Constants.*;
 
 public class ValidationFailureHandler implements Handler<RoutingContext> {
 

@@ -1,5 +1,7 @@
 package iudx.file.server.database.elasticdb.elastic;
 
+import static iudx.file.server.database.elasticdb.utilities.Constants.EMPTY_RESPONSE;
+
 import co.elastic.clients.elasticsearch.ElasticsearchAsyncClient;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
@@ -15,6 +17,9 @@ import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.file.server.database.elasticdb.utilities.ResponseBuilder;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.UUID;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -25,12 +30,6 @@ import org.apache.logging.log4j.Logger;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
-
-import java.io.Reader;
-import java.io.StringReader;
-import java.util.UUID;
-
-import static iudx.file.server.database.elasticdb.utilities.Constants.EMPTY_RESPONSE;
 
 public class ElasticClient {
 

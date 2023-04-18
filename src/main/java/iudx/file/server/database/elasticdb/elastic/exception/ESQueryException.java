@@ -1,13 +1,13 @@
 package iudx.file.server.database.elasticdb.elastic.exception;
 
-import io.vertx.core.json.JsonObject;
-import iudx.file.server.apiserver.response.ResponseUrn;
-import org.apache.http.HttpStatus;
-
 import static iudx.file.server.auditing.util.Constants.DETAIL;
 import static iudx.file.server.auditing.util.Constants.TITLE;
 import static iudx.file.server.database.elasticdb.utilities.Constants.STATUS;
 import static iudx.file.server.database.elasticdb.utilities.Constants.TYPE_KEY;
+
+import io.vertx.core.json.JsonObject;
+import iudx.file.server.apiserver.response.ResponseUrn;
+import org.apache.http.HttpStatus;
 
 public class ESQueryException extends RuntimeException {
 

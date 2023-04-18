@@ -1,14 +1,13 @@
 package iudx.file.server.apiserver.validations;
 
+import static iudx.file.server.apiserver.utilities.Constants.*;
+
 import io.vertx.core.MultiMap;
 import iudx.file.server.apiserver.validations.types.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.ArrayList;
 import java.util.List;
-
-import static iudx.file.server.apiserver.utilities.Constants.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ValidationHandlerFactory {
 

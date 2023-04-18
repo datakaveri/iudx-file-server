@@ -1,19 +1,18 @@
 package iudx.file.server.database.elasticdb.elastic;
 
+import static iudx.file.server.database.elasticdb.utilities.Constants.FILE_ID;
+import static iudx.file.server.database.elasticdb.utilities.Constants.ID;
+
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import io.vertx.core.json.JsonObject;
 import iudx.file.server.common.QueryType;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static iudx.file.server.database.elasticdb.utilities.Constants.FILE_ID;
-import static iudx.file.server.database.elasticdb.utilities.Constants.ID;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ElasticQueryGenerator {
   private static final Logger LOGGER = LogManager.getLogger(ElasticQueryGenerator.class);

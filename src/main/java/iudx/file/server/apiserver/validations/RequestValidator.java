@@ -1,21 +1,20 @@
 package iudx.file.server.apiserver.validations;
 
+import static iudx.file.server.apiserver.utilities.Constants.*;
+import static iudx.file.server.common.Constants.PARAM_LIMIT;
+import static iudx.file.server.common.Constants.PARAM_OFFSET;
+
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import iudx.file.server.apiserver.response.ResponseUrn;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import static iudx.file.server.apiserver.utilities.Constants.*;
-import static iudx.file.server.common.Constants.PARAM_LIMIT;
-import static iudx.file.server.common.Constants.PARAM_OFFSET;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class RequestValidator {
 

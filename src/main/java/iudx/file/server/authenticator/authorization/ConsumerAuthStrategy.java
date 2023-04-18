@@ -1,17 +1,16 @@
 package iudx.file.server.authenticator.authorization;
 
+import static iudx.file.server.authenticator.authorization.Method.GET;
+
 import io.vertx.core.json.JsonArray;
 import iudx.file.server.authenticator.utilities.JwtData;
 import iudx.file.server.common.Api;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static iudx.file.server.authenticator.authorization.Method.GET;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ConsumerAuthStrategy implements AuthorizationStrategy {
 

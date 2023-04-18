@@ -2,10 +2,9 @@ package iudx.file.server.apiserver.validations.types;
 
 import iudx.file.server.apiserver.exceptions.DxRuntimeException;
 import iudx.file.server.apiserver.response.ResponseUrn;
+import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.List;
 
 public class GeomTypeValidator implements Validator {
   private static final Logger LOGGER = LogManager.getLogger(GeomTypeValidator.class);

@@ -1,10 +1,10 @@
 package iudx.file.server.apiserver.validations.types;
 
+import static iudx.file.server.apiserver.utilities.Constants.VALIDATION_ALLOWED_COORDINATES;
+import static iudx.file.server.apiserver.utilities.Constants.VALIDATION_COORDINATE_PRECISION_ALLOWED;
+
 import iudx.file.server.apiserver.exceptions.DxRuntimeException;
 import iudx.file.server.apiserver.response.ResponseUrn;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.List;
@@ -12,9 +12,8 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import static iudx.file.server.apiserver.utilities.Constants.VALIDATION_ALLOWED_COORDINATES;
-import static iudx.file.server.apiserver.utilities.Constants.VALIDATION_COORDINATE_PRECISION_ALLOWED;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class CoordinatesTypeValidator implements Validator {
 

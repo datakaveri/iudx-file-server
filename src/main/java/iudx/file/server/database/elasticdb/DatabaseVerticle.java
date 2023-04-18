@@ -1,11 +1,11 @@
 package iudx.file.server.database.elasticdb;
 
+import static iudx.file.server.database.elasticdb.utilities.Constants.DB_SERVICE_ADDRESS;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ServiceBinder;
-
-import static iudx.file.server.database.elasticdb.utilities.Constants.DB_SERVICE_ADDRESS;
 
 public class DatabaseVerticle extends AbstractVerticle {
 

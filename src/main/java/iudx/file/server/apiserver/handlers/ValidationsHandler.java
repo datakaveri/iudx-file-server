@@ -1,5 +1,8 @@
 package iudx.file.server.apiserver.handlers;
 
+import static iudx.file.server.apiserver.utilities.Constants.APPLICATION_JSON;
+import static iudx.file.server.apiserver.utilities.Constants.CONTENT_TYPE;
+
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonObject;
@@ -7,16 +10,12 @@ import io.vertx.ext.web.RoutingContext;
 import iudx.file.server.apiserver.validations.RequestType;
 import iudx.file.server.apiserver.validations.ValidationHandlerFactory;
 import iudx.file.server.apiserver.validations.types.Validator;
-import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
-import static iudx.file.server.apiserver.utilities.Constants.APPLICATION_JSON;
-import static iudx.file.server.apiserver.utilities.Constants.CONTENT_TYPE;
+import org.apache.http.HttpStatus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ValidationsHandler implements Handler<RoutingContext> {
 

@@ -1,5 +1,8 @@
 package iudx.file.server.authenticator;
 
+import static iudx.file.server.authenticator.utilities.Constants.*;
+import static iudx.file.server.common.Constants.CAT_SEARCH_PATH;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import io.vertx.core.*;
@@ -17,18 +20,14 @@ import iudx.file.server.cache.CacheService;
 import iudx.file.server.cache.cacheimpl.CacheType;
 import iudx.file.server.common.Api;
 import iudx.file.server.common.service.CatalogueService;
-import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
-
-import static iudx.file.server.authenticator.utilities.Constants.*;
-import static iudx.file.server.common.Constants.CAT_SEARCH_PATH;
+import org.apache.http.HttpStatus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class JwtAuthenticationServiceImpl implements AuthenticationService {
 

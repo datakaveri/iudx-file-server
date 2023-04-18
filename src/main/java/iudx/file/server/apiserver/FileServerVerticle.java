@@ -1,5 +1,17 @@
 package iudx.file.server.apiserver;
 
+import static iudx.file.server.apiserver.response.ResponseUrn.*;
+import static iudx.file.server.apiserver.response.ResponseUrn.SUCCESS;
+import static iudx.file.server.apiserver.utilities.Constants.*;
+import static iudx.file.server.apiserver.utilities.Utilities.getFileIdComponents;
+import static iudx.file.server.apiserver.utilities.Utilities.getQueryType;
+import static iudx.file.server.auditing.util.Constants.*;
+import static iudx.file.server.auditing.util.Constants.RESPONSE_SIZE;
+import static iudx.file.server.common.Constants.AUDIT_SERVICE_ADDRESS;
+import static iudx.file.server.common.Constants.DB_SERVICE_ADDRESS;
+import static iudx.file.server.common.QueryType.TEMPORAL_GEO;
+import static iudx.file.server.database.elasticdb.utilities.Constants.TYPE_KEY;
+
 import io.netty.handler.codec.http.HttpConstants;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.vertx.core.*;
@@ -35,26 +47,13 @@ import iudx.file.server.common.WebClientFactory;
 import iudx.file.server.common.service.CatalogueService;
 import iudx.file.server.common.service.impl.CatalogueServiceImpl;
 import iudx.file.server.database.elasticdb.DatabaseService;
-import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-
-import static iudx.file.server.apiserver.response.ResponseUrn.SUCCESS;
-import static iudx.file.server.apiserver.response.ResponseUrn.*;
-import static iudx.file.server.apiserver.utilities.Constants.*;
-import static iudx.file.server.apiserver.utilities.Utilities.getFileIdComponents;
-import static iudx.file.server.apiserver.utilities.Utilities.getQueryType;
-import static iudx.file.server.auditing.util.Constants.RESPONSE_SIZE;
-import static iudx.file.server.auditing.util.Constants.*;
-import static iudx.file.server.common.Constants.AUDIT_SERVICE_ADDRESS;
-import static iudx.file.server.common.Constants.DB_SERVICE_ADDRESS;
-import static iudx.file.server.common.QueryType.TEMPORAL_GEO;
-import static iudx.file.server.database.elasticdb.utilities.Constants.TYPE_KEY;
+import org.apache.http.HttpStatus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * The File Server API Verticle.
@@ -464,7 +463,7 @@ public class FileServerVerticle extends AbstractVerticle {
                 LOGGER.debug(handler.cause());
                 if (uploadJson.containsKey("upload") && uploadJson.getBoolean("upload")) {
                   // fail, run Compensating service to clean/undo upload.
-                  String fileIdComponent[] = getFileIdComponents(uploadJson.getString("fileId"));
+                  String[] fileIdComponent = getFileIdComponents(uploadJson.getString("fileId"));
                   StringBuilder uploadDir = new StringBuilder();
                   uploadDir.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
                   String fileuuId =
@@ -540,11 +539,10 @@ public class FileServerVerticle extends AbstractVerticle {
     LOGGER.debug(fileuuId);
     String fileName = id.substring(id.lastIndexOf("/"));
     JsonObject auditParams =
-            new JsonObject()
-                    .put("api", request.path())
-                    .put(USER_ID, routingContext.data().get("AuthResult"))
-                    .put(RESOURCE_ID, resourceId);
-
+        new JsonObject()
+            .put("api", request.path())
+            .put(USER_ID, routingContext.data().get("AuthResult"))
+            .put(RESOURCE_ID, resourceId);
 
     if (fileuuId.contains("sample") && fileIdComponent.length >= 6) {
       uploadDir.append("/" + fileIdComponent[4]);

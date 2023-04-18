@@ -2,11 +2,10 @@ package iudx.file.server.apiserver.validations.types;
 
 import iudx.file.server.apiserver.exceptions.DxRuntimeException;
 import iudx.file.server.apiserver.response.ResponseUrn;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.net.MalformedURLException;
 import java.net.URL;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class StorageURLValidator implements Validator {
   private static final Logger LOGGER = LogManager.getLogger(StorageURLValidator.class);

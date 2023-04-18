@@ -10,14 +10,13 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import iudx.file.server.apiserver.response.ResponseUrn;
 import iudx.file.server.common.Response;
-import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import org.apache.http.HttpStatus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class PostgresServiceImpl implements PostgresService {
 

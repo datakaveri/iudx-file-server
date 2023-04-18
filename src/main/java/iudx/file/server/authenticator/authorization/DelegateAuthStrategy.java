@@ -1,15 +1,14 @@
 package iudx.file.server.authenticator.authorization;
 
+import static iudx.file.server.authenticator.authorization.Method.DELETE;
+import static iudx.file.server.authenticator.authorization.Method.POST;
+
 import iudx.file.server.authenticator.utilities.JwtData;
 import iudx.file.server.common.Api;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static iudx.file.server.authenticator.authorization.Method.DELETE;
-import static iudx.file.server.authenticator.authorization.Method.POST;
 
 public class DelegateAuthStrategy implements AuthorizationStrategy {
   static Map<String, List<AuthorizationRequest>> delegateAuthorizationRules = new HashMap<>();

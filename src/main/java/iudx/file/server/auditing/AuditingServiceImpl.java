@@ -1,5 +1,9 @@
 package iudx.file.server.auditing;
 
+import static iudx.file.server.auditing.util.Constants.EXCHANGE_NAME;
+import static iudx.file.server.auditing.util.Constants.ROUTING_KEY;
+import static iudx.file.server.common.Constants.DATABROKER_SERVICE_ADDRESS;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.AsyncResult;
@@ -12,10 +16,6 @@ import iudx.file.server.common.Response;
 import iudx.file.server.databroker.DataBrokerService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import static iudx.file.server.auditing.util.Constants.EXCHANGE_NAME;
-import static iudx.file.server.auditing.util.Constants.ROUTING_KEY;
-import static iudx.file.server.common.Constants.DATABROKER_SERVICE_ADDRESS;
 
 public class AuditingServiceImpl implements AuditingService {
 

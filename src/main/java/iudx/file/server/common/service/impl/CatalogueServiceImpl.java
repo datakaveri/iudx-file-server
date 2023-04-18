@@ -1,5 +1,8 @@
 package iudx.file.server.common.service.impl;
 
+import static iudx.file.server.common.Constants.CACHE_TIMEOUT_AMOUNT;
+import static iudx.file.server.common.Constants.CAT_ITEM_PATH;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import io.vertx.core.*;
@@ -12,15 +15,11 @@ import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import iudx.file.server.common.ServerType;
 import iudx.file.server.common.WebClientFactory;
 import iudx.file.server.common.service.CatalogueService;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import static iudx.file.server.common.Constants.CACHE_TIMEOUT_AMOUNT;
-import static iudx.file.server.common.Constants.CAT_ITEM_PATH;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class CatalogueServiceImpl implements CatalogueService {
 

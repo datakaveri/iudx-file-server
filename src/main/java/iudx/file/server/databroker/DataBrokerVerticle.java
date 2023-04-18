@@ -1,5 +1,7 @@
 package iudx.file.server.databroker;
 
+import static iudx.file.server.common.Constants.*;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.MessageConsumer;
@@ -15,8 +17,6 @@ import iudx.file.server.cache.cacheimpl.CacheType;
 import iudx.file.server.common.Vhosts;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import static iudx.file.server.common.Constants.*;
 
 public class DataBrokerVerticle extends AbstractVerticle {
 

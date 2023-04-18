@@ -1,10 +1,10 @@
 package iudx.file.server.database.elasticdb.utilities;
 
+import static iudx.file.server.database.elasticdb.utilities.Constants.*;
+
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.file.server.apiserver.utilities.HttpStatusCode;
-
-import static iudx.file.server.database.elasticdb.utilities.Constants.*;
 
 public class ResponseBuilder {
 

@@ -1,5 +1,7 @@
 package iudx.file.server.database.elasticdb;
 
+import static iudx.file.server.database.elasticdb.utilities.Constants.*;
+
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -12,8 +14,6 @@ import iudx.file.server.database.elasticdb.elastic.exception.ESQueryException;
 import iudx.file.server.database.elasticdb.utilities.ResponseBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import static iudx.file.server.database.elasticdb.utilities.Constants.*;
 
 public class DatabaseServiceImpl implements DatabaseService {
 

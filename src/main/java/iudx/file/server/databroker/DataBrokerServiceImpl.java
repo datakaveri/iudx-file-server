@@ -1,5 +1,8 @@
 package iudx.file.server.databroker;
 
+import static iudx.file.server.auditing.util.Constants.FAILED;
+import static iudx.file.server.auditing.util.Constants.SUCCESS;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -7,9 +10,6 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rabbitmq.RabbitMQClient;
 import iudx.file.server.common.Response;
-
-import static iudx.file.server.auditing.util.Constants.FAILED;
-import static iudx.file.server.auditing.util.Constants.SUCCESS;
 
 public class DataBrokerServiceImpl implements DataBrokerService {
 

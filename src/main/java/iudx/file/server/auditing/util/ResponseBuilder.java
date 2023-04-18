@@ -7,8 +7,8 @@ import static iudx.file.server.auditing.util.Constants.RESULTS;
 import static iudx.file.server.auditing.util.Constants.SUCCESS;
 import static iudx.file.server.auditing.util.Constants.TITLE;
 
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public class ResponseBuilder {
   private String status;

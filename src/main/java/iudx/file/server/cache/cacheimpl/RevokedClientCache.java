@@ -6,10 +6,9 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.file.server.database.postgres.PostgresConstants;
 import iudx.file.server.database.postgres.PostgresService;
+import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.concurrent.TimeUnit;
 
 public class RevokedClientCache implements IudxCache {
 
