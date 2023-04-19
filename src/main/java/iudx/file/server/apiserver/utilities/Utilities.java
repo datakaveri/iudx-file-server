@@ -3,6 +3,11 @@ package iudx.file.server.apiserver.utilities;
 import iudx.file.server.apiserver.query.QueryParams;
 import iudx.file.server.common.QueryType;
 
+/**
+ * Utilities.
+ *
+ * <h1>Utilities</h1>
+ */
 public class Utilities {
 
   /**
@@ -12,7 +17,6 @@ public class Utilities {
    * Retreives a query type based on the attributes present in the query json.
    * </pre>
    *
-   * @param query
    * @return QueryType
    */
   public static QueryType getQueryType(QueryParams params) {
@@ -30,7 +34,7 @@ public class Utilities {
   }
 
   /**
-   *
+   * .
    *
    * <pre>
    * retreive components from id index :
@@ -42,7 +46,7 @@ public class Utilities {
    *            5 - File id(optional)
    * </pre>
    *
-   * @param fileId
+   * @param fileId id of file
    * @return array of file id after splitting by "/".
    */
   public static String[] getFileIdComponents(String fileId) {

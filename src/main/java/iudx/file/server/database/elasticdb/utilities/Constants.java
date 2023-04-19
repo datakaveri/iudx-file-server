@@ -56,16 +56,4 @@ public class Constants extends iudx.file.server.common.Constants {
   public static final int DEFAULT_SIZE_VALUE = 5000;
   public static final int DEFAULT_FROM_VALUE = 0;
   public static final String TOTAL_HITS_KEY = "totalHits";
-
-  public static final String DB_ERROR_2XX = "Status code is not 2xx";
-
-  // SQL
-  public static final String SQL_DELETE = "DELETE FROM file_server_token s where file_token = $1";
-  public static final String SQL_INSERT =
-      "INSERT INTO file_server_token (user_token, file_token, validity_date, server_id ) VALUES ($1, $2, $3,$4)";
-  public static final String SQL_SELECT = "SELECT * FROM file_server_token WHERE user_token = $1";
-
-  public static final String TERM_QUERY = "{\"term\":{\"$1\":\"$2\"}}";
-  public static final String MUST_RANGE_QUERY =
-      "{\"must\":[{\"range\":{\"startTime\":{\"lte\":\"$1\"}}},{\"range\":{\"endTime\":{\"gte\":\"$2\"}}}]}";
 }

@@ -5,7 +5,14 @@ import iudx.file.server.apiserver.response.ResponseUrn;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-// TOOD : Regex for fileId
+/**
+ * FileIdTypeValidator.
+ *
+ * <h1>FileIdTypeValidator</h1>
+ *
+ * <p>it validate the FileId.
+ */
+// TODO : Regex for fileId
 public class FileIdTypeValidator implements Validator {
 
   private static final Logger LOGGER = LogManager.getLogger(FileIdTypeValidator.class);

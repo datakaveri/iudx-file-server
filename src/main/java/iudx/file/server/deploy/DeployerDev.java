@@ -23,7 +23,7 @@ import org.apache.logging.log4j.Logger;
  *   <li>--config/-c : path to the config file
  * </ul>
  *
- * e.g. <i>java -jar ./fatjar.jar -c configs/config.json</i>
+ * <p>e.g. <i>java -jar ./fatjar.jar -c configs/config.json</i>
  */
 public class DeployerDev {
   private static final Logger LOGGER = LogManager.getLogger(DeployerDev.class);

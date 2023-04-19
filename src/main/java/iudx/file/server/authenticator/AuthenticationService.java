@@ -20,7 +20,6 @@ public interface AuthenticationService {
    * @param address which is the proxy address
    * @return AuthenticationServiceVertxEBProxy which is a service proxy
    */
-
   @GenIgnore
   static AuthenticationService createProxy(Vertx vertx, String address) {
     return new AuthenticationServiceVertxEBProxy(vertx, address);
@@ -33,13 +32,11 @@ public interface AuthenticationService {
    *
    * @param request which is a JsonObject containing ids: [String]
    * @param authenticationInfo which is a JsonObject containing token: String and apiEndpoint:
-   *        String
+   *     String
    * @param handler which is a request handler
    * @return AuthenticationService which is a service
    */
-
   @Fluent
-  AuthenticationService tokenInterospect(JsonObject request,
-      JsonObject authenticationInfo,
-      Handler<AsyncResult<JsonObject>> handler);
+  AuthenticationService tokenInterospect(
+      JsonObject request, JsonObject authenticationInfo, Handler<AsyncResult<JsonObject>> handler);
 }

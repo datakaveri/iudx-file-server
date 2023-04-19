@@ -17,6 +17,7 @@ import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/** it validate the entities according to their need . */
 public class ValidationsHandler implements Handler<RoutingContext> {
 
   private static final Logger LOGGER = LogManager.getLogger(ValidationsHandler.class);

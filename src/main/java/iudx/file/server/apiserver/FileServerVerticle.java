@@ -74,7 +74,7 @@ public class FileServerVerticle extends AbstractVerticle {
 
   private static final Logger LOGGER = LogManager.getLogger(FileServerVerticle.class);
 
-  /** Service addresses */
+  /** Service addresses. */
   private static final String DATABASE_SERVICE_ADDRESS = DB_SERVICE_ADDRESS;
 
   private final ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
@@ -303,7 +303,9 @@ public class FileServerVerticle extends AbstractVerticle {
   }
 
   /**
-   * @param routingContext
+   * Upload File service allows to upload a file into the server after authenticating the user.
+   *
+   * @param routingContext Handles web request in Vert.x web
    */
   public void upload(RoutingContext routingContext) {
     LOGGER.debug("upload() started.");
@@ -320,7 +322,7 @@ public class FileServerVerticle extends AbstractVerticle {
             .put(USER_ID, routingContext.data().get("AuthResult"))
             .put(RESOURCE_ID, id);
 
-    String fileIdComponent[] = getFileIdComponents(id);
+    String[] fileIdComponent = getFileIdComponents(id);
     StringBuilder uploadPath = new StringBuilder();
     uploadPath.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
     Boolean isExternalStorage = Boolean.parseBoolean(request.getHeader("externalStorage"));
@@ -373,11 +375,9 @@ public class FileServerVerticle extends AbstractVerticle {
   /**
    * Helper method to upload a sample file.
    *
-   * @param response
-   * @param files
-   * @param fileName
-   * @param filePath
-   * @param id
+   * @param response HttpServerResponse
+   * @param files set of file (although there will always be a single file to upload) * @param
+   * @param filePath path for the upload file * @param id resource id
    */
   private void sampleFileUpload(
       HttpServerResponse response,
@@ -409,10 +409,11 @@ public class FileServerVerticle extends AbstractVerticle {
   /**
    * Helper method to upload a archieve file.
    *
-   * @param response
-   * @param files
-   * @param filePath
-   * @param id
+   * @param response HttpServerResponse
+   * @param files set of file (although there will always be a single file to upload)
+   * @param filePath path for the upload file
+   * @param id resource id
+   * @param auditParams for auditing
    */
   private void archiveFileUpload(
       HttpServerResponse response,
@@ -530,7 +531,7 @@ public class FileServerVerticle extends AbstractVerticle {
     LOGGER.debug("id: " + id);
     String resourceId = id.substring(0, id.indexOf('/', id.lastIndexOf('/')));
 
-    String fileIdComponent[] = getFileIdComponents(id);
+    String[] fileIdComponent = getFileIdComponents(id);
     StringBuilder uploadDir = new StringBuilder();
     uploadDir.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
     // extract the file-uuid from supplied id, since position of file-id in id will be different for
@@ -564,6 +565,11 @@ public class FileServerVerticle extends AbstractVerticle {
               // content-disposition.
             });
   }
+  /**
+   * query service allows to query/search a file from the server.
+   *
+   * @param context Handles web request in Vert.x web
+   */
 
   public void query(RoutingContext context) {
     HttpServerResponse response = context.response();
@@ -656,7 +662,7 @@ public class FileServerVerticle extends AbstractVerticle {
             .put(USER_ID, routingContext.data().get("AuthResult"))
             .put(RESOURCE_ID, resourceId);
 
-    String fileIdComponent[] = getFileIdComponents(id);
+    String[] fileIdComponent = getFileIdComponents(id);
     StringBuilder uploadDir = new StringBuilder();
     uploadDir.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
     // extract the file-uuid from supplied id, since position of file-id in id will be different for
@@ -715,6 +721,7 @@ public class FileServerVerticle extends AbstractVerticle {
       deleteSampleFile(response, id, fileuuId, uploadDir.toString());
     }
   }
+  /** get list of metatdata form server. */
 
   public void listMetadata(RoutingContext context) {
     HttpServerRequest request = context.request();
@@ -813,7 +820,7 @@ public class FileServerVerticle extends AbstractVerticle {
   }
 
   /**
-   * Helper method to check/create initial directory structure
+   * Helper method to check/create initial directory structure.
    *
    * @param fileSystem vert.x FileSystem
    * @param basePath base derfault directory structure
@@ -952,7 +959,7 @@ public class FileServerVerticle extends AbstractVerticle {
   }
 
   /**
-   * function to handle call to audit service
+   * function to handle call to audit service.
    *
    * @param auditInfo contains userid, api-endpoint and the resourceid
    */

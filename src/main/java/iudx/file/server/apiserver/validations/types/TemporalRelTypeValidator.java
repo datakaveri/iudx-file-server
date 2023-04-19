@@ -7,6 +7,13 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * TemporalRelTypeValidator.
+ *
+ * <h1>TemporalRelTypeValidator</h1>
+ *
+ * <p>it validate temporal rel("after", "before", "during", "between")
+ */
 public class TemporalRelTypeValidator implements Validator {
 
   private static final Logger LOGGER = LogManager.getLogger(TemporalRelTypeValidator.class);

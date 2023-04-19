@@ -5,6 +5,13 @@ import iudx.file.server.apiserver.response.ResponseUrn;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * PaginationLimitTypeValidator.
+ *
+ * <h1>PaginationLimitTypeValidator</h1>
+ *
+ * <p>it validate pagination value
+ */
 public class PaginationLimitTypeValidator implements Validator {
 
   private static final Logger LOGGER = LogManager.getLogger(PaginationLimitTypeValidator.class);

@@ -24,7 +24,7 @@ public class WebClientFactory {
     if (serverType.equals(ServerType.FILE_SERVER)) {
       return getFileServerWebClient(vertx, config);
     } else if (serverType.equals(ServerType.RESOURCE_SERVER)) {
-      return getRSServerWebClient(vertx, config);
+      return getRsServerWebClient(vertx, config);
     } else {
       LOGGER.error("Unknown type passed." + serverType);
       return null;
@@ -44,7 +44,7 @@ public class WebClientFactory {
     return WebClient.create(vertx, options);
   }
 
-  private WebClient getRSServerWebClient(final Vertx vertx, final JsonObject config) {
+  private WebClient getRsServerWebClient(final Vertx vertx, final JsonObject config) {
     WebClientOptions options =
         new WebClientOptions()
             .setTrustAll(true)

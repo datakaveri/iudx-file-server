@@ -1,5 +1,10 @@
 package iudx.file.server.apiserver.utilities;
 
+/**
+ * Constants.
+ *
+ * <h1>Constants</h1>
+ */
 public class Constants extends iudx.file.server.common.Constants {
   public static final long MAX_SIZE = 1073741824L; // 1GB = 1073741824 Bytes
   // api

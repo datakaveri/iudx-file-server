@@ -6,6 +6,13 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * GeoRelationTypeValidator.
+ *
+ * <h1>GeoRelationTypeValidator</h1>
+ *
+ * <p>it validate GeoRelation.
+ */
 public class GeoRelationTypeValidator implements Validator {
 
   private static final Logger LOGGER = LogManager.getLogger(GeoRelationTypeValidator.class);
@@ -18,12 +25,14 @@ public class GeoRelationTypeValidator implements Validator {
     this.required = required;
   }
 
-
   @Override
   public boolean isValid() {
     if (required && (value == null || value.isBlank())) {
       LOGGER.error("Validation error : null or blank value for required mandatory field");
-      throw new DxRuntimeException(failureCode(), ResponseUrn.MANDATORY_FIELD, "Validation error : null or blank value for required mandatory field");
+      throw new DxRuntimeException(
+          failureCode(),
+          ResponseUrn.MANDATORY_FIELD,
+          "Validation error : " + "null or blank value for required mandatory field");
     } else {
       if (value == null || value.isBlank()) {
         return true;
@@ -31,7 +40,10 @@ public class GeoRelationTypeValidator implements Validator {
     }
     if (!allowedValues.contains(value)) {
       LOGGER.error("Validation error : Invalid geo relation value passed [ " + value + " ]");
-      throw new DxRuntimeException(failureCode(), ResponseUrn.INVALID_ATTR_VALUE, "Validation error: Invalid geo relation value passed [ " + value + " ]");
+      throw new DxRuntimeException(
+          failureCode(),
+          ResponseUrn.INVALID_ATTR_VALUE,
+          "Validation error: " + "Invalid geo relation value passed [ " + value + " ]");
     }
     return true;
   }

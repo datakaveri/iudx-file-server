@@ -5,6 +5,13 @@ import iudx.file.server.apiserver.response.ResponseUrn;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * PaginationOffsetTypeValidator.
+ *
+ * <h1>PaginationOffsetTypeValidator</h1>
+ *
+ * <p>it validate pagination offset value
+ */
 public class PaginationOffsetTypeValidator implements Validator {
 
   private static final Logger LOGGER = LogManager.getLogger(PaginationOffsetTypeValidator.class);

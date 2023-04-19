@@ -7,6 +7,13 @@ import java.time.format.DateTimeParseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * DateTypeValidator.
+ *
+ * <h1>DateTypeValidator</h1>
+ *
+ * <p>it validate the date.
+ */
 public class DateTypeValidator implements Validator {
 
   private static final Logger LOGGER = LogManager.getLogger(DateTypeValidator.class);

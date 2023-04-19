@@ -10,7 +10,7 @@ import iudx.file.server.apiserver.response.ResponseUrn;
 import iudx.file.server.common.QueryType;
 import iudx.file.server.database.elasticdb.elastic.ElasticClient;
 import iudx.file.server.database.elasticdb.elastic.ElasticQueryGenerator;
-import iudx.file.server.database.elasticdb.elastic.exception.ESQueryException;
+import iudx.file.server.database.elasticdb.elastic.exception.EsqueryException;
 import iudx.file.server.database.elasticdb.utilities.ResponseBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -95,11 +95,11 @@ public class DatabaseServiceImpl implements DatabaseService {
                 LOGGER.info("failed to query : " + failureHandler);
                 promise.fail(failureHandler.getMessage());
               });
-    } catch (ESQueryException ex) {
+    } catch (EsqueryException ex) {
       ResponseUrn exceptionUrn = ResponseUrn.BAD_REQUEST_URN;
-      promise.fail(new ESQueryException(exceptionUrn, ex.getMessage()).toString());
+      promise.fail(new EsqueryException(exceptionUrn, ex.getMessage()).toString());
     } catch (Exception ex) {
-      promise.fail(new ESQueryException("Exception occured executing query").toString());
+      promise.fail(new EsqueryException("Exception occured executing query").toString());
     }
 
     return promise.future();
@@ -148,7 +148,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     LOGGER.debug("index : " + fileMetadataIndex);
     client
-        .deleteAsync(fileMetadataIndex, id, deleteQuery)
+        .deleteAsync(fileMetadataIndex, deleteQuery)
         .onComplete(
             deleteHandler -> {
               if (deleteHandler.succeeded()) {

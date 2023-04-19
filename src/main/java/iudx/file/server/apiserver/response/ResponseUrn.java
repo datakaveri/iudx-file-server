@@ -2,6 +2,13 @@ package iudx.file.server.apiserver.response;
 
 import java.util.stream.Stream;
 
+/**
+ * ResponseUrn.
+ *
+ * <h1>ResponseUrn</h1>
+ *
+ * <p>it helps to build http response according to urn with customized message
+ */
 public enum ResponseUrn {
   SUCCESS("urn:dx:rs:success", "Successful operation"),
   INVALID_TEMPORAL_PARAM("irn:dx:rs:InvalidTemporalParam", "Invalid temporal param"),
@@ -59,6 +66,11 @@ public enum ResponseUrn {
     this.urn = urn;
     this.message = message;
   }
+  /**
+   * urnFromCode.
+   *
+   * @param urn urn data
+   */
 
   public static ResponseUrn urnFromCode(final String urn) {
     return Stream.of(values())

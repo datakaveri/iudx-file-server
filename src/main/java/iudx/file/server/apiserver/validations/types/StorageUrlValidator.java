@@ -7,13 +7,20 @@ import java.net.URL;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class StorageURLValidator implements Validator {
-  private static final Logger LOGGER = LogManager.getLogger(StorageURLValidator.class);
+/**
+ * StorageURLValidator.
+ *
+ * <h1>StorageURLValidator</h1>
+ *
+ * <p>it validate StorageURL
+ */
+public class StorageUrlValidator implements Validator {
+  private static final Logger LOGGER = LogManager.getLogger(StorageUrlValidator.class);
 
   private final String value;
   private final boolean required;
 
-  public StorageURLValidator(String value, boolean required) {
+  public StorageUrlValidator(String value, boolean required) {
     this.value = value;
     this.required = required;
   }

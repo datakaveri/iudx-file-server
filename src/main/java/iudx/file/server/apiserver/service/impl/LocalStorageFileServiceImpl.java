@@ -21,6 +21,7 @@ import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/** {@inheritDoc} */
 public class LocalStorageFileServiceImpl implements FileService {
 
   private static final Logger LOGGER = LogManager.getLogger(LocalStorageFileServiceImpl.class);

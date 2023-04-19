@@ -114,14 +114,10 @@ public class CacheServiceImpl implements CacheService {
     IudxCache cache = null;
     switch (cacheType) {
       case REVOKED_CLIENT:
-        {
-          cache = revokedClientCache;
-          break;
-        }
+        cache = revokedClientCache;
+        break;
       default:
-        {
-          throw new IllegalArgumentException("No cache type specified");
-        }
+        throw new IllegalArgumentException("No cache type specified");
     }
     return cache;
   }

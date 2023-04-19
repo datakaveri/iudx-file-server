@@ -15,6 +15,13 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * CoordinatesTypeValidator.
+ *
+ * <h1>CoordinatesTypeValidator</h1>
+ *
+ * <p>it validate the co-ordinate whether its valid or not
+ */
 public class CoordinatesTypeValidator implements Validator {
 
   private static final Logger LOGGER = LogManager.getLogger(CoordinatesTypeValidator.class);
@@ -158,7 +165,8 @@ public class CoordinatesTypeValidator implements Validator {
     }
     if (!isValidCoordinateCount(value)) {
       message =
-          "Invalid numbers of coordinates supplied (Only 10 coordinates allowed for polygon and line & 1 coordinate for point)";
+          "Invalid numbers of coordinates supplied "
+              + "(Only 10 coordinates allowed for polygon and line & 1 coordinate for point)";
     }
     if (!isValidCoordinates(value)) {
       message = "invalid coordinate (only 6 digits to precision allowed)";

@@ -6,6 +6,14 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * GeomTypeValidator.
+ *
+ * <h1>GeomTypeValidator</h1>
+ *
+ * <p>it validate GeomType("Point", "point", "Polygon", "polygon", "LineString", "linestring",
+ * "bbox")
+ */
 public class GeomTypeValidator implements Validator {
   private static final Logger LOGGER = LogManager.getLogger(GeomTypeValidator.class);
 

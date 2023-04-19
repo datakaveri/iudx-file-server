@@ -53,9 +53,11 @@ import org.apache.logging.log4j.core.LoggerContext;
  *   <li>--modules/-m : comma separated list of module names to deploy
  * </ul>
  *
- * e.g. <i>java -jar ./fatjar.jar --host $(hostname) -c configs/config.json -m
- * iudx.file.server.apiserver.FileServerVerticle,iudx.file.server.authenticator.AuthenticationVerticle
- * ,iudx.file.server.database.elasticdb.DatabaseVerticle,iudx.file.server.auditing.AuditingVerticle</i>
+ * <p>e.g. <i>java -jar ./fatjar.jar --host $(hostname) -c configs/config.json -m
+ * iudx.file.server.apiserver.FileServerVerticle,
+ * iudx.file.server.authenticator.AuthenticationVerticle,
+ * iudx.file.server.database.elasticdb.DatabaseVerticle,
+ * iudx.file.server.auditing.AuditingVerticle</i>
  */
 public class Deployer {
   private static final Logger logger = LogManager.getLogger(Deployer.class);
@@ -231,15 +233,15 @@ public class Deployer {
   }
 
   public static void gracefulShutdown() {
-    Set<String> deployIDSet = vertx.deploymentIDs();
+    Set<String> deployIdSet = vertx.deploymentIDs();
     Logger logger1 = LogManager.getLogger(Deployer.class);
     logger1.info("Shutting down the application");
-    CountDownLatch latchVerticles = new CountDownLatch(deployIDSet.size());
+    CountDownLatch latchVerticles = new CountDownLatch(deployIdSet.size());
     CountDownLatch latchCluster = new CountDownLatch(1);
     CountDownLatch latchVertx = new CountDownLatch(1);
-    logger1.debug("number of verticles being undeployed are:" + deployIDSet.size());
+    logger1.debug("number of verticles being undeployed are:" + deployIdSet.size());
     // shutdown verticles
-    for (String deploymentId : deployIDSet) {
+    for (String deploymentId : deployIdSet) {
       vertx.undeploy(
           deploymentId,
           handler -> {

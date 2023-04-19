@@ -9,9 +9,23 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * ValidationHandlerFactory.
+ *
+ * <h1>ValidationHandlerFactory</h1>
+ *
+ * <p>ValidationHandlerFactory filter the nature of validation.
+ */
 public class ValidationHandlerFactory {
 
   private static final Logger LOGGER = LogManager.getLogger(ValidationHandlerFactory.class);
+  /**
+   * it manages the type of validation to be performed.
+   *
+   * @param requestType iudx requestType
+   * @param parameters recieved parameters
+   * @param headers recieved headers
+   */
 
   public List<Validator> create(RequestType requestType, MultiMap parameters, MultiMap headers) {
     LOGGER.debug("type :" + requestType);
@@ -58,7 +72,7 @@ public class ValidationHandlerFactory {
     // external storage
     validators.add(new StorageTypeValidator(headers.get(HEADER_EXTERNAL_STORAGE), false));
     validators.add(
-        new StorageURLValidator(
+        new StorageUrlValidator(
             parameters.get(PARAM_FILE_URL),
             Boolean.parseBoolean(headers.get(HEADER_EXTERNAL_STORAGE))));
 

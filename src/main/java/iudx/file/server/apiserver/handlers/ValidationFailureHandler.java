@@ -12,6 +12,7 @@ import iudx.file.server.apiserver.utilities.HttpStatusCode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/** handle the Validation failure. */
 public class ValidationFailureHandler implements Handler<RoutingContext> {
 
   private static final Logger LOGGER = LogManager.getLogger(ValidationFailureHandler.class);

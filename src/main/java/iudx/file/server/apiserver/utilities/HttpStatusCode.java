@@ -1,5 +1,10 @@
 package iudx.file.server.apiserver.utilities;
 
+/**
+ * HttpStatusCode.
+ *
+ * <h1>HttpStatusCode</h1>
+ */
 public enum HttpStatusCode {
 
   // 1xx: Informational
@@ -69,10 +74,13 @@ public enum HttpStatusCode {
     this.description = description;
     this.urn = urn;
   }
+  /** HttpStatusCode . */
 
   public static HttpStatusCode getByValue(int value) {
     for (HttpStatusCode status : values()) {
-      if (status.value == value) return status;
+      if (status.value == value) {
+        return status;
+      }
     }
     throw new IllegalArgumentException("Invalid status code: " + value);
   }

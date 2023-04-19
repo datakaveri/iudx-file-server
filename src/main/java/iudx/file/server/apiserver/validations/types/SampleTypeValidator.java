@@ -5,6 +5,13 @@ import iudx.file.server.apiserver.response.ResponseUrn;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * SampleTypeValidator.
+ *
+ * <h1>SampleTypeValidator</h1>
+ *
+ * <p>it checks sample value whether its null or not
+ */
 public class SampleTypeValidator implements Validator {
 
   private static final Logger LOGGER = LogManager.getLogger(SampleTypeValidator.class);
@@ -21,7 +28,10 @@ public class SampleTypeValidator implements Validator {
   public boolean isValid() {
     if (required && (value == null || value.isBlank())) {
       LOGGER.error("Validation error : null or blank value for required mandatory field");
-      throw new DxRuntimeException(failureCode(), ResponseUrn.MANDATORY_FIELD, "Validation error : null or blank value for required mandatory field");
+      throw new DxRuntimeException(
+          failureCode(),
+          ResponseUrn.MANDATORY_FIELD,
+          "Validation error : null or blank value for required mandatory field");
     } else {
       if (value == null || value.isBlank()) {
         return true;
@@ -29,7 +39,10 @@ public class SampleTypeValidator implements Validator {
     }
     if (!value.equalsIgnoreCase("true")) {
       LOGGER.error("Validation error : Invalid isSample field value [ " + value + " ]");
-      throw new DxRuntimeException(failureCode(), ResponseUrn.INVALID_ATTR_VALUE, "Validation error : Invalid isSample field value [ " + value + " ]");
+      throw new DxRuntimeException(
+          failureCode(),
+          ResponseUrn.INVALID_ATTR_VALUE,
+          "Validation error : Invalid isSample field value [ " + value + " ]");
     }
     return true;
   }
@@ -43,5 +56,4 @@ public class SampleTypeValidator implements Validator {
   public String failureMessage() {
     return "invalid sample value provided.";
   }
-
 }

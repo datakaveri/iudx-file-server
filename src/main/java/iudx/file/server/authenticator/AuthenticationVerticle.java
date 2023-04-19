@@ -69,7 +69,8 @@ public class AuthenticationVerticle extends AbstractVerticle {
               if (jwtIgnoreExpiry) {
                 jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);
                 LOGGER.warn(
-                    "JWT ignore expiration set to true, do not set IgnoreExpiration in production!!");
+                    "JWT ignore expiration set to true,"
+                        + "do not set IgnoreExpiration in production!!");
               }
               cacheService = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
               dxApiBasePath = config().getString("dxApiBasePath");

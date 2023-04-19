@@ -17,6 +17,14 @@ import iudx.file.server.databroker.DataBrokerService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * AuditingServiceImpl.
+ *
+ * <h1>AuditingServiceImpl</h1>
+ *
+ * <p>AuditingServiceImpl save data for auditing purpose for that it push all the auditing data into
+ * rmq.
+ */
 public class AuditingServiceImpl implements AuditingService {
 
   private static final Logger LOGGER = LogManager.getLogger(AuditingServiceImpl.class);

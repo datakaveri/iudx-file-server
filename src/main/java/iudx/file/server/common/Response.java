@@ -29,6 +29,7 @@ public class Response {
     this.title = builder.title;
     this.detail = builder.detail;
   }
+  /** form a respone json. */
 
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
@@ -41,6 +42,7 @@ public class Response {
     return json;
   }
 
+  /** Builder class . */
 
   public static class Builder {
     private String type;

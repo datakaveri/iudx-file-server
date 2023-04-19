@@ -1,7 +1,10 @@
 package iudx.file.server.common;
 
 import static iudx.file.server.apiserver.utilities.Constants.*;
-/** This class is used to get complete endpoint by appending configurable base path with the APIs */
+
+/**
+ * This class is used to get complete endpoint by appending configurable base path with the APIs.
+ */
 public class Api {
   private static volatile Api apiInstance;
   //    public static final String NGSILD_BASE_PATH = "dxApiBasePath";
@@ -20,6 +23,7 @@ public class Api {
     this.iudxApiBasePath = iudxApiBasePath;
     buildEndpoints();
   }
+  /** This method is used to getI nstance. */
 
   public static Api getInstance(String dxApiBasePath, String iudxApiBasePath) {
     if (apiInstance == null) {
@@ -31,6 +35,7 @@ public class Api {
     }
     return apiInstance;
   }
+  /** This method is used to build complete endpoint. */
 
   public void buildEndpoints() {
     temporalEndpoint = new StringBuilder(dxApiBasePath).append(API_TEMPORAL);

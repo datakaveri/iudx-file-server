@@ -16,6 +16,14 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * RequestValidator.
+ *
+ * <h1>RequestValidator</h1>
+ *
+ * <p>it validate the request
+ */
+
 public class RequestValidator {
 
   private static final Logger LOGGER = LogManager.getLogger(RequestValidator.class);
@@ -36,6 +44,11 @@ public class RequestValidator {
     validParams.add(PARAM_LIMIT);
     validParams.add(PARAM_END_TIME_LOWERCASE);
   }
+  /**
+   * handleResponse.
+   *
+   * @param map map
+   */
 
   public Future<Boolean> isValid(MultiMap map) {
     Promise<Boolean> promise = Promise.promise();
@@ -58,6 +71,11 @@ public class RequestValidator {
     }
     return true;
   }
+  /**
+   * handleResponse.
+   *
+   * @param params boolean type promise
+   */
 
   public Future<Boolean> isValidArchiveRequest(MultiMap params) {
     Promise<Boolean> promise = Promise.promise();
@@ -78,6 +96,12 @@ public class RequestValidator {
 
     return promise.future();
   }
+  /**
+   * handleResponse.
+   *
+   * @param promise boolean type promise
+   * @param message message
+   */
 
   public void handleResponse(Promise<Boolean> promise, String message) {
     promise.fail(

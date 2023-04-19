@@ -8,7 +8,8 @@ import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-// TODO : make usable after looking for Exception propogation in vertx
+/** handle Validation FailureHandler exceptions. */
+//TODO : make usable after looking for Exception propogation in vertx
 public class ValidationFailureHandler implements Handler<RoutingContext> {
 
   private static final Logger LOGGER = LogManager.getLogger(ValidationFailureHandler.class);

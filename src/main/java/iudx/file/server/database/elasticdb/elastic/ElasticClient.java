@@ -11,7 +11,6 @@ import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
@@ -31,6 +30,13 @@ import org.elasticsearch.client.Request;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 
+/**
+ * ElasticClient.
+ *
+ * <h1>ElasticClient</h1>
+ *
+ * <p>ElasticClient to communicate with elastic (to insert,search and delete tha data)
+ */
 public class ElasticClient {
 
   private static final Logger LOGGER = LogManager.getLogger(ElasticClient.class);
@@ -65,7 +71,8 @@ public class ElasticClient {
    *
    * @param index Index to search on
    * @param query Query
-   * @param searchHandler JsonObject result {@link AsyncResult}
+   * @param size int type
+   * @param from from int type
    */
   public Future<JsonObject> asyncSearch(String index, Query query, int size, int from) {
     Promise<JsonObject> promise = Promise.promise();
@@ -109,6 +116,12 @@ public class ElasticClient {
     return promise.future();
   }
 
+  /**
+   * insertAsync - insert data into the respective index of elastic.
+   *
+   * @param index Index to insert
+   * @param document json type
+   */
   public Future<JsonObject> insertAsync(String index, JsonObject document) {
     StringBuilder putRequestIndex = new StringBuilder(index);
     putRequestIndex.append("/_doc/");
@@ -151,7 +164,13 @@ public class ElasticClient {
     return promise.future();
   }
 
-  public Future<JsonObject> deleteAsync(String index, String id, Query query) {
+  /**
+   * deleteAsync - delete tha data from respective index.
+   *
+   * @param index Index to insert
+   * @param query elastic query
+   */
+  public Future<JsonObject> deleteAsync(String index, Query query) {
 
     Promise<JsonObject> promise = Promise.promise();
     DeleteByQueryRequest deleteByQueryRequest =
@@ -192,6 +211,12 @@ public class ElasticClient {
     return promise.future();
   }
 
+  /**
+   * asyncCount - count data from respective index.
+   *
+   * @param index Index to insert
+   * @param query elastic query
+   */
   public Future<JsonObject> asyncCount(String index, Query query) {
 
     Promise<JsonObject> promise = Promise.promise();

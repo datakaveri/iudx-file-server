@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(VertxExtension.class)
 
 public class StorageURLValidatorTest {
-    private static StorageURLValidator storageURLValidator;
+    private static StorageUrlValidator storageURLValidator;
 
     public static Stream<Arguments> validValues() {
         return Stream.of(
@@ -41,7 +41,7 @@ public class StorageURLValidatorTest {
     @DisplayName("Test isValid method with valid values")
     @MethodSource("validValues")
     public void testIsValidWithValidValues(String value, boolean required, VertxTestContext vertxTestContext) {
-        storageURLValidator = new StorageURLValidator(value, required);
+        storageURLValidator = new StorageUrlValidator(value, required);
         assertTrue(storageURLValidator.isValid());
         vertxTestContext.completeNow();
 
@@ -51,7 +51,7 @@ public class StorageURLValidatorTest {
     @DisplayName("Test isValid method with invalid values")
     @MethodSource("inValidValues")
     public void testIsValidWhenRequiredTrue(String value, boolean required, VertxTestContext vertxTestContext) {
-        storageURLValidator = new StorageURLValidator(value, required);
+        storageURLValidator = new StorageUrlValidator(value, required);
         assertThrows(DxRuntimeException.class, () -> storageURLValidator.isValid());
         vertxTestContext.completeNow();
     }

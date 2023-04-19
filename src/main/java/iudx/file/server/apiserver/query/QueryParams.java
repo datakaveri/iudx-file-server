@@ -9,6 +9,13 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * The QueryParams.
+ *
+ * <h1>QueryParams</h1>
+ *
+ * <p>The QueryParams class hepls to build query
+ */
 @JsonInclude(Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class QueryParams {
@@ -78,6 +85,11 @@ public class QueryParams {
     this.textQuery = textQuery;
   }
 
+  /**
+   * set georel.
+   *
+   * @param geoRel a geo rel data
+   */
   public void setGeoRel(String geoRel) {
     String[] relation = geoRel.split(";");
     if (relation.length == 2) {
@@ -137,6 +149,7 @@ public class QueryParams {
     return this.temporalRelation != null && this.startTime != null;
   }
 
+  /** build QueryParams. */
   public QueryParams build() {
     if (isGeoParamsPresent()) {
       if (this.geoRel != null && this.coordinates != null && this.geometry != null) {

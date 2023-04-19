@@ -3,6 +3,13 @@ package iudx.file.server.apiserver.validations.types;
 import iudx.file.server.apiserver.exceptions.DxRuntimeException;
 import iudx.file.server.apiserver.response.ResponseUrn;
 
+/**
+ * IdTypeValidator.
+ *
+ * <h1>IdTypeValidator</h1>
+ *
+ * <p>it validate Id
+ */
 public class IdTypeValidator implements Validator {
   private final String value;
   private final boolean required;
