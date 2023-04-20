@@ -30,7 +30,7 @@
         <exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
         <maven-surefire-plugin.version>3.0.0-M7</maven-surefire-plugin.version>
         <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
-        <maven-pmd-plugin.version>3.14.0</maven-pmd-plugin.version>
+        <maven-pmd-plugin.version>3.17.0</maven-pmd-plugin.version>
         <maven-surefire-report-plugin.version>3.0.0-M7</maven-surefire-report-plugin.version>
 
         <exec.mainClass>iudx.file.server.deploy.Deployer</exec.mainClass>
@@ -460,11 +460,6 @@
                     <release>${openjdk.version}</release>
                 </configuration>
             </plugin>
-        </plugins>
-    </build>
-
-    <reporting>
-        <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
@@ -472,14 +467,19 @@
                 <configuration>
                     <targetJdk>${openjdk.version}</targetJdk>
                     <rulesets>
-                        <ruleset>/rulesets/java/braces.xml</ruleset>
-                        <ruleset>/rulesets/java/naming.xml</ruleset>
-                        <ruleset>/rulesets/java/imports.xml</ruleset>
-                        <ruleset>/rulesets/java/unnecessary.xml</ruleset>
-                        <ruleset>/rulesets/java/unusedcode.xml</ruleset>
+                        <ruleset>./iudx-pmd-ruleset.xml</ruleset>
                     </rulesets>
+                    <printFailingErrors>true</printFailingErrors>
+                    <excludeRoots>
+                        <excludeRoot>target/generated-sources</excludeRoot>
+                    </excludeRoots>
                 </configuration>
             </plugin>
+        </plugins>
+    </build>
+
+    <reporting>
+        <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>

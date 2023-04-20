@@ -5,7 +5,7 @@ networks:
 services:
   test:
     image: ghcr.io/datakaveri/fs-test:latest
-    environment: 
+    environment:
       - LOG_LEVEL=INFO
     volumes:
       - /home/ubuntu/configs/fs-config-test.json:/usr/share/app/secrets/all-verticles-configs/config-dev.json
@@ -14,8 +14,9 @@ services:
       - ./example-configs/:/usr/share/app/example-configs
       - ./src/:/usr/share/app/src
       - ${WORKSPACE}:/tmp/test
-      - $PWD:$PWD -w $PWD 
+      - $PWD:$PWD -w $PWD
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./iudx-pmd-ruleset.xml:/usr/share/app/iudx-pmd-ruleset.xml
     command: bash -c "docker/runTests.sh"
     network_mode: host
 
@@ -36,7 +37,7 @@ services:
 
   zookeeper:
     image: zookeeper:latest
-    expose: 
+    expose:
       - "2181"
     networks:
       - fs-net

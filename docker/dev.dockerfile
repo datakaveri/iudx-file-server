@@ -23,6 +23,7 @@ WORKDIR /usr/share/app
 
 # Copying openapi docs 
 COPY docs docs
+COPY iudx-pmd-ruleset.xml iudx-pmd-ruleset.xml
 
 # Copying dev fatjar from builder stage to final image
 COPY --from=builder /usr/share/app/target/${JAR} ./fatjar.jar
