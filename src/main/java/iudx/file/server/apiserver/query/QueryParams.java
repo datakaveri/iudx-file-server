@@ -69,20 +69,116 @@ public class QueryParams {
     super();
   }
 
-  public void setSize(Integer size) {
-    this.size = size;
-  }
-
-  public void setFrom(Integer from) {
-    this.from = from;
+  public String getId() {
+    return id;
   }
 
   public void setId(String id) {
     this.id = id;
   }
 
+  public String getTextQuery() {
+    return textQuery;
+  }
+
   public void setTextQuery(String textQuery) {
     this.textQuery = textQuery;
+  }
+
+  public String getMaxDistance() {
+    return maxDistance;
+  }
+
+  public void setMaxDistance(String maxDistance) {
+    this.maxDistance = maxDistance;
+  }
+
+  public String getGeometry() {
+    return geometry;
+  }
+
+  public void setGeometry(String geometry) {
+    this.geometry = geometry;
+  }
+
+  public String getCoordinates() {
+    return coordinates;
+  }
+
+  public void setCoordinates(String coordinates) {
+    this.coordinates = coordinates;
+  }
+
+  public String getGeoProperty() {
+    return geoProperty;
+  }
+
+  public void setGeoProperty(String geoProperty) {
+    this.geoProperty = geoProperty;
+  }
+
+  public String getTemporalRelation() {
+    return temporalRelation;
+  }
+
+  public void setTemporalRelation(String temporalRelation) {
+    this.temporalRelation = temporalRelation;
+  }
+
+  public String getStartTime() {
+    return startTime;
+  }
+
+  public void setStartTime(String startTime) {
+    this.startTime = startTime;
+  }
+
+  public String getEndTime() {
+    return endTime;
+  }
+
+  public void setEndTime(String endTime) {
+    this.endTime = endTime;
+  }
+
+  public Double getLat() {
+    return lat;
+  }
+
+  public void setLat(Double lat) {
+    this.lat = lat;
+  }
+
+  public Double getLon() {
+    return lon;
+  }
+
+  public void setLon(Double lon) {
+    this.lon = lon;
+  }
+
+  public Double getRadius() {
+    return radius;
+  }
+
+  public void setRadius(Double radius) {
+    this.radius = radius;
+  }
+
+  public Integer getSize() {
+    return size;
+  }
+
+  public void setSize(Integer size) {
+    this.size = size;
+  }
+
+  public Integer getFrom() {
+    return from;
+  }
+
+  public void setFrom(Integer from) {
+    this.from = from;
   }
 
   /**
@@ -97,46 +193,6 @@ public class QueryParams {
       this.setMaxDistance(distance[1]);
     }
     this.geoRel = relation[0];
-  }
-
-  public void setMaxDistance(String maxDistance) {
-    this.maxDistance = maxDistance;
-  }
-
-  public void setStartTime(String startTime) {
-    this.startTime = startTime;
-  }
-
-  public void setEndTime(String endTime) {
-    this.endTime = endTime;
-  }
-
-  public void setLat(Double lat) {
-    this.lat = lat;
-  }
-
-  public void setLon(Double lon) {
-    this.lon = lon;
-  }
-
-  public void setRadius(Double radius) {
-    this.radius = radius;
-  }
-
-  public void setGeometry(String geometry) {
-    this.geometry = geometry.toLowerCase();
-  }
-
-  public void setCoordinates(String coordinates) {
-    this.coordinates = coordinates;
-  }
-
-  public void setGeoProperty(String geoProperty) {
-    this.geoProperty = geoProperty;
-  }
-
-  public void setTemporalRelation(String temporalRelation) {
-    this.temporalRelation = temporalRelation;
   }
 
   @JsonIgnore
