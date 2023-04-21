@@ -28,7 +28,7 @@ pipeline {
     stage('Unit Tests and CodeCoverage Test'){
       steps{
         script{
-          sh 'docker-compose -f docker-compose.test.yml up test'
+          sh 'docker compose -f docker-compose.test.yml up test'
         }
         xunit (
           thresholds: [ skipped(failureThreshold: '1'), failed(failureThreshold: '0') ],
@@ -39,7 +39,7 @@ pipeline {
       post{
         failure{
           script{
-            sh 'docker-compose -f docker-compose.test.yml down --remove-orphans'
+            sh 'docker compose -f docker-compose.test.yml down --remove-orphans'
           }
           error "Test failure. Stopping pipeline execution!"
         }
@@ -55,8 +55,15 @@ pipeline {
       steps{
         script{
             sh 'scp src/test/resources/iudx-file-server-api.Release-v4.5.0.postman_collection.json jenkins@jenkins-master:/var/lib/jenkins/iudx/fs/Newman/'
-            sh 'docker-compose -f docker-compose.test.yml up -d integTest'
+            sh 'docker compose -f docker-compose.test.yml up -d integTest'
             sh 'sleep 45'
+        }
+      }
+      post{
+        failure{
+          script{
+            sh 'docker compose -f docker-compose.test.yml down --remove-orphans'
+          }
         }
       }
     }
@@ -86,7 +93,7 @@ pipeline {
         }
         cleanup{
           script{
-            sh 'docker-compose -f docker-compose.test.yml down --remove-orphans'
+            sh 'docker compose -f docker-compose.test.yml down --remove-orphans'
           } 
         }
       }
