@@ -330,7 +330,6 @@
                     </dependency>
                 </dependencies>
                 <configuration>
-                        <exclude>**/*VertxEBProxy.class</exclude>
                     <!-- <violationSeverity>warning</violationSeverity> -->
                     <consoleOutput>true</consoleOutput>
                     <encoding>UTF-8</encoding>
