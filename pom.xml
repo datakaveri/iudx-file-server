@@ -328,7 +328,7 @@
                     <!-- <violationSeverity>warning</violationSeverity> -->
                     <consoleOutput>true</consoleOutput>
                     <encoding>UTF-8</encoding>
-                    <configLocation>google_checks.xml</configLocation>
+                    <configLocation>./google_checks.xml</configLocation>
                     <sourceDirectories>
                         <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
                     </sourceDirectories>
