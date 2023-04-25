@@ -329,9 +329,9 @@
                     <consoleOutput>true</consoleOutput>
                     <encoding>UTF-8</encoding>
                     <configLocation>google_checks.xml</configLocation>
-                    <module name="LineLength">
-                        <property name="max" value="120" />
-                    </module>
+                    <sourceDirectories>
+                        <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+                    </sourceDirectories>
                 </configuration>
             </plugin>
             <plugin>
