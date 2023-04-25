@@ -25,7 +25,6 @@ WORKDIR /usr/share/app
 COPY docs docs
 COPY iudx-pmd-ruleset.xml iudx-pmd-ruleset.xml
 COPY google_checks.xml google_checks.xml
-COPY checkstyle-suppressions.xml checkstyle-suppressions.xml
 
 # Copying dev fatjar from builder stage to final image
 COPY --from=builder /usr/share/app/target/${JAR} ./fatjar.jar

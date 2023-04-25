@@ -18,7 +18,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./iudx-pmd-ruleset.xml:/usr/share/app/iudx-pmd-ruleset.xml
       - ./google_checks.xml:/usr/share/app/google_checks.xml
-      - ./checkstyle-suppressions.xml:/usr/share/app/gcheckstyle-suppressions.xml
     command: bash -c "docker/runTests.sh"
     network_mode: host
 

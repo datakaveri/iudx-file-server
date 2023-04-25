@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>datakaveri.org</groupId>
     <artifactId>iudx.file.server</artifactId>
@@ -11,7 +12,7 @@
         <hazelcast.version>4.0.2</hazelcast.version>
         <micrometer.version>1.9.2</micrometer.version>
         <curator.version>5.3.0</curator.version>
-      <!--  <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>-->
+        <!--  <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>-->
         <junit-jupiter-api.version>5.8.2</junit-jupiter-api.version>
         <junit-jupiter-params.version>5.8.2</junit-jupiter-params.version>
         <junit-jupiter-engine.version>5.8.2</junit-jupiter-engine.version>
@@ -25,7 +26,7 @@
         <!--<elasticsearch-rest-high-level-client.version>7.12.1</elasticsearch-rest-high-level-client.version>-->
         <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
         <!--<checkstyle.version>10.3.1</checkstyle.version>-->
-        <checkstyle.version>10.7.0</checkstyle.version>
+        <checkstyle.version>10.5.0</checkstyle.version>
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
         <maven-javadoc-plugin.version>3.4.0</maven-javadoc-plugin.version>
         <exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
@@ -207,12 +208,6 @@
             <artifactId>elasticsearch-rest-client</artifactId>
             <version>${elasticsearch-rest-client.version}</version>
         </dependency>
-        <!--<dependency>
-            <groupId>org.elasticsearch.client</groupId>
-            <artifactId>elasticsearch-rest-high-level-client</artifactId>
-            <version>${elasticsearch-rest-high-level-client.version}</version>
-        </dependency>-->
-        <!--HLC transition dependency -->
         <dependency>
             <groupId>co.elastic.clients</groupId>
             <artifactId>elasticsearch-java</artifactId>
@@ -334,10 +329,9 @@
                     <consoleOutput>true</consoleOutput>
                     <encoding>UTF-8</encoding>
                     <configLocation>google_checks.xml</configLocation>
-                    <suppressionsLocation>checkstyle-suppressions.xml</suppressionsLocation>
-                    <module name="LineLength">
-                        <property name="max" value="120" />
-                    </module>
+                    <sourceDirectories>
+                        <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+                    </sourceDirectories>
                 </configuration>
             </plugin>
             <plugin>
@@ -365,21 +359,23 @@
                                 </filter>
                             </filters>
                             <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
                                         <Main-Class>${exec.mainClassDev}</Main-Class>
                                     </manifestEntries>
                                 </transformer>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/services/io.vertx.core.spi.VerticleFactory
-									</resource>
+                                    </resource>
                                     <resource>META-INF/services/io.vertx.core.spi.VertxServiceProvider
-									</resource>
+                                    </resource>
                                 </transformer>
                             </transformers>
                             <artifactSet></artifactSet>
                             <outputFile>${project.build.directory}/${project.artifactId}-dev-${project.version}-fat.jar
-							</outputFile>
+                            </outputFile>
                         </configuration>
                     </execution>
                     <execution>
@@ -402,21 +398,24 @@
                                 </filter>
                             </filters>
                             <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
                                         <Main-Class>${exec.mainClass}</Main-Class>
                                     </manifestEntries>
                                 </transformer>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/services/io.vertx.core.spi.VerticleFactory
-									</resource>
+                                    </resource>
                                     <resource>META-INF/services/io.vertx.core.spi.VertxServiceProvider
-									</resource>
+                                    </resource>
                                 </transformer>
                             </transformers>
                             <artifactSet></artifactSet>
-                            <outputFile>${project.build.directory}/${project.artifactId}-cluster-${project.version}-fat.jar
-							</outputFile>
+                            <outputFile>
+                                ${project.build.directory}/${project.artifactId}-cluster-${project.version}-fat.jar
+                            </outputFile>
                         </configuration>
                     </execution>
                 </executions>
@@ -438,11 +437,11 @@
                     <execution>
                         <id>file-server</id>
                         <configuration>
-                            <mainClass>iudx.file.server.deploy.DeployerDev </mainClass>
+                            <mainClass>iudx.file.server.deploy.DeployerDev</mainClass>
                             <arguments>
                                 <argument>-jar</argument>
                                 <argument>{project.build.directory}/${project.artifactId}-dev-${project.version}-fat.jar
-								</argument>
+                                </argument>
                                 <argument>-c</argument>
                                 <argument>./secrets/all-verticles-configs/${config-dev.file}</argument>
                             </arguments>
@@ -495,7 +494,6 @@
                     </reportSet>
                 </reportSets>
             </plugin>
-
         </plugins>
     </reporting>
 </project>
