@@ -21,7 +21,7 @@ public class DxRuntimeExceptionTest {
         int statusCode = 400;
         ResponseUrn responseUrn = ResponseUrn.INVALID_GEO_PARAM;
         DxRuntimeException obj = new DxRuntimeException(statusCode,responseUrn);
-        assertEquals(400,obj.getStatusCode());
+        assertEquals(400,obj.getSTatusCode());
         assertEquals(ResponseUrn.INVALID_GEO_PARAM, obj.getUrn());
         assertEquals(ResponseUrn.INVALID_GEO_PARAM.getMessage(), obj.getMessage());
         vertxTestContext.completeNow();
@@ -35,7 +35,7 @@ public class DxRuntimeExceptionTest {
         ResponseUrn responseUrn = ResponseUrn.INVALID_OPERATION;
         RuntimeException runtimeException = new RuntimeException("failed");
         DxRuntimeException obj = new DxRuntimeException(statusCode, responseUrn, runtimeException);
-        assertEquals(400, obj.getStatusCode());
+        assertEquals(400, obj.getSTatusCode());
         assertEquals(ResponseUrn.INVALID_OPERATION,obj.getUrn());
         assertEquals(ResponseUrn.INVALID_OPERATION.getMessage(),obj.getMessage());
         vertxTestContext.completeNow();
