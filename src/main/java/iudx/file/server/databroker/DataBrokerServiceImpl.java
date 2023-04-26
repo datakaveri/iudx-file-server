@@ -1,7 +1,6 @@
 package iudx.file.server.databroker;
 
-import static iudx.file.server.auditing.util.Constants.FAILED;
-import static iudx.file.server.auditing.util.Constants.SUCCESS;
+import static iudx.file.server.auditing.util.Constants.*;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;

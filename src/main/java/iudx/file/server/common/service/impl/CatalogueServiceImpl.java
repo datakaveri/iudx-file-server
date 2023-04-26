@@ -1,7 +1,6 @@
 package iudx.file.server.common.service.impl;
 
-import static iudx.file.server.common.Constants.CACHE_TIMEOUT_AMOUNT;
-import static iudx.file.server.common.Constants.CAT_ITEM_PATH;
+import static iudx.file.server.common.Constants.*;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;

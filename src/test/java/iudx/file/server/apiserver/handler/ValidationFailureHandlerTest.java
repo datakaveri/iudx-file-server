@@ -45,7 +45,7 @@ public class ValidationFailureHandlerTest {
         when(event.failure()).thenReturn(throwableMock);
         when(throwableMock.getUrn()).thenReturn(responseUrnMock);
         when(responseUrnMock.getUrn()).thenReturn("dummy urn message");
-        when(throwableMock.getSTatusCode()).thenReturn(400);
+        when(throwableMock.getStatusCode()).thenReturn(400);
         when(event.response()).thenReturn(httpServerResponseMock);
         when(httpServerResponseMock.putHeader(anyString(), anyString())).thenReturn(httpServerResponseMock);
         when(httpServerResponseMock.setStatusCode(anyInt())).thenReturn(httpServerResponseMock);
@@ -53,7 +53,7 @@ public class ValidationFailureHandlerTest {
         validationFailureHandler.handle(event);
 
         DxRuntimeException dxRuntimeException = (DxRuntimeException) event.failure();
-        assertEquals(400, dxRuntimeException.getSTatusCode());
+        assertEquals(400, dxRuntimeException.getStatusCode());
         vertxTestContext.completeNow();
     }
 

@@ -1,7 +1,6 @@
 package iudx.file.server.cache;
 
-import static iudx.file.server.common.Constants.CACHE_SERVICE_ADDRESS;
-import static iudx.file.server.common.Constants.PG_SERVICE_ADDRESS;
+import static iudx.file.server.common.Constants.*;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;

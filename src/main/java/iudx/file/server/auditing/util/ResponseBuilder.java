@@ -1,11 +1,7 @@
 package iudx.file.server.auditing.util;
 
-import static iudx.file.server.auditing.util.Constants.DETAIL;
+import static iudx.file.server.auditing.util.Constants.*;
 import static iudx.file.server.auditing.util.Constants.ERROR_TYPE;
-import static iudx.file.server.auditing.util.Constants.FAILED;
-import static iudx.file.server.auditing.util.Constants.RESULTS;
-import static iudx.file.server.auditing.util.Constants.SUCCESS;
-import static iudx.file.server.auditing.util.Constants.TITLE;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;

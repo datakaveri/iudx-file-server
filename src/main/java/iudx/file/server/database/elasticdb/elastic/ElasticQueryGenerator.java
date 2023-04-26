@@ -1,7 +1,6 @@
 package iudx.file.server.database.elasticdb.elastic;
 
-import static iudx.file.server.database.elasticdb.utilities.Constants.FILE_ID;
-import static iudx.file.server.database.elasticdb.utilities.Constants.ID;
+import static iudx.file.server.database.elasticdb.utilities.Constants.*;
 
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.query_dsl.*;

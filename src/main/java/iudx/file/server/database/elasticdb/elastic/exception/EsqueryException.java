@@ -1,7 +1,6 @@
 package iudx.file.server.database.elasticdb.elastic.exception;
 
-import static iudx.file.server.auditing.util.Constants.DETAIL;
-import static iudx.file.server.auditing.util.Constants.TITLE;
+import static iudx.file.server.auditing.util.Constants.*;
 import static iudx.file.server.database.elasticdb.utilities.Constants.STATUS;
 import static iudx.file.server.database.elasticdb.utilities.Constants.TYPE_KEY;
 

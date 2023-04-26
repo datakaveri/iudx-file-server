@@ -1,7 +1,6 @@
 package iudx.file.server.apiserver.handlers;
 
-import static iudx.file.server.apiserver.utilities.Constants.APPLICATION_JSON;
-import static iudx.file.server.apiserver.utilities.Constants.CONTENT_TYPE;
+import static iudx.file.server.apiserver.utilities.Constants.*;
 
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;

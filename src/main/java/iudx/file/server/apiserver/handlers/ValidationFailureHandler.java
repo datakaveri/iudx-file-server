@@ -24,7 +24,7 @@ public class ValidationFailureHandler implements Handler<RoutingContext> {
     if (failure instanceof DxRuntimeException) {
       DxRuntimeException exception = (DxRuntimeException) failure;
       LOGGER.error(exception.getUrn().getUrn() + " : " + exception.getMessage());
-      HttpStatusCode code = HttpStatusCode.getByValue(exception.getSTatusCode());
+      HttpStatusCode code = HttpStatusCode.getByValue(exception.getStatusCode());
 
       JsonObject response =
           new RestResponse.Builder()
@@ -37,7 +37,7 @@ public class ValidationFailureHandler implements Handler<RoutingContext> {
       routingContext
           .response()
           .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-          .setStatusCode(exception.getSTatusCode())
+          .setStatusCode(exception.getStatusCode())
           .end(response.toString());
     }
 
