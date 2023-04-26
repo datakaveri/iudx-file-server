@@ -1,47 +1,36 @@
 package iudx.file.server.authenticator.authorization;
 
-
 import static iudx.file.server.authenticator.authorization.Method.DELETE;
 import static iudx.file.server.authenticator.authorization.Method.POST;
 
+import iudx.file.server.authenticator.utilities.JwtData;
+import iudx.file.server.common.Api;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import iudx.file.server.common.Api;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import io.vertx.core.json.JsonArray;
-import iudx.file.server.authenticator.utilities.JwtData;
-
 public class ProviderAuthStrategy implements AuthorizationStrategy {
 
-  private static final Logger LOGGER = LogManager.getLogger(ProviderAuthStrategy.class);
-
-  private final Api api;
-  private volatile static ProviderAuthStrategy instance;
   static Map<String, List<AuthorizationRequest>> providerAuthorizationRules = new HashMap<>();
-  private ProviderAuthStrategy(Api api)
-  {
-    this.api = api;
+  private static volatile ProviderAuthStrategy instance;
+
+  private ProviderAuthStrategy(Api api) {
     buildPermissions(api);
   }
-  public static ProviderAuthStrategy getInstance(Api apis)
-  {
-    if(instance == null)
-    {
-      synchronized (ProviderAuthStrategy.class)
-      {
-        if(instance == null)
-        {
+
+  public static ProviderAuthStrategy getInstance(Api apis) {
+    if (instance == null) {
+      synchronized (ProviderAuthStrategy.class) {
+        if (instance == null) {
           instance = new ProviderAuthStrategy(apis);
         }
       }
     }
     return instance;
-  }  private void buildPermissions(Api api) {
+  }
+
+  private void buildPermissions(Api api) {
 
     // file access list/rules
     List<AuthorizationRequest> fileAccessList = new ArrayList<>();
@@ -54,5 +43,4 @@ public class ProviderAuthStrategy implements AuthorizationStrategy {
   public boolean isAuthorized(AuthorizationRequest authRequest, JwtData jwtData) {
     return true;
   }
-
 }

@@ -1,17 +1,22 @@
 package iudx.file.server.auditing.util;
 
-import io.vertx.core.json.JsonObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import java.util.UUID;
-
 import static iudx.file.server.auditing.util.Constants.*;
 
-public class QueryBuilder {
-  private static final Logger LOGGER = LogManager.getLogger(QueryBuilder.class);
+import io.vertx.core.json.JsonObject;
+import java.util.UUID;
 
-  public JsonObject buildWriteQueryForRMQ(JsonObject request) {
+/**
+ * QueryBuilder.
+ *
+ * <h1>QueryBuilder</h1>
+ */
+public class QueryBuilder {
+  /**
+   * buildWriteQueryForRmq.
+   *
+   * @param request json data
+   */
+  public JsonObject buildWriteQueryForRmq(JsonObject request) {
 
     String primaryKey = UUID.randomUUID().toString().replace("-", "");
 

@@ -1,5 +1,10 @@
 package iudx.file.server.apiserver.utilities;
 
+/**
+ * HttpStatusCode.
+ *
+ * <h1>HttpStatusCode</h1>
+ */
 public enum HttpStatusCode {
 
   // 1xx: Informational
@@ -20,7 +25,8 @@ public enum HttpStatusCode {
   NOT_FOUND(404, "Not Found", "urn:dx:rs:resourceNotFound"),
   METHOD_NOT_ALLOWED(405, "Method Not Allowed", "urn:dx:rs:methodNotAllowed"),
   NOT_ACCEPTABLE(406, "Not Acceptable", "urn:dx:rs:notAcceptable"),
-  PROXY_AUTHENTICATION_REQUIRED(407, "Proxy Authentication Required", "urn:dx:rs:proxyAuthenticationRequired"),
+  PROXY_AUTHENTICATION_REQUIRED(
+      407, "Proxy Authentication Required", "urn:dx:rs:proxyAuthenticationRequired"),
   REQUEST_TIMEOUT(408, "Request Timeout", "urn:dx:rs:requestTimeout"),
   CONFLICT(409, "Conflict", "urn:dx:rs:conflict"),
   GONE(410, "Gone", "urn:dx:rs:gone"),
@@ -39,8 +45,10 @@ public enum HttpStatusCode {
   UPGRADE_REQUIRED(426, "Upgrade Required", "urn:dx:rs:upgradeRequired"),
   PRECONDITION_REQUIRED(428, "Precondition Required", "urn:dx:rs:preconditionRequired"),
   TOO_MANY_REQUESTS(429, "Too Many Requests", "urn:dx:rs:tooManyRequests"),
-  REQUEST_HEADER_FIELDS_TOO_LARGE(431, "Request Header Fields Too Large", "urn:dx:rs:requestHeaderFieldsTooLarge"),
-  UNAVAILABLE_FOR_LEGAL_REASONS(451, "Unavailable For Legal Reasons", "urn:dx:rs:unavailableForLegalReasons"),
+  REQUEST_HEADER_FIELDS_TOO_LARGE(
+      431, "Request Header Fields Too Large", "urn:dx:rs:requestHeaderFieldsTooLarge"),
+  UNAVAILABLE_FOR_LEGAL_REASONS(
+      451, "Unavailable For Legal Reasons", "urn:dx:rs:unavailableForLegalReasons"),
 
   // 5xx: Server Error
   INTERNAL_SERVER_ERROR(500, "Internal Server Error", "urn:dx:rs:internalServerError"),
@@ -48,12 +56,14 @@ public enum HttpStatusCode {
   BAD_GATEWAY(502, "Bad Gateway", "urn:dx:rs:badGateway"),
   SERVICE_UNAVAILABLE(503, "Service Unavailable", "urn:dx:rs:serviceUnavailable"),
   GATEWAY_TIMEOUT(504, "Gateway Timeout", "urn:dx:rs:gatewayTimeout"),
-  HTTP_VERSION_NOT_SUPPORTED(505, "HTTP Version Not Supported", "urn:dx:rs:httpVersionNotSupported"),
+  HTTP_VERSION_NOT_SUPPORTED(
+      505, "HTTP Version Not Supported", "urn:dx:rs:httpVersionNotSupported"),
   VARIANT_ALSO_NEGOTIATES(506, "Variant Also Negotiates", "urn:dx:rs:variantAlsoNegotiates"),
   INSUFFICIENT_STORAGE(507, "Insufficient Storage", "urn:dx:rs:insufficientStorage"),
   LOOP_DETECTED(508, "Loop Detected", "urn:dx:rs:loopDetected"),
   NOT_EXTENDED(510, "Not Extended", "urn:dx:rs:notExtended"),
-  NETWORK_AUTHENTICATION_REQUIRED(511, "Network Authentication Required", "urn:dx:rs:networkAuthenticationRequired");
+  NETWORK_AUTHENTICATION_REQUIRED(
+      511, "Network Authentication Required", "urn:dx:rs:networkAuthenticationRequired");
 
   private final int value;
   private final String description;
@@ -63,6 +73,16 @@ public enum HttpStatusCode {
     this.value = value;
     this.description = description;
     this.urn = urn;
+  }
+  /** HttpStatusCode . */
+
+  public static HttpStatusCode getByValue(int value) {
+    for (HttpStatusCode status : values()) {
+      if (status.value == value) {
+        return status;
+      }
+    }
+    throw new IllegalArgumentException("Invalid status code: " + value);
   }
 
   public int getValue() {
@@ -81,13 +101,4 @@ public enum HttpStatusCode {
   public String toString() {
     return value + " " + description;
   }
-
-  public static HttpStatusCode getByValue(int value) {
-    for (HttpStatusCode status : values()) {
-      if (status.value == value)
-        return status;
-    }
-    throw new IllegalArgumentException("Invalid status code: " + value);
-  }
 }
-

@@ -1,6 +1,8 @@
 package iudx.file.server.apiserver.exceptions;
 
 import iudx.file.server.apiserver.response.ResponseUrn;
+
+/** handle the runtime exceptions. */
 public class DxRuntimeException extends RuntimeException {
 
   private static final long serialVersionUID = 1L; // TODO: ??
@@ -8,6 +10,7 @@ public class DxRuntimeException extends RuntimeException {
   private final int statusCode;
   private final ResponseUrn urn;
   private final String message;
+  /** handle the runtime exceptions. */
 
   public DxRuntimeException(final int statusCode, final ResponseUrn urn) {
     super();
@@ -15,6 +18,7 @@ public class DxRuntimeException extends RuntimeException {
     this.urn = urn;
     this.message = urn.getMessage();
   }
+  /** handle the runtime exceptions. */
 
   public DxRuntimeException(final int statusCode, final ResponseUrn urn, final String message) {
     super(message);
@@ -22,6 +26,7 @@ public class DxRuntimeException extends RuntimeException {
     this.urn = urn;
     this.message = message;
   }
+  /** handle the runtime exceptions. */
 
   public DxRuntimeException(final int statusCode, final ResponseUrn urn, final Throwable cause) {
     super(cause);

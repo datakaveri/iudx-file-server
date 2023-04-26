@@ -1,18 +1,31 @@
 package iudx.file.server.apiserver.validations;
 
-
 import static iudx.file.server.apiserver.utilities.Constants.*;
+
+import io.vertx.core.MultiMap;
+import iudx.file.server.apiserver.validations.types.*;
 import java.util.ArrayList;
 import java.util.List;
-
-import iudx.file.server.apiserver.validations.types.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import io.vertx.core.MultiMap;
 
+/**
+ * ValidationHandlerFactory.
+ *
+ * <h1>ValidationHandlerFactory</h1>
+ *
+ * <p>ValidationHandlerFactory filter the nature of validation.
+ */
 public class ValidationHandlerFactory {
 
   private static final Logger LOGGER = LogManager.getLogger(ValidationHandlerFactory.class);
+  /**
+   * it manages the type of validation to be performed.
+   *
+   * @param requestType iudx requestType
+   * @param parameters recieved parameters
+   * @param headers recieved headers
+   */
 
   public List<Validator> create(RequestType requestType, MultiMap parameters, MultiMap headers) {
     LOGGER.debug("type :" + requestType);
@@ -28,13 +41,13 @@ public class ValidationHandlerFactory {
         validator = getDeleteRequestValidations(parameters, headers);
         break;
       case TEMPORAL_QUERY:
-        validator = getTemporalQueryRequestValidator(parameters, headers);
+        validator = getTemporalQueryRequestValidator(parameters);
         break;
       case LIST_QUERY:
-        validator = getListQueryRequestValidator(parameters, headers);
+        validator = getListQueryRequestValidator(parameters);
         break;
       case GEO_QUERY:
-        validator = getGeoQueryRequestValidator(parameters, headers);
+        validator = getGeoQueryRequestValidator(parameters);
         break;
       default:
         break;
@@ -42,12 +55,11 @@ public class ValidationHandlerFactory {
     return validator;
   }
 
-
-  private List<Validator> getUploadRequestValidations(final MultiMap parameters,
-      final MultiMap headers) {
+  private List<Validator> getUploadRequestValidations(
+      final MultiMap parameters, final MultiMap headers) {
     List<Validator> validators = new ArrayList<>();
 
-    validators.add(new IDTypeValidator(parameters.get(PARAM_ID), true));
+    validators.add(new IdTypeValidator(parameters.get(PARAM_ID), true));
     validators.add(new DateTypeValidator(parameters.get(PARAM_START_TIME), false));
     validators.add(new DateTypeValidator(parameters.get(PARAM_END_TIME), false));
     validators.add(new SampleTypeValidator(parameters.get(PARAM_SAMPLE), false));
@@ -58,14 +70,17 @@ public class ValidationHandlerFactory {
     validators.add(new CoordinatesTypeValidator(parameters.get(PARAM_COORDINATES), false));
 
     // external storage
-    validators.add(new StorageTypeValidator(headers.get(HEADER_EXTERNAL_STORAGE),false));
-    validators.add(new StorageURLValidator(parameters.get(PARAM_FILE_URL), Boolean.parseBoolean(headers.get(HEADER_EXTERNAL_STORAGE))));
+    validators.add(new StorageTypeValidator(headers.get(HEADER_EXTERNAL_STORAGE), false));
+    validators.add(
+        new StorageUrlValidator(
+            parameters.get(PARAM_FILE_URL),
+            Boolean.parseBoolean(headers.get(HEADER_EXTERNAL_STORAGE))));
 
     return validators;
   }
 
-  private List<Validator> getDownloadRequestValidations(final MultiMap parameters,
-      final MultiMap headers) {
+  private List<Validator> getDownloadRequestValidations(
+      final MultiMap parameters, final MultiMap headers) {
     List<Validator> validators = new ArrayList<>();
 
     validators.add(new FileIdTypeValidator(parameters.get(PARAM_FILE_ID), true));
@@ -74,26 +89,23 @@ public class ValidationHandlerFactory {
     return validators;
   }
 
-
-  private List<Validator> getDeleteRequestValidations(final MultiMap parameters,
-      final MultiMap headers) {
+  private List<Validator> getDeleteRequestValidations(
+      final MultiMap parameters, final MultiMap headers) {
     List<Validator> validators = new ArrayList<>();
 
     validators.add(new FileIdTypeValidator(parameters.get(PARAM_FILE_ID), true));
     validators.add(new TokenTypeValidator(headers.get(HEADER_TOKEN), true));
 
     // external storage
-    validators.add(new StorageTypeValidator(headers.get(HEADER_EXTERNAL_STORAGE),false));
+    validators.add(new StorageTypeValidator(headers.get(HEADER_EXTERNAL_STORAGE), false));
 
     return validators;
   }
 
-
-  private List<Validator> getTemporalQueryRequestValidator(final MultiMap parameters,
-      final MultiMap headers) {
+  private List<Validator> getTemporalQueryRequestValidator(final MultiMap parameters) {
     List<Validator> validators = new ArrayList<>();
     // temporal fields(mandatory)
-    validators.add(new IDTypeValidator(parameters.get(PARAM_ID), true));
+    validators.add(new IdTypeValidator(parameters.get(PARAM_ID), true));
     validators.add(new TemporalRelTypeValidator(parameters.get(PARAM_TIME_REL), true));
     validators.add(new DateTypeValidator(parameters.get("time"), true));
     validators.add(new DateTypeValidator(parameters.get(PARAM_END_TIME), false));
@@ -105,20 +117,18 @@ public class ValidationHandlerFactory {
     return validators;
   }
 
-  private List<Validator> getListQueryRequestValidator(final MultiMap parameters,
-      final MultiMap headers) {
+  private List<Validator> getListQueryRequestValidator(final MultiMap parameters) {
     List<Validator> validators = new ArrayList<>();
 
-    validators.add(new IDTypeValidator(parameters.get(PARAM_ID), true));
+    validators.add(new IdTypeValidator(parameters.get(PARAM_ID), true));
 
     return validators;
   }
 
-  private List<Validator> getGeoQueryRequestValidator(final MultiMap parameters,
-      final MultiMap headers) {
+  private List<Validator> getGeoQueryRequestValidator(final MultiMap parameters) {
     List<Validator> validators = new ArrayList<>();
 
-    validators.add(new IDTypeValidator(parameters.get(PARAM_ID), true));
+    validators.add(new IdTypeValidator(parameters.get(PARAM_ID), true));
     validators.add(new GeoRelationTypeValidator(parameters.get(PARAM_GEOREL), true));
     validators.add(new GeomTypeValidator(parameters.get(PARAM_GEOMETRY), true));
     validators.add(new CoordinatesTypeValidator(parameters.get(PARAM_COORDINATES), true));

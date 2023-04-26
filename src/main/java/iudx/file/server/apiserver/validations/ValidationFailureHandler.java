@@ -1,14 +1,15 @@
 package iudx.file.server.apiserver.validations;
 
-import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.validation.BadRequestException;
+import org.apache.http.HttpStatus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-// TODO : make usable after looking for Exception propogation in vertx
+/** handle Validation FailureHandler exceptions. */
+//TODO : make usable after looking for Exception propogation in vertx
 public class ValidationFailureHandler implements Handler<RoutingContext> {
 
   private static final Logger LOGGER = LogManager.getLogger(ValidationFailureHandler.class);
@@ -23,13 +24,13 @@ public class ValidationFailureHandler implements Handler<RoutingContext> {
       // String failedParameter=((BadRequestException) failure);
       failure.printStackTrace();
       LOGGER.error("error :" + failure.getLocalizedMessage());
-      context.response()
+      context
+          .response()
           .putHeader("content-type", "application/json")
           .setStatusCode(HttpStatus.SC_BAD_REQUEST)
           .end(validationFailureReponse().toString());
     }
     context.next();
-    return;
   }
 
   private JsonObject validationFailureReponse() {

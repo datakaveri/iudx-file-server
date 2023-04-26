@@ -1,5 +1,7 @@
 package iudx.file.server.database.elasticdb;
 
+import static iudx.file.server.database.elasticdb.utilities.Constants.*;
+
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -8,19 +10,16 @@ import iudx.file.server.apiserver.response.ResponseUrn;
 import iudx.file.server.common.QueryType;
 import iudx.file.server.database.elasticdb.elastic.ElasticClient;
 import iudx.file.server.database.elasticdb.elastic.ElasticQueryGenerator;
-import iudx.file.server.database.elasticdb.elastic.exception.ESQueryException;
+import iudx.file.server.database.elasticdb.elastic.exception.EsqueryException;
 import iudx.file.server.database.elasticdb.utilities.ResponseBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import static iudx.file.server.database.elasticdb.utilities.Constants.*;
 
 public class DatabaseServiceImpl implements DatabaseService {
 
   private static final Logger LOGGER = LogManager.getLogger(DatabaseServiceImpl.class);
   private final ElasticClient client;
   private final String fileMetadataIndex;
-  private ElasticQueryGenerator elasticQueryGenerator = new ElasticQueryGenerator();
 
   public DatabaseServiceImpl(JsonObject config) {
     this.fileMetadataIndex = config.getString("file-metadata-index");
@@ -38,9 +37,9 @@ public class DatabaseServiceImpl implements DatabaseService {
   @Override
   public Future<JsonObject> search(JsonObject apiQuery, QueryType type) {
     Promise<JsonObject> promise = Promise.promise();
-    if ((apiQuery == null || apiQuery.isEmpty()) || type == null) {
+    if (apiQuery == null || apiQuery.isEmpty() || type == null) {
       ResponseBuilder responseBuilder =
-          new ResponseBuilder(FAILED)
+          new ResponseBuilder()
               .setTypeAndTitle(400)
               .setMessage("invalid parameters passed to search.");
       promise.fail(responseBuilder.getResponse().toString());
@@ -96,11 +95,11 @@ public class DatabaseServiceImpl implements DatabaseService {
                 LOGGER.info("failed to query : " + failureHandler);
                 promise.fail(failureHandler.getMessage());
               });
-    } catch (ESQueryException ex) {
-      ResponseUrn exception_urn = ResponseUrn.BAD_REQUEST_URN;
-      promise.fail(new ESQueryException(exception_urn, ex.getMessage()).toString());
+    } catch (EsqueryException ex) {
+      ResponseUrn exceptionUrn = ResponseUrn.BAD_REQUEST_URN;
+      promise.fail(new EsqueryException(exceptionUrn, ex.getMessage()).toString());
     } catch (Exception ex) {
-      promise.fail(new ESQueryException("Exception occured executing query").toString());
+      promise.fail(new EsqueryException("Exception occured executing query").toString());
     }
 
     return promise.future();
@@ -113,9 +112,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     Promise<JsonObject> promise = Promise.promise();
     if (document == null || document.isEmpty()) {
       ResponseBuilder responseBuilder =
-          new ResponseBuilder(FAILED)
-              .setTypeAndTitle(400)
-              .setMessage("empty document passed to save.");
+          new ResponseBuilder().setTypeAndTitle(400).setMessage("empty document passed to save.");
       promise.fail(responseBuilder.getResponse().toString());
     }
     LOGGER.debug(fileMetadataIndex);
@@ -142,7 +139,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     Promise<JsonObject> promise = Promise.promise();
     if (id == null || id.isBlank()) {
       ResponseBuilder responseBuilder =
-          new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage("empty id passed to delete.");
+          new ResponseBuilder().setTypeAndTitle(400).setMessage("empty id passed to delete.");
       promise.fail(responseBuilder.getResponse().toString());
     }
     ElasticQueryGenerator queryGenerator = new ElasticQueryGenerator();
@@ -151,7 +148,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     LOGGER.debug("index : " + fileMetadataIndex);
     client
-        .deleteAsync(fileMetadataIndex, id, deleteQuery)
+        .deleteAsync(fileMetadataIndex, deleteQuery)
         .onComplete(
             deleteHandler -> {
               if (deleteHandler.succeeded()) {

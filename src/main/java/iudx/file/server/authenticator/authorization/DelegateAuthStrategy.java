@@ -1,45 +1,34 @@
 package iudx.file.server.authenticator.authorization;
 
-import static iudx.file.server.authenticator.authorization.Method.*;
+import static iudx.file.server.authenticator.authorization.Method.DELETE;
+import static iudx.file.server.authenticator.authorization.Method.POST;
 
+import iudx.file.server.authenticator.utilities.JwtData;
+import iudx.file.server.common.Api;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import iudx.file.server.common.Api;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import io.vertx.core.json.JsonArray;
-import iudx.file.server.authenticator.utilities.JwtData;
-
 public class DelegateAuthStrategy implements AuthorizationStrategy {
-
-  private static final Logger LOGGER = LogManager.getLogger(DelegateAuthStrategy.class);
-
-  private final Api api;
-  private volatile static DelegateAuthStrategy instance;
   static Map<String, List<AuthorizationRequest>> delegateAuthorizationRules = new HashMap<>();
-  private DelegateAuthStrategy(Api api)
-  {
-    this.api = api;
+  private static volatile DelegateAuthStrategy instance;
+
+  private DelegateAuthStrategy(Api api) {
     buildPermissions(api);
   }
-  public static DelegateAuthStrategy getInstance(Api apis)
-  {
-    if(instance == null)
-    {
-      synchronized (DelegateAuthStrategy.class)
-      {
-        if(instance == null)
-        {
+
+  public static DelegateAuthStrategy getInstance(Api apis) {
+    if (instance == null) {
+      synchronized (DelegateAuthStrategy.class) {
+        if (instance == null) {
           instance = new DelegateAuthStrategy(apis);
         }
       }
     }
     return instance;
   }
+
   private void buildPermissions(Api api) {
 
     // file access list/rules

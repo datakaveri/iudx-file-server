@@ -2,39 +2,31 @@ package iudx.file.server.authenticator.authorization;
 
 import static iudx.file.server.authenticator.authorization.Method.GET;
 
+import io.vertx.core.json.JsonArray;
+import iudx.file.server.authenticator.utilities.JwtData;
+import iudx.file.server.common.Api;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import iudx.file.server.common.Api;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import io.vertx.core.json.JsonArray;
-import iudx.file.server.authenticator.utilities.JwtData;
-import org.checkerframework.checker.units.qual.A;
 
 public class ConsumerAuthStrategy implements AuthorizationStrategy {
 
   private static final Logger LOGGER = LogManager.getLogger(ConsumerAuthStrategy.class);
 
   static Map<String, List<AuthorizationRequest>> consumerAuthorizationRules = new HashMap<>();
-  private final Api api;
-  private volatile static ConsumerAuthStrategy instance;
-  private ConsumerAuthStrategy(Api api)
-  {
-    this.api = api;
+  private static volatile ConsumerAuthStrategy instance;
+
+  private ConsumerAuthStrategy(Api api) {
     buildPermissions(api);
   }
-  public static ConsumerAuthStrategy getInstance(Api apis)
-  {
-    if(instance == null)
-    {
-      synchronized (ConsumerAuthStrategy.class)
-      {
-        if(instance == null)
-        {
+
+  public static ConsumerAuthStrategy getInstance(Api apis) {
+    if (instance == null) {
+      synchronized (ConsumerAuthStrategy.class) {
+        if (instance == null) {
           instance = new ConsumerAuthStrategy(apis);
         }
       }
@@ -51,9 +43,7 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
     fileAccessList.add(new AuthorizationRequest(GET, api.getListMetaData()));
     fileAccessList.add(new AuthorizationRequest(GET, api.getApiSpatial()));
     consumerAuthorizationRules.put("file", fileAccessList);
-
   }
-
 
   @Override
   public boolean isAuthorized(AuthorizationRequest authRequest, JwtData jwtData) {
@@ -72,5 +62,4 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
     }
     return result;
   }
-
 }

@@ -1,4 +1,5 @@
-@ModuleGen(groupPackage = "iudx.file.server.authenticator",
+@ModuleGen(
+    groupPackage = "iudx.file.server.authenticator",
     name = "iudx-file-server-authentication-service")
 package iudx.file.server.authenticator;
 

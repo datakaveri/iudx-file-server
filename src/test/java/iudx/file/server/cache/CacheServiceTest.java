@@ -24,7 +24,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import iudx.file.server.cache.cacheImpl.CacheType;
+import iudx.file.server.cache.cacheimpl.CacheType;
 import iudx.file.server.database.postgres.PostgresService;
 
 @Testcontainers

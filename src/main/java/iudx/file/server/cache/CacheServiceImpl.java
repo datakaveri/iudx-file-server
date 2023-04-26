@@ -1,15 +1,15 @@
 package iudx.file.server.cache;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
-import iudx.file.server.cache.cacheImpl.CacheType;
-import iudx.file.server.cache.cacheImpl.IudxCache;
-import iudx.file.server.cache.cacheImpl.RevokedClientCache;
+import iudx.file.server.cache.cacheimpl.CacheType;
+import iudx.file.server.cache.cacheimpl.IudxCache;
+import iudx.file.server.cache.cacheimpl.RevokedClientCache;
 import iudx.file.server.database.postgres.PostgresService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class CacheServiceImpl implements CacheService {
 
@@ -23,9 +23,7 @@ public class CacheServiceImpl implements CacheService {
     revokedClientCache = new RevokedClientCache(postgresService);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public CacheService get(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
     IudxCache cache = null;
@@ -53,13 +51,10 @@ public class CacheServiceImpl implements CacheService {
       handler.handle(Future.failedFuture("null key passed."));
     }
 
-
     return this;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public CacheService put(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
     LOGGER.debug("message received from for cache put operation");
@@ -85,9 +80,7 @@ public class CacheServiceImpl implements CacheService {
     return this;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public CacheService refresh(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
     LOGGER.debug("message received for cache refresh()");
@@ -120,15 +113,12 @@ public class CacheServiceImpl implements CacheService {
     CacheType cacheType = CacheType.valueOf(json.getString("type"));
     IudxCache cache = null;
     switch (cacheType) {
-      case REVOKED_CLIENT: {
+      case REVOKED_CLIENT:
         cache = revokedClientCache;
         break;
-      }
-      default: {
+      default:
         throw new IllegalArgumentException("No cache type specified");
-      }
     }
     return cache;
   }
-
 }

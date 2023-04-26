@@ -6,7 +6,6 @@ FROM maven:3-eclipse-temurin-11 as builder
 
 WORKDIR /usr/share/app
 COPY pom.xml .
-
 # Downloads all packages defined in pom.xml
 RUN mvn clean package
 COPY src src
@@ -25,6 +24,10 @@ WORKDIR /usr/share/app
 
 # Copying openapi docs 
 COPY docs docs
+COPY iudx-pmd-ruleset.xml iudx-pmd-ruleset.xml
+COPY google_checks.xml google_checks.xml
+
+
 
 # Copying dev fatjar from builder stage to final image
 COPY --from=builder /usr/share/app/target/${JAR} ./fatjar.jar

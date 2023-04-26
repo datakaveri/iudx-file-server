@@ -1,18 +1,17 @@
 package iudx.file.server.database.elasticdb.elastic;
 
+import static iudx.file.server.common.Constants.GEOM_POINT;
+import static iudx.file.server.database.elasticdb.utilities.Constants.*;
+
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.WrapperQuery;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
-
-import static iudx.file.server.common.Constants.GEOM_POINT;
-import static iudx.file.server.database.elasticdb.utilities.Constants.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class GeoQueryFiltersDecorator implements ElasticsearchQueryDecorator {
   private static final Logger LOGGER = LogManager.getLogger(GeoQueryFiltersDecorator.class);

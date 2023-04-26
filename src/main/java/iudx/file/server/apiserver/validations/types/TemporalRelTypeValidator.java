@@ -1,13 +1,19 @@
 package iudx.file.server.apiserver.validations.types;
 
-import java.util.Arrays;
-import java.util.List;
-
 import iudx.file.server.apiserver.exceptions.DxRuntimeException;
 import iudx.file.server.apiserver.response.ResponseUrn;
+import java.util.Arrays;
+import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * TemporalRelTypeValidator.
+ *
+ * <h1>TemporalRelTypeValidator</h1>
+ *
+ * <p>it validate temporal rel("after", "before", "during", "between")
+ */
 public class TemporalRelTypeValidator implements Validator {
 
   private static final Logger LOGGER = LogManager.getLogger(TemporalRelTypeValidator.class);
@@ -26,7 +32,10 @@ public class TemporalRelTypeValidator implements Validator {
   public boolean isValid() {
     LOGGER.debug("value : " + value + "required : " + required);
     if (required && (value == null || value.isBlank())) {
-      throw new DxRuntimeException(failureCode(), ResponseUrn.MANDATORY_FIELD, "Validation error : null or blank value for required mandatory field");
+      throw new DxRuntimeException(
+          failureCode(),
+          ResponseUrn.MANDATORY_FIELD,
+          "Validation error : null or blank value for required mandatory field");
     } else {
       if (value == null || value.isBlank()) {
         return true;
@@ -34,7 +43,10 @@ public class TemporalRelTypeValidator implements Validator {
     }
     if (!allowedTimeRel.contains(value)) {
       LOGGER.error("Validation error : Invalid temporal relation value passed [ " + value + " ]");
-      throw new DxRuntimeException(failureCode(), ResponseUrn.INVALID_TEMPORAL_RELATION_VALUE, "Validation error : Invalid temporal relation value passed [ "+value+" ]");
+      throw new DxRuntimeException(
+          failureCode(),
+          ResponseUrn.INVALID_TEMPORAL_RELATION_VALUE,
+          "Validation error : Invalid temporal relation value passed [ " + value + " ]");
     }
     return true;
   }
@@ -49,4 +61,3 @@ public class TemporalRelTypeValidator implements Validator {
     return "invalid time relation value.";
   }
 }
-

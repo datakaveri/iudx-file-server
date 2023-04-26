@@ -1,30 +1,11 @@
 package iudx.file.server.authenticator;
 
-import static iudx.file.server.authenticator.utilities.Constants.CACHE_TIMEOUT;
-import static iudx.file.server.authenticator.utilities.Constants.JSON_EXPIRY;
-import static iudx.file.server.authenticator.utilities.Constants.JSON_IID;
-import static iudx.file.server.authenticator.utilities.Constants.JSON_USERID;
-import static iudx.file.server.authenticator.utilities.Constants.OPEN_ENDPOINTS;
-import static iudx.file.server.authenticator.utilities.Constants.QUERY_ENDPOINTS;
+import static iudx.file.server.authenticator.utilities.Constants.*;
 import static iudx.file.server.common.Constants.CAT_SEARCH_PATH;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
-
-import iudx.file.server.common.Api;
-import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.authentication.TokenCredentials;
@@ -33,50 +14,55 @@ import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
-import iudx.file.server.authenticator.authorization.AuthorizationContextFactory;
-import iudx.file.server.authenticator.authorization.AuthorizationRequest;
-import iudx.file.server.authenticator.authorization.AuthorizationStrategy;
-import iudx.file.server.authenticator.authorization.JwtAuthorization;
-import iudx.file.server.authenticator.authorization.Method;
-import iudx.file.server.authenticator.utilities.Constants;
+import iudx.file.server.authenticator.authorization.*;
 import iudx.file.server.authenticator.utilities.JwtData;
 import iudx.file.server.cache.CacheService;
-import iudx.file.server.cache.cacheImpl.CacheType;
+import iudx.file.server.cache.cacheimpl.CacheType;
+import iudx.file.server.common.Api;
 import iudx.file.server.common.service.CatalogueService;
-
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+import org.apache.http.HttpStatus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
   private static final Logger LOGGER = LogManager.getLogger(JwtAuthenticationServiceImpl.class);
 
-
   final JWTAuth jwtAuth;
-  WebClient catWebClient;
   final String host;
-  final int port;;
+  final int port;
   final String audience;
   final String path;
   final String catBasePath;
   final CatalogueService catalogueService;
   final CacheService cache;
   final Api api;
-
-
   // resourceGroupCache will contains ACL info about all resource group in a resource server
-  private final Cache<String, String> resourceGroupCache = CacheBuilder
-      .newBuilder()
-      .maximumSize(1000)
-      .expireAfterAccess(CACHE_TIMEOUT, TimeUnit.MINUTES)
-      .build();
+  private final Cache<String, String> resourceGroupCache =
+      CacheBuilder.newBuilder()
+          .maximumSize(1000)
+          .expireAfterAccess(CACHE_TIMEOUT, TimeUnit.MINUTES)
+          .build();
   // resourceIdCache will contains info about resources available(& their ACL) in resource server.
-  private final Cache<String, String> resourceIdCache = CacheBuilder
-      .newBuilder()
-      .maximumSize(1000)
-      .expireAfterAccess(CACHE_TIMEOUT, TimeUnit.MINUTES)
-      .build();
+  private final Cache<String, String> resourceIdCache =
+      CacheBuilder.newBuilder()
+          .maximumSize(1000)
+          .expireAfterAccess(CACHE_TIMEOUT, TimeUnit.MINUTES)
+          .build();
+  WebClient catWebClient;
 
-  JwtAuthenticationServiceImpl(Vertx vertx, final JWTAuth jwtAuth, final JsonObject config,
-      final CatalogueService catalogueService, final CacheService cacheService, final Api api) {
+  JwtAuthenticationServiceImpl(
+      Vertx vertx,
+      final JWTAuth jwtAuth,
+      final JsonObject config,
+      final CatalogueService catalogueService,
+      final CacheService cacheService,
+      final Api api) {
     this.jwtAuth = jwtAuth;
     this.audience = config.getString("audience");
     this.catalogueService = catalogueService;
@@ -93,85 +79,93 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   }
 
   @Override
-  public AuthenticationService tokenInterospect(JsonObject request, JsonObject authenticationInfo,
-      Handler<AsyncResult<JsonObject>> handler) {
+  public AuthenticationService tokenInterospect(
+      JsonObject request, JsonObject authenticationInfo, Handler<AsyncResult<JsonObject>> handler) {
     LOGGER.debug("token interospect called");
-    String id = authenticationInfo.getString("id");;
+    String id = authenticationInfo.getString("id");
     String token = authenticationInfo.getString("token");
     String endPoint = authenticationInfo.getString("apiEndpoint");
 
     Future<JwtData> jwtDecodeFuture = decodeJwt(token);
     Future<Boolean> isItemExistFuture = catalogueService.isItemExist(id);
 
-
     ResultContainer result = new ResultContainer();
 
-    jwtDecodeFuture.compose(decodeHandler -> {
-      result.jwtData = decodeHandler;
-      return isValidAudienceValue(result.jwtData);
-    }).compose(audienceHandler -> {
-      if (!result.jwtData.getIss().equals(result.jwtData.getSub())) {
-        return isRevokedClientToken(result.jwtData);
-      } else {
-        return Future.succeededFuture(true);
-      }
-    }).compose(revokeTokenHandler -> {
-      return isItemExistFuture;
-    }).compose(itemExistHandler -> {
-      if (!result.jwtData.getIss().equals(result.jwtData.getSub())) {
-        return isOpenResource(id);
-      } else {
-        return Future.succeededFuture("OPEN");
-      }
-    }).compose(openResourceHandler -> {
-      result.isOpen = openResourceHandler.equalsIgnoreCase("OPEN");
-      if (result.isOpen && checkOpenEndPoints(endPoint)) {
-        JsonObject json = new JsonObject()
-            .put(JSON_USERID, result.jwtData.getSub());
-        return Future.succeededFuture(true);
-      } else if (checkQueryEndPoints(endPoint)) {
-        JsonObject json = new JsonObject()
-            .put(JSON_USERID, result.jwtData.getSub());
-        return Future.succeededFuture(true);
-      } else if (!result.isOpen) {
-        return isValidId(result.jwtData, id);
-      } else {
-        return Future.succeededFuture(true);
-      }
-    }).compose(validIdHandler -> {
-      if (result.jwtData.getIss().equals(result.jwtData.getSub())) {
-        JsonObject jsonResponse = new JsonObject();
-        jsonResponse.put(JSON_USERID, result.jwtData.getSub());
-        LOGGER.info("jwt : " + result.jwtData);
-        jsonResponse.put(
-            JSON_EXPIRY,
-            (LocalDateTime.ofInstant(
-                Instant.ofEpochSecond(Long.parseLong(String.valueOf(result.jwtData.getExp()))),
-                ZoneId.systemDefault()))
-                    .toString());
-        return Future.succeededFuture(jsonResponse);
-      } else {
-        return validateAccess(result.jwtData, result.isOpen, authenticationInfo);
-      }
-    }).onComplete(completeHandler -> {
-      LOGGER.debug("completion handler");
-      if (completeHandler.succeeded()) {
-        handler.handle(Future.succeededFuture(completeHandler.result()));
-      } else {
-        LOGGER.error("error : " + completeHandler.cause());
-        LOGGER.error("error : " + completeHandler);
-        handler.handle(Future.failedFuture(completeHandler.cause().getMessage()));
-      }
-    });
+    jwtDecodeFuture
+        .compose(
+            decodeHandler -> {
+              result.jwtData = decodeHandler;
+              return isValidAudienceValue(result.jwtData);
+            })
+        .compose(
+            audienceHandler -> {
+              if (!result.jwtData.getIss().equals(result.jwtData.getSub())) {
+                return isRevokedClientToken(result.jwtData);
+              } else {
+                return Future.succeededFuture(true);
+              }
+            })
+        .compose(
+            revokeTokenHandler -> {
+              return isItemExistFuture;
+            })
+        .compose(
+            itemExistHandler -> {
+              if (!result.jwtData.getIss().equals(result.jwtData.getSub())) {
+                return isOpenResource(id);
+              } else {
+                return Future.succeededFuture("OPEN");
+              }
+            })
+        .compose(
+            openResourceHandler -> {
+              result.isOpen = openResourceHandler.equalsIgnoreCase("OPEN");
+              if (result.isOpen && checkOpenEndPoints(endPoint)) {
+                return Future.succeededFuture(true);
+              } else if (checkQueryEndPoints(endPoint)) {
+                return Future.succeededFuture(true);
+              } else if (!result.isOpen) {
+                return isValidId(result.jwtData, id);
+              } else {
+                return Future.succeededFuture(true);
+              }
+            })
+        .compose(
+            validIdHandler -> {
+              if (result.jwtData.getIss().equals(result.jwtData.getSub())) {
+                JsonObject jsonResponse = new JsonObject();
+                jsonResponse.put(JSON_USERID, result.jwtData.getSub());
+                LOGGER.info("jwt : " + result.jwtData);
+                jsonResponse.put(
+                    JSON_EXPIRY,
+                    LocalDateTime.ofInstant(
+                            Instant.ofEpochSecond(
+                                Long.parseLong(String.valueOf(result.jwtData.getExp()))),
+                            ZoneId.systemDefault())
+                        .toString());
+                return Future.succeededFuture(jsonResponse);
+              } else {
+                return validateAccess(result.jwtData, result.isOpen, authenticationInfo);
+              }
+            })
+        .onComplete(
+            completeHandler -> {
+              LOGGER.debug("completion handler");
+              if (completeHandler.succeeded()) {
+                handler.handle(Future.succeededFuture(completeHandler.result()));
+              } else {
+                LOGGER.error("error : " + completeHandler.cause());
+                LOGGER.error("error : " + completeHandler);
+                handler.handle(Future.failedFuture(completeHandler.cause().getMessage()));
+              }
+            });
 
     return this;
   }
 
   private boolean checkQueryEndPoints(String endPoint) {
-    for (String item : QUERY_ENDPOINTS)
-    {
-      if (endPoint.contains(item))
-      {
+    for (String item : QUERY_ENDPOINTS) {
+      if (endPoint.contains(item)) {
         return true;
       }
     }
@@ -179,10 +173,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   }
 
   private boolean checkOpenEndPoints(String endPoint) {
-    for(String item : OPEN_ENDPOINTS)
-    {
-      if(endPoint.contains(item))
-      {
+    for (String item : OPEN_ENDPOINTS) {
+      if (endPoint.contains(item)) {
         return true;
       }
     }
@@ -193,10 +185,10 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     LOGGER.trace("isOpenResource() started");
     Promise<String> promise = Promise.promise();
 
-    String ACL = resourceIdCache.getIfPresent(id);
-    if (ACL != null) {
+    String acl = resourceIdCache.getIfPresent(id);
+    if (acl != null) {
       LOGGER.debug("Cache Hit");
-      promise.complete(ACL);
+      promise.complete(acl);
     } else {
       // cache miss
       LOGGER.debug("Cache miss calling cat server");
@@ -212,11 +204,11 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
       // 1. check group accessPolicy.
       // 2. check resource exist, if exist set accessPolicy to group accessPolicy. else fail
-      Future<String> groupACLFuture = getGroupAccessPolicy(groupId);
-      groupACLFuture
+      Future<String> groupAclFuture = getGroupAccessPolicy(groupId);
+      groupAclFuture
           .compose(
-              groupACLResult -> {
-                String groupPolicy = groupACLResult;
+              groupAclResult -> {
+                String groupPolicy = groupAclResult;
                 return isResourceExist(id, groupPolicy);
               })
           .onSuccess(
@@ -232,7 +224,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     return promise.future();
   }
 
-  private Future<Boolean> isResourceExist(String id, String groupACL) {
+  private Future<Boolean> isResourceExist(String id, String groupAcl) {
     LOGGER.trace("isResourceExist() started");
     Promise<Boolean> promise = Promise.promise();
     String resourceExist = resourceIdCache.getIfPresent(id);
@@ -263,7 +255,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
                   promise.fail("Not Found");
                 } else {
                   LOGGER.debug("is Exist response : " + responseBody);
-                  resourceIdCache.put(id, groupACL);
+                  resourceIdCache.put(id, groupAcl);
                   promise.complete(true);
                 }
               });
@@ -275,11 +267,11 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
     LOGGER.trace("getGroupAccessPolicy() started");
     Promise<String> promise = Promise.promise();
-    String groupACL = resourceGroupCache.getIfPresent(groupId);
+    String groupAcl = resourceGroupCache.getIfPresent(groupId);
 
-    if (groupACL != null) {
+    if (groupAcl != null) {
       LOGGER.debug("Info : cache Hit");
-      promise.complete(groupACL);
+      promise.complete(groupAcl);
     } else {
       LOGGER.debug("Info : cache miss");
       catWebClient
@@ -305,16 +297,16 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
                   promise.fail("Resource not found");
                   return;
                 }
-                String resourceACL = "SECURE";
+                String resourceAcl = "SECURE";
                 try {
-                  resourceACL =
+                  resourceAcl =
                       responseBody
                           .getJsonArray("results")
                           .getJsonObject(0)
                           .getString("accessPolicy");
-                  resourceGroupCache.put(groupId, resourceACL);
+                  resourceGroupCache.put(groupId, resourceAcl);
                   LOGGER.debug("Info: Group ID valid : Catalogue item Found");
-                  promise.complete(resourceACL);
+                  promise.complete(resourceAcl);
                 } catch (Exception ignored) {
                   LOGGER.error(ignored.getMessage());
                   LOGGER.debug("Info: Group ID invalid : Empty response in results from Catalogue");
@@ -325,32 +317,29 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     return promise.future();
   }
 
-  // class to contain intermeddiate data for token interospection
-  final class ResultContainer {
-    JwtData jwtData;
-    boolean isOpen;
-  }
-
-
   Future<JwtData> decodeJwt(String jwtToken) {
     Promise<JwtData> promise = Promise.promise();
 
     TokenCredentials creds = new TokenCredentials(jwtToken);
 
-    jwtAuth.authenticate(creds)
-        .onSuccess(user -> {
-          JwtData jwtData = new JwtData(user.principal());
-          promise.complete(jwtData);
-        }).onFailure(err -> {
-          LOGGER.error("failed to decode/validate jwt token : " + err.getMessage());
-          promise.fail("failed");
-        });
+    jwtAuth
+        .authenticate(creds)
+        .onSuccess(
+            user -> {
+              JwtData jwtData = new JwtData(user.principal());
+              promise.complete(jwtData);
+            })
+        .onFailure(
+            err -> {
+              LOGGER.error("failed to decode/validate jwt token : " + err.getMessage());
+              promise.fail("failed");
+            });
 
     return promise.future();
   }
 
-  public Future<JsonObject> validateAccess(JwtData jwtData, boolean openResource,
-      JsonObject authInfo) {
+  public Future<JsonObject> validateAccess(
+      JwtData jwtData, boolean openResource, JsonObject authInfo) {
     LOGGER.trace("validateAccess() started");
     Promise<JsonObject> promise = Promise.promise();
     String jwtId = jwtData.getIid().split(":")[1];
@@ -362,21 +351,21 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       jsonResponse.put(JSON_USERID, jwtData.getSub());
       return Future.succeededFuture(jsonResponse);
     }
-    
-    if(checkQueryEndPoints(authInfo.getString("apiEndpoint"))){
+
+    if (checkQueryEndPoints(authInfo.getString("apiEndpoint"))) {
       LOGGER.info("User access is allowed. [Query endpoints]");
       JsonObject jsonResponse = new JsonObject();
       jsonResponse.put(JSON_IID, jwtId);
       jsonResponse.put(JSON_USERID, jwtData.getSub());
       return Future.succeededFuture(jsonResponse);
     }
-    
 
     Method method = Method.valueOf(authInfo.getString("method"));
     String api = authInfo.getString("apiEndpoint");
     AuthorizationRequest authRequest = new AuthorizationRequest(method, api);
 
-    AuthorizationStrategy authStrategy = AuthorizationContextFactory.create(jwtData.getRole(), this.api);
+    AuthorizationStrategy authStrategy =
+        AuthorizationContextFactory.create(jwtData.getRole(), this.api);
     LOGGER.info("strategy : " + authStrategy.getClass().getSimpleName());
     JwtAuthorization jwtAuthStrategy = new JwtAuthorization(authStrategy);
     LOGGER.info("endPoint : " + authInfo.getString("apiEndpoint"));
@@ -425,31 +414,38 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     JsonObject requestJson = new JsonObject().put("type", cacheType).put("key", subId);
 
     LOGGER.debug("requestJson : " + requestJson);
-    cache.get(requestJson, handler -> {
-      if (handler.succeeded()) {
-        JsonObject responseJson = handler.result();
-        LOGGER.debug("responseJson : " + responseJson);
-        String timestamp = responseJson.getJsonArray("result").getJsonObject(0).getString("value");
+    cache.get(
+        requestJson,
+        handler -> {
+          if (handler.succeeded()) {
+            JsonObject responseJson = handler.result();
+            LOGGER.debug("responseJson : " + responseJson);
+            String timestamp =
+                responseJson.getJsonArray("result").getJsonObject(0).getString("value");
 
-        LocalDateTime revokedAt = LocalDateTime.parse(timestamp);
-        LocalDateTime jwtIssuedAt = (LocalDateTime.ofInstant(
-            Instant.ofEpochSecond(jwtData.getIat()),
-            ZoneId.systemDefault()));
-        if (jwtIssuedAt.isBefore(revokedAt)) {
-          LOGGER.error("Privilages for client is revoked.");
-          JsonObject result = new JsonObject().put("401", "revoked token passes");
-          promise.fail(result.toString());
-        } else {
-          promise.complete(true);
-        }
-      } else {
-        // since no value in cache, this means client_id is valie and not revoked
-        LOGGER.debug("cache call result : [fail] " + handler.cause());
-        promise.complete(true);
-      }
-    });
+            LocalDateTime revokedAt = LocalDateTime.parse(timestamp);
+            LocalDateTime jwtIssuedAt =
+                LocalDateTime.ofInstant(
+                    Instant.ofEpochSecond(jwtData.getIat()), ZoneId.systemDefault());
+            if (jwtIssuedAt.isBefore(revokedAt)) {
+              LOGGER.error("Privilages for client is revoked.");
+              JsonObject result = new JsonObject().put("401", "revoked token passes");
+              promise.fail(result.toString());
+            } else {
+              promise.complete(true);
+            }
+          } else {
+            // since no value in cache, this means client_id is valie and not revoked
+            LOGGER.debug("cache call result : [fail] " + handler.cause());
+            promise.complete(true);
+          }
+        });
     return promise.future();
   }
 
-
+  // class to contain intermeddiate data for token interospection
+  final class ResultContainer {
+    JwtData jwtData;
+    boolean isOpen;
+  }
 }

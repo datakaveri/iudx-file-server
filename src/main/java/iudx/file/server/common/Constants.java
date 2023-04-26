@@ -1,5 +1,12 @@
 package iudx.file.server.common;
 
+/**
+ * Constants.
+ *
+ * <h1>Constants</h1>
+ *
+ */
+
 public class Constants {
   public static final String DB_SERVICE_ADDRESS = "iudx.file.database.service";
   public static final String AUTH_SERVICE_ADDRESS = "iudx.file.auth.service";
@@ -20,18 +27,16 @@ public class Constants {
   public static final String JSON_TIMEREL = "timerel";
 
   public static final long CACHE_TIMEOUT_AMOUNT = 30;
-//  public static final String CAT_RSG_PATH = "/iudx/cat/v1/search";
+  //  public static final String CAT_RSG_PATH = "/iudx/cat/v1/search";
   public static final String CAT_SEARCH_PATH = "/search";
 
   public static final String CAT_ITEM_PATH = "/item";
   public static final String AUTH_CERTIFICATE_PATH = "/cert";
 
-
   // pagination parameters
   public static final String PARAM_OFFSET = "offset";
   public static final String PARAM_LIMIT = "limit";
-  
-  
-  //RMQ queues and exchanges.
-  public static String INVALID_SUB_Q="fs-invalid-sub";
+
+  // RMQ queues and exchanges.
+  public static String INVALID_SUB_Q = "fs-invalid-sub";
 }

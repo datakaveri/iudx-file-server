@@ -5,7 +5,14 @@ import iudx.file.server.apiserver.response.ResponseUrn;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-// TOOD : Regex for fileId
+/**
+ * FileIdTypeValidator.
+ *
+ * <h1>FileIdTypeValidator</h1>
+ *
+ * <p>it validate the FileId.
+ */
+// TODO : Regex for fileId
 public class FileIdTypeValidator implements Validator {
 
   private static final Logger LOGGER = LogManager.getLogger(FileIdTypeValidator.class);
@@ -22,7 +29,10 @@ public class FileIdTypeValidator implements Validator {
   public boolean isValid() {
     if (required && (value == null || value.isBlank())) {
       LOGGER.error("Validation error : null or blank value for required mandatory field");
-      throw new DxRuntimeException(failureCode(), ResponseUrn.MANDATORY_FIELD, "Validation error : null or blank value for required mandatory field");
+      throw new DxRuntimeException(
+          failureCode(),
+          ResponseUrn.MANDATORY_FIELD,
+          "Validation error : null or blank value for required mandatory field");
     } else {
       if (value == null || value.isBlank()) {
         return true;
@@ -30,7 +40,10 @@ public class FileIdTypeValidator implements Validator {
     }
     if (!isValidLength(value) || !isValidId(value)) {
       LOGGER.error("Validation error : invalid file id [ " + value + " ]");
-      throw new DxRuntimeException(failureCode(), ResponseUrn.INVALID_ATTR_VALUE, "Validation error : invalid file id [ " + value + " ]");
+      throw new DxRuntimeException(
+          failureCode(),
+          ResponseUrn.INVALID_ATTR_VALUE,
+          "Validation error : invalid file id [ " + value + " ]");
     }
     return true;
   }

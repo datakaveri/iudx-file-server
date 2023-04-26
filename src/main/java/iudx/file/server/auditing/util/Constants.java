@@ -1,5 +1,10 @@
 package iudx.file.server.auditing.util;
 
+/**
+ * Constants.
+ *
+ * <h1>Constants</h1>
+ */
 public class Constants {
   public static final String ID = "id";
   /* Errors */
@@ -19,10 +24,9 @@ public class Constants {
   public static final String RESPONSE_SIZE = "response_size";
   public static final String ORIGIN_SERVER = "file-server";
   public static final String ORIGIN = "origin";
-  public static final String PRIMARY_KEY= "primaryKey";
+  public static final String PRIMARY_KEY = "primaryKey";
   public static final String EPOCH_TIME = "epochTime";
   public static final String ISO_TIME = "isoTime";
   public static final String EXCHANGE_NAME = "auditing";
   public static final String ROUTING_KEY = "#";
-
 }

@@ -1,5 +1,7 @@
 package iudx.file.server.databroker;
 
+import static iudx.file.server.auditing.util.Constants.*;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -7,14 +9,8 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rabbitmq.RabbitMQClient;
 import iudx.file.server.common.Response;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import static iudx.file.server.auditing.util.Constants.FAILED;
-import static iudx.file.server.auditing.util.Constants.SUCCESS;
 
 public class DataBrokerServiceImpl implements DataBrokerService {
-  private static final Logger LOGGER = LogManager.getLogger(DataBrokerServiceImpl.class);
 
   private RabbitMQClient client;
 
@@ -32,7 +28,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
     Buffer buffer = Buffer.buffer(request.toString());
 
-    if (!client.isConnected()) client.start();
+    if (!client.isConnected()) {
+      client.start();
+    }
 
     client.basicPublish(
         toExchange,

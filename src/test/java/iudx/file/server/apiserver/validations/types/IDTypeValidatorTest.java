@@ -20,7 +20,7 @@ import io.vertx.junit5.VertxTestContext;
 @ExtendWith(VertxExtension.class)
 public class IDTypeValidatorTest {
 
-  private IDTypeValidator IdTypeValidator;
+  private iudx.file.server.apiserver.validations.types.IdTypeValidator IdTypeValidator;
 
   @BeforeEach
   public void setup(Vertx vertx, VertxTestContext testContext) {
@@ -50,7 +50,7 @@ public class IDTypeValidatorTest {
   @Description("id type parameter allowed values.")
   public void testValidIdTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
-    IdTypeValidator = new IDTypeValidator(value, required);
+    IdTypeValidator = new IdTypeValidator(value, required);
     assertTrue(IdTypeValidator.isValid());
     testContext.completeNow();
   }
@@ -72,7 +72,7 @@ public class IDTypeValidatorTest {
   @Description("id type parameter allowed values.")
   public void testInvalidIdTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
-    IdTypeValidator = new IDTypeValidator(value, required);
+    IdTypeValidator = new IdTypeValidator(value, required);
     Assertions.assertThrows(DxRuntimeException.class, () -> IdTypeValidator.isValid());
     testContext.completeNow();
   }

@@ -1,5 +1,9 @@
 package iudx.file.server.auditing;
 
+import static iudx.file.server.auditing.util.Constants.EXCHANGE_NAME;
+import static iudx.file.server.auditing.util.Constants.ROUTING_KEY;
+import static iudx.file.server.common.Constants.DATABROKER_SERVICE_ADDRESS;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.AsyncResult;
@@ -13,10 +17,14 @@ import iudx.file.server.databroker.DataBrokerService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static iudx.file.server.auditing.util.Constants.EXCHANGE_NAME;
-import static iudx.file.server.auditing.util.Constants.ROUTING_KEY;
-import static iudx.file.server.common.Constants.DATABROKER_SERVICE_ADDRESS;
-
+/**
+ * AuditingServiceImpl.
+ *
+ * <h1>AuditingServiceImpl</h1>
+ *
+ * <p>AuditingServiceImpl save data for auditing purpose for that it push all the auditing data into
+ * rmq.
+ */
 public class AuditingServiceImpl implements AuditingService {
 
   private static final Logger LOGGER = LogManager.getLogger(AuditingServiceImpl.class);
@@ -32,7 +40,7 @@ public class AuditingServiceImpl implements AuditingService {
   @Override
   public AuditingService executeWriteQuery(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
-    writeMessage = queryBuilder.buildWriteQueryForRMQ(request);
+    writeMessage = queryBuilder.buildWriteQueryForRmq(request);
 
     rmqService.publishMessage(
         writeMessage,

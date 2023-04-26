@@ -1,18 +1,22 @@
 package iudx.file.server.apiserver.utilities;
 
-import io.vertx.core.json.JsonObject;
 import iudx.file.server.apiserver.query.QueryParams;
 import iudx.file.server.common.QueryType;
 
+/**
+ * Utilities.
+ *
+ * <h1>Utilities</h1>
+ */
 public class Utilities {
 
-
   /**
+   *
+   *
    * <pre>
    * Retreives a query type based on the attributes present in the query json.
    * </pre>
-   * 
-   * @param query
+   *
    * @return QueryType
    */
   public static QueryType getQueryType(QueryParams params) {
@@ -30,17 +34,19 @@ public class Utilities {
   }
 
   /**
+   * .
+   *
    * <pre>
-   * retreive components from id index : 
-   *            0 - Domain 
-   *            1 - user SHA 
-   *            2 - File Server 
-   *            3 - File group 
-   *            4 - Resource/ File id(for Group level file, index 4 represent file Id(optional)) 
+   * retreive components from id index :
+   *            0 - Domain
+   *            1 - user SHA
+   *            2 - File Server
+   *            3 - File group
+   *            4 - Resource/ File id(for Group level file, index 4 represent file Id(optional))
    *            5 - File id(optional)
    * </pre>
-   * 
-   * @param fileId
+   *
+   * @param fileId id of file
    * @return array of file id after splitting by "/".
    */
   public static String[] getFileIdComponents(String fileId) {
