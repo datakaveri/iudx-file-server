@@ -29,7 +29,7 @@ jobs:
         GH_TOKEN: ${{ secrets.JENKINS_UPDATE}}
       run: | 
         # Get the latest version of 4.5.0 and 5.0.0-alpha tags from the container registry using GitHub API
-        export newtag4_5_0=`(head -n 1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/fs-depl/versions | jq ' .[].metadata.container.tags[0]'  | grep 4.5.0 | sed -e 's/^"//' -e 's/"$//'))`
+        export newtag4_5_0=`(head -n 1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/fs-depl/versions | jq ' .[].metadata.container.tags[0]'  | grep 4.5.0 | grep -v alpha | sed -e 's/^"//' -e 's/"$//'))`
         export newtag5_0_0=`(head -n 1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/fs-depl/versions | jq ' .[].metadata.container.tags[0]'  | grep 5.0.0-alpha | sed -e 's/^"//' -e 's/"$//'))`
         
         # Get the old tags from the YAML files
