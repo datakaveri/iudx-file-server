@@ -16,6 +16,11 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"",
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
 									"var jsonData = JSON.parse(responseBody);",
 									"pm.environment.set(\"openResourceToken\", jsonData.results.accessToken);",
 									"postman.setEnvironmentVariable(\"openResourceToken\", jsonData.results.accessToken);"
@@ -68,6 +73,9 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
 									"var jsonData = JSON.parse(responseBody);",
 									"pm.environment.set(\"secureResourceToken\", jsonData.results.accessToken);",
 									"postman.setEnvironmentVariable(\"secureResourceToken\", jsonData.results.accessToken);"
@@ -135,6 +143,10 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
 									"var jsonData = JSON.parse(responseBody);",
 									"pm.environment.set(\"secureRGToken\", jsonData.results.accessToken);",
 									"postman.setEnvironmentVariable(\"secureRGToken\", jsonData.results.accessToken);"
@@ -202,6 +214,10 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
 									"var jsonData = JSON.parse(responseBody);",
 									"pm.environment.set(\"delegateToken\", jsonData.results.accessToken);",
 									"postman.setEnvironmentVariable(\"delegateToken\", jsonData.results.accessToken);"
@@ -269,9 +285,22 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
 									"var jsonData = JSON.parse(responseBody);",
 									"pm.environment.set(\"delegateToken-RG\", jsonData.results.accessToken);",
 									"postman.setEnvironmentVariable(\"delegateToken-RG\", jsonData.results.accessToken);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -336,6 +365,10 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
 									"var jsonData = JSON.parse(responseBody);",
 									"pm.environment.set(\"adminToken\", jsonData.results.accessToken);",
 									"postman.setEnvironmentVariable(\"adminToken\", jsonData.results.accessToken);"
@@ -416,7 +449,9 @@
 									"// Test the response",
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
+									"    const resultsjsonData = body.results[0];",
 									"    pm.expect(body).to.have.property(\"results\");",
+									"    pm.expect(resultsjsonData).to.have.property(\"fileId\");",
 									"",
 									"});",
 									"",
@@ -715,7 +750,9 @@
 									"// Test the response",
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
+									"    const resultsjsonData = body.results[0];",
 									"    pm.expect(body).to.have.property(\"results\");",
+									"    pm.expect(resultsjsonData).to.have.property(\"fileId\");",
 									"",
 									"});",
 									"",
@@ -898,7 +935,9 @@
 									"// Test the response",
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
+									"    const resultsjsonData = body.results[0];",
 									"    pm.expect(body).to.have.property(\"results\");",
+									"    pm.expect(resultsjsonData).to.have.property(\"fileId\");",
 									"",
 									"});",
 									"",
@@ -1231,7 +1270,9 @@
 									"// Test the response",
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
+									"    const resultsjsonData = body.results[0];",
 									"    pm.expect(body).to.have.property(\"results\");",
+									"    pm.expect(resultsjsonData).to.have.property(\"fileId\");",
 									"",
 									"});",
 									"",
@@ -1837,7 +1878,7 @@
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
 									"    pm.expect(body).to.have.property(\"results\");",
-									"",
+									"    pm.expect(body).to.have.property(\"title\",\"urn:dx:rs:success\");",
 									"});"
 								],
 								"type": "text/javascript"
@@ -1902,6 +1943,7 @@
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
 									"    pm.expect(body).to.have.property(\"results\");",
+									"    pm.expect(body).to.have.property(\"title\",\"urn:dx:rs:success\");",
 									"",
 									"});"
 								],
@@ -1967,6 +2009,7 @@
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
 									"    pm.expect(body).to.have.property(\"results\");",
+									"    pm.expect(body).to.have.property(\"title\",\"urn:dx:rs:success\");",
 									"",
 									"});"
 								],
@@ -2032,6 +2075,7 @@
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
 									"    pm.expect(body).to.have.property(\"results\");",
+									"    pm.expect(body).to.have.property(\"title\",\"urn:dx:rs:success\");",
 									"",
 									"});"
 								],
@@ -2158,6 +2202,7 @@
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
 									"    pm.expect(body).to.have.property(\"results\");",
+									"    pm.expect(body).to.have.property(\"title\",\"urn:dx:rs:success\");",
 									"",
 									"});"
 								],
@@ -2223,7 +2268,8 @@
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
 									"    pm.expect(body).to.have.property(\"results\");",
-									"",
+									"    pm.expect(body).to.have.property(\"title\",\"urn:dx:rs:success\");",
+									"    ",
 									"});"
 								],
 								"type": "text/javascript"
@@ -2296,6 +2342,7 @@
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
 									"    pm.expect(body).to.have.property(\"results\");",
+									"    pm.expect(body).to.have.property(\"title\",\"urn:dx:rs:success\");",
 									"",
 									"});"
 								],
@@ -2365,6 +2412,7 @@
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
 									"    pm.expect(body).to.have.property(\"results\");",
+									"    pm.expect(body).to.have.property(\"title\",\"urn:dx:rs:success\");",
 									"",
 									"});"
 								],
@@ -2522,6 +2570,7 @@
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
 									"    pm.expect(body).to.have.property(\"results\");",
+									"    pm.expect(body).to.have.property(\"title\",\"urn:dx:rs:success\");",
 									"",
 									"});"
 								],
@@ -2574,6 +2623,7 @@
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
 									"    pm.expect(body).to.have.property(\"results\");",
+									"    pm.expect(body).to.have.property(\"title\",\"urn:dx:rs:success\");",
 									"",
 									"});"
 								],
@@ -2626,6 +2676,7 @@
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
 									"    pm.expect(body).to.have.property(\"results\");",
+									"    pm.expect(body).to.have.property(\"title\",\"urn:dx:rs:success\");",
 									"",
 									"});"
 								],
@@ -2678,6 +2729,7 @@
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
 									"    pm.expect(body).to.have.property(\"results\");",
+									"    pm.expect(body).to.have.property(\"title\",\"urn:dx:rs:success\");",
 									"",
 									"});"
 								],
@@ -2783,7 +2835,17 @@
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
-									"});"
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    const resultsjsonData = body.results[0];",
+									"    pm.expect(body).to.have.property(\"results\");",
+									"    pm.expect(resultsjsonData).to.have.property(\"detail\");",
+									"",
+									"});",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -2880,7 +2942,17 @@
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
-									"});"
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    const resultsjsonData = body.results[0];",
+									"    pm.expect(body).to.have.property(\"results\");",
+									"    pm.expect(resultsjsonData).to.have.property(\"detail\");",
+									"",
+									"});",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -2924,7 +2996,17 @@
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
-									"});"
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    const resultsjsonData = body.results[0];",
+									"    pm.expect(body).to.have.property(\"results\");",
+									"    pm.expect(resultsjsonData).to.have.property(\"detail\");",
+									"",
+									"});",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -3021,7 +3103,16 @@
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
-									"});"
+									"});",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    const resultsjsonData = body.results[0];",
+									"    pm.expect(body).to.have.property(\"results\");",
+									"    pm.expect(resultsjsonData).to.have.property(\"detail\");",
+									"",
+									"});",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -3118,7 +3209,16 @@
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
-									"});"
+									"});",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    const resultsjsonData = body.results[0];",
+									"    pm.expect(body).to.have.property(\"results\");",
+									"    pm.expect(resultsjsonData).to.have.property(\"detail\");",
+									"",
+									"});",
+									""
 								],
 								"type": "text/javascript"
 							}
