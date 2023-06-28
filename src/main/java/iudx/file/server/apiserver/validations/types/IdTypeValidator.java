@@ -55,11 +55,11 @@ public class IdTypeValidator implements Validator {
   }
 
   private boolean isValidId(String id) {
-    String[] idcomponents = id.split("/");
-    return idcomponents.length >= 4;
+    String[] idcomponents = id.split("-");
+    return idcomponents.length == 5;
   }
 
   private boolean isValidLength(String id) {
-    return id.length() <= 512;
+    return id.length() == 36;
   }
 }

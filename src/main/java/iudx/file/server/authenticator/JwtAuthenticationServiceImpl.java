@@ -99,6 +99,9 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             })
         .compose(
             audienceHandler -> {
+              LOGGER.debug(
+                  "102: iss " + result.jwtData.getIss() + "  sub " + result.jwtData.getSub());
+
               if (!result.jwtData.getIss().equals(result.jwtData.getSub())) {
                 return isRevokedClientToken(result.jwtData);
               } else {
@@ -192,32 +195,36 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     } else {
       // cache miss
       LOGGER.debug("Cache miss calling cat server");
-      String[] idComponents = id.split("/");
-      if (idComponents.length < 4) {
-        promise.fail("Not Found " + id);
-        return promise.future();
-      }
-      String groupId =
-          (idComponents.length == 4)
-              ? id
-              : String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
-
-      // 1. check group accessPolicy.
-      // 2. check resource exist, if exist set accessPolicy to group accessPolicy. else fail
-      Future<String> groupAclFuture = getGroupAccessPolicy(groupId);
-      groupAclFuture
-          .compose(
-              groupAclResult -> {
-                String groupPolicy = groupAclResult;
-                return isResourceExist(id, groupPolicy);
-              })
+      catalogueService
+          .getRelItem(id)
           .onSuccess(
-              handler -> {
-                promise.complete(resourceIdCache.getIfPresent(id));
+              result -> {
+                String groupId;
+                groupId =
+                    result.getString("type").equalsIgnoreCase(ITEM_TYPE_RESOURCE)
+                        ? result.getString("resourceGroup")
+                        : result.getString("id");
+                Future<String> groupAclFuture = getGroupAccessPolicy(groupId);
+                groupAclFuture
+                    .compose(
+                        groupAclResult -> {
+                          String groupPolicy = groupAclResult;
+                          return isResourceExist(id, groupPolicy);
+                        })
+                    .onSuccess(
+                        handler -> {
+                          promise.complete(resourceIdCache.getIfPresent(id));
+                        })
+                    .onFailure(
+                        handler -> {
+                          LOGGER.error(
+                              "cat response failed for Id : (" + id + ")" + handler.getCause());
+                          promise.fail("Not Found " + id);
+                        });
               })
           .onFailure(
-              handler -> {
-                LOGGER.error("cat response failed for Id : (" + id + ")" + handler.getCause());
+              filure -> {
+                LOGGER.info("cat server error " + filure.getMessage());
                 promise.fail("Not Found " + id);
               });
     }
@@ -264,6 +271,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   }
 
   private Future<String> getGroupAccessPolicy(String groupId) {
+    LOGGER.debug("groupId: " + groupId);
 
     LOGGER.trace("getGroupAccessPolicy() started");
     Promise<String> promise = Promise.promise();
@@ -419,7 +427,6 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
         handler -> {
           if (handler.succeeded()) {
             JsonObject responseJson = handler.result();
-            LOGGER.debug("responseJson : " + responseJson);
             String timestamp =
                 responseJson.getJsonArray("result").getJsonObject(0).getString("value");
 

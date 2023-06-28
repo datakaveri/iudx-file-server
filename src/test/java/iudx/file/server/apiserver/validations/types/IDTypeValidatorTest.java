@@ -30,18 +30,10 @@ public class IDTypeValidatorTest {
   static Stream<Arguments> allowedValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
-        Arguments.of(
-            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
-            true),
-        Arguments.of(
-            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information",
-            false),
-        Arguments.of(
-            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
-            true),
-        Arguments.of(
-            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information",
-            false),
+        Arguments.of("b58da193-23d9-43eb-b98a-a103d4b6103c", true),
+        Arguments.of("5b7556b5-0779-4c47-9cf2-3f209779aa22", false),
+        Arguments.of("b58da193-23d9-43eb-b98a-a103d4b6103c", true),
+        Arguments.of("5b7556b5-0779-4c47-9cf2-3f209779aa22", false),
         Arguments.of(null, false));
   }
 

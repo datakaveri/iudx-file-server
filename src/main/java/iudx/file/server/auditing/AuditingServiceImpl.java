@@ -51,7 +51,7 @@ public class AuditingServiceImpl implements AuditingService {
             handler.handle(Future.succeededFuture());
             LOGGER.info("inserted into rmq");
           } else {
-            LOGGER.error(rmqHandler.cause());
+            LOGGER.info(rmqHandler.cause());
             try {
               Response resp =
                   objectMapper.readValue(rmqHandler.cause().getMessage(), Response.class);

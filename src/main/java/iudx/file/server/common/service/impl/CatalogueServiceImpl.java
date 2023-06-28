@@ -15,7 +15,9 @@ import iudx.file.server.common.ServerType;
 import iudx.file.server.common.WebClientFactory;
 import iudx.file.server.common.service.CatalogueService;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,6 +35,7 @@ public class CatalogueServiceImpl implements CatalogueService {
   private int port;
   private String catBasePath;
   private String catItemPath;
+  private String catSearchPath;
 
   public CatalogueServiceImpl(WebClientFactory webClientFactory, JsonObject config) {
     this.webClient = webClientFactory.getWebClientFor(ServerType.FILE_SERVER);
@@ -40,6 +43,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     this.port = config.getInteger("cataloguePort");
     catBasePath = config.getString("dxCatalogueBasePath");
     catItemPath = catBasePath + CAT_ITEM_PATH;
+    catSearchPath = catBasePath + CAT_SEARCH_PATH;
   }
 
   @Override
@@ -52,26 +56,38 @@ public class CatalogueServiceImpl implements CatalogueService {
   @Override
   public Future<List<String>> getAllowedFilters4Queries(String id) {
     Promise<List<String>> promise = Promise.promise();
-    // Note: id should be a complete id not a group id (ex : domain/SHA/rs/rs-group/itemId)
-    String groupId = id.substring(0, id.lastIndexOf("/"));
-    List<String> filters = applicableFilterCache.getIfPresent(id);
-    if (filters == null) {
-      // check for group if not present by item key.
-      filters = applicableFilterCache.getIfPresent(groupId + "/*");
-    }
-    if (filters == null) {
-      fetchFilters4Item(id, groupId)
-          .onComplete(
-              handler -> {
-                if (handler.succeeded()) {
-                  promise.complete(handler.result());
-                } else {
-                  promise.fail("failed to fetch filters.");
-                }
-              });
-    } else {
-      promise.complete(filters);
-    }
+
+    getRelItem(id)
+        .onSuccess(
+            relHandler -> {
+              String groupId = null;
+              List<String> filters = null;
+              LOGGER.info("relHandler: " + relHandler);
+              if (relHandler.getString("type").equalsIgnoreCase(ITEM_TYPE_RESOURCE)) {
+                filters = applicableFilterCache.getIfPresent(id);
+                groupId = relHandler.getString("resourceGroup");
+              } else {
+                groupId = relHandler.getString("id");
+              }
+              LOGGER.debug("groupId: " + groupId);
+              if (filters == null) {
+                // check for group if not present by item key.
+                filters = applicableFilterCache.getIfPresent(groupId + "/*");
+              }
+              if (filters == null) {
+                fetchFilters4Item(id, groupId)
+                    .onComplete(
+                        handler -> {
+                          if (handler.succeeded()) {
+                            promise.complete(handler.result());
+                          } else {
+                            promise.fail("failed to fetch filters.");
+                          }
+                        });
+              } else {
+                promise.complete(filters);
+              }
+            });
     return promise.future();
   }
 
@@ -125,6 +141,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
   private void callCatalogueApi(String id, Handler<AsyncResult<List<String>>> handler) {
     List<String> filters = new ArrayList<String>();
+    LOGGER.debug("port: " + port + " " + "host: " + host + " " + "catRelPath: " + catSearchPath);
     webClient
         .get(port, host, catItemPath)
         .addQueryParam("id", id)
@@ -140,8 +157,8 @@ public class CatalogueServiceImpl implements CatalogueService {
                       }
                     });
                 handler.handle(Future.succeededFuture(filters));
-              } else if (catHandler.failed()) {
-                LOGGER.error("catalogue call (" + catItemPath + ") failed for id" + id);
+              } else  {
+                LOGGER.info("catalogue call (" + catItemPath + ") failed for id" + id);
                 handler.handle(
                     Future.failedFuture("catalogue call(" + catItemPath + ") failed for id" + id));
               }
@@ -160,7 +177,7 @@ public class CatalogueServiceImpl implements CatalogueService {
   public Future<Boolean> isItemExist(String id) {
     LOGGER.debug("isItemExist() started");
     Promise<Boolean> promise = Promise.promise();
-    LOGGER.info("id : " + id);
+    LOGGER.debug("id : " + id);
     webClient
         .get(port, host, catItemPath)
         .addQueryParam("id", id)
@@ -180,6 +197,44 @@ public class CatalogueServiceImpl implements CatalogueService {
                 promise.fail(responseHandler.cause());
               }
             });
+    return promise.future();
+  }
+
+  @Override
+  public Future<JsonObject> getRelItem(String id) {
+    LOGGER.debug("get item for id: " + id);
+    Promise<JsonObject> promise = Promise.promise();
+
+    LOGGER.debug("port: " + port + " " + "host: " + host + " " + "catRelPath: " + catSearchPath);
+    webClient
+        .get(port, host, catSearchPath)
+        .addQueryParam("property", "[id]")
+        .addQueryParam("value", "[[" + id + "]]")
+        .addQueryParam("filter", "[id,provider,resourceGroup,type,accessPolicy]")
+        .expect(ResponsePredicate.JSON)
+        .send(
+            relHandler -> {
+              if (relHandler.succeeded()
+                  && relHandler.result().bodyAsJsonObject().getInteger("totalHits") > 0) {
+                JsonArray resultArray =
+                    relHandler.result().bodyAsJsonObject().getJsonArray("results");
+                JsonObject response = resultArray.getJsonObject(0);
+                LOGGER.debug("response: " + response);
+
+                Set<String> type = new HashSet<String>(new JsonArray().getList());
+                type = new HashSet<String>(response.getJsonArray("type").getList());
+                type.retainAll(ITEM_TYPES);
+                String itemType = type.toString().replaceAll("\\[", "").replaceAll("\\]", "");
+                LOGGER.info("itemType: " + itemType);
+                response.put("type", itemType);
+                promise.complete(response);
+
+              } else {
+                LOGGER.error("catalogue call search api failed: " + relHandler.cause());
+                promise.fail(relHandler.cause());
+              }
+            });
+
     return promise.future();
   }
 }

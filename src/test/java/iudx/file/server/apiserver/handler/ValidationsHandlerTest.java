@@ -42,7 +42,7 @@ public class ValidationsHandlerTest {
   @Test
   public void validationHandlerSuccess() {
     parameters = MultiMap.caseInsensitiveMultiMap();
-    parameters.set(PARAM_ID, "asdasd/asdasd/adasd/adasd/adasd");
+    parameters.set(PARAM_ID, "b58da193-23d9-43eb-b98a-a103d4b6103c");
 
     Mockito.doReturn(parameters).when(request).params();
     Mockito.doReturn(headers).when(request).headers();
