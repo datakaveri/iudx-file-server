@@ -231,7 +231,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
               } else {
                 LOGGER.error("catalogue call search api failed: " + relHandler.cause());
-                promise.fail(relHandler.cause());
+                promise.fail("catalogue call search api failed");
               }
             });
 
