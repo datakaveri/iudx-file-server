@@ -23,7 +23,6 @@ import iudx.file.server.common.service.CatalogueService;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -99,9 +98,6 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             })
         .compose(
             audienceHandler -> {
-              LOGGER.debug(
-                  "102: iss " + result.jwtData.getIss() + "  sub " + result.jwtData.getSub());
-
               if (!result.jwtData.getIss().equals(result.jwtData.getSub())) {
                 return isRevokedClientToken(result.jwtData);
               } else {
@@ -153,7 +149,6 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             })
         .onComplete(
             completeHandler -> {
-              LOGGER.debug("completion handler");
               if (completeHandler.succeeded()) {
                 handler.handle(Future.succeededFuture(completeHandler.result()));
               } else {
@@ -271,8 +266,6 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   }
 
   private Future<String> getGroupAccessPolicy(String groupId) {
-    LOGGER.debug("groupId: " + groupId);
-
     LOGGER.trace("getGroupAccessPolicy() started");
     Promise<String> promise = Promise.promise();
     String groupAcl = resourceGroupCache.getIfPresent(groupId);
@@ -420,8 +413,6 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     CacheType cacheType = CacheType.REVOKED_CLIENT;
     String subId = jwtData.getSub();
     JsonObject requestJson = new JsonObject().put("type", cacheType).put("key", subId);
-
-    LOGGER.debug("requestJson : " + requestJson);
     cache.get(
         requestJson,
         handler -> {

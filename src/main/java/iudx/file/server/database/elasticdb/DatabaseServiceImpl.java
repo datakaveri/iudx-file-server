@@ -51,7 +51,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     ElasticQueryGenerator queryGenerator = new ElasticQueryGenerator();
     Query query = queryGenerator.getQuery(apiQuery, type);
 
-    LOGGER.debug("fileMetadataIndex=" + fileMetadataIndex);
+    LOGGER.debug("fileMetadataIndex= {}" , fileMetadataIndex);
 
     try {
       final String searchIndexUrl = fileMetadataIndex;
@@ -107,8 +107,6 @@ public class DatabaseServiceImpl implements DatabaseService {
 
   @Override
   public Future<JsonObject> save(JsonObject document) {
-
-    LOGGER.debug("Documents = " + document);
     Promise<JsonObject> promise = Promise.promise();
     if (document == null || document.isEmpty()) {
       ResponseBuilder responseBuilder =

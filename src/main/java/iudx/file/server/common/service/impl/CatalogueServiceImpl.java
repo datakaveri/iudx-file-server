@@ -69,7 +69,7 @@ public class CatalogueServiceImpl implements CatalogueService {
               } else {
                 groupId = relHandler.getString("id");
               }
-              LOGGER.debug("groupId: " + groupId);
+              LOGGER.debug("groupId: {} ", groupId);
               if (filters == null) {
                 // check for group if not present by item key.
                 filters = applicableFilterCache.getIfPresent(groupId + "/*");
@@ -177,7 +177,6 @@ public class CatalogueServiceImpl implements CatalogueService {
   public Future<Boolean> isItemExist(String id) {
     LOGGER.debug("isItemExist() started");
     Promise<Boolean> promise = Promise.promise();
-    LOGGER.debug("id : " + id);
     webClient
         .get(port, host, catItemPath)
         .addQueryParam("id", id)
@@ -202,7 +201,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
   @Override
   public Future<JsonObject> getRelItem(String id) {
-    LOGGER.debug("get item for id: " + id);
+    LOGGER.debug("get item for id: {} ", id);
     Promise<JsonObject> promise = Promise.promise();
 
     LOGGER.debug("port: " + port + " " + "host: " + host + " " + "catRelPath: " + catSearchPath);
@@ -219,13 +218,12 @@ public class CatalogueServiceImpl implements CatalogueService {
                 JsonArray resultArray =
                     relHandler.result().bodyAsJsonObject().getJsonArray("results");
                 JsonObject response = resultArray.getJsonObject(0);
-                LOGGER.debug("response: " + response);
 
                 Set<String> type = new HashSet<String>(new JsonArray().getList());
                 type = new HashSet<String>(response.getJsonArray("type").getList());
                 type.retainAll(ITEM_TYPES);
                 String itemType = type.toString().replaceAll("\\[", "").replaceAll("\\]", "");
-                LOGGER.info("itemType: " + itemType);
+                LOGGER.info("itemType: {} ", itemType);
                 response.put("type", itemType);
                 promise.complete(response);
 

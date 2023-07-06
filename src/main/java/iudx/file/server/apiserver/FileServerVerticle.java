@@ -677,7 +677,6 @@ public class FileServerVerticle extends AbstractVerticle {
                 updateAuditTable(auditParams);
               } else if (urn.equals(RESOURCE_NOT_FOUND)) {
                 String resultDetails = dbHandlerResult.getJsonObject("result").getString("details");
-                LOGGER.debug("resultDetails: " + resultDetails);
                 handleResponse(response, code, urn, resultDetails);
               }
             } else {
@@ -959,7 +958,6 @@ public class FileServerVerticle extends AbstractVerticle {
                     });
               } else {
                 LOGGER.error("failed to update audit table");
-                LOGGER.debug("failed: " + catHandler.cause());
               }
             });
   }
