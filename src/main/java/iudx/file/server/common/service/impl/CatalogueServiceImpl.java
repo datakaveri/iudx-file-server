@@ -62,7 +62,6 @@ public class CatalogueServiceImpl implements CatalogueService {
             relHandler -> {
               String groupId = null;
               List<String> filters = null;
-              LOGGER.info("relHandler: " + relHandler);
               if (relHandler.getString("type").equalsIgnoreCase(ITEM_TYPE_RESOURCE)) {
                 filters = applicableFilterCache.getIfPresent(id);
                 groupId = relHandler.getString("resourceGroup");
@@ -204,7 +203,6 @@ public class CatalogueServiceImpl implements CatalogueService {
     LOGGER.debug("get item for id: {} ", id);
     Promise<JsonObject> promise = Promise.promise();
 
-    LOGGER.debug("port: " + port + " " + "host: " + host + " " + "catRelPath: " + catSearchPath);
     webClient
         .get(port, host, catSearchPath)
         .addQueryParam("property", "[id]")
@@ -226,7 +224,6 @@ public class CatalogueServiceImpl implements CatalogueService {
                 LOGGER.info("itemType: {} ", itemType);
                 response.put("type", itemType);
                 promise.complete(response);
-
               } else {
                 LOGGER.error("catalogue call search api failed: " + relHandler.cause());
                 promise.fail("catalogue call search api failed");
