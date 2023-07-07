@@ -51,8 +51,6 @@ public class DatabaseServiceImpl implements DatabaseService {
     ElasticQueryGenerator queryGenerator = new ElasticQueryGenerator();
     Query query = queryGenerator.getQuery(apiQuery, type);
 
-    LOGGER.debug("fileMetadataIndex= {}" , fileMetadataIndex);
-
     try {
       final String searchIndexUrl = fileMetadataIndex;
       final String countIndexUrl = fileMetadataIndex;
@@ -113,13 +111,11 @@ public class DatabaseServiceImpl implements DatabaseService {
           new ResponseBuilder().setTypeAndTitle(400).setMessage("empty document passed to save.");
       promise.fail(responseBuilder.getResponse().toString());
     }
-    LOGGER.debug(fileMetadataIndex);
     client
         .insertAsync(fileMetadataIndex, document)
         .onComplete(
             insertHandler -> {
               if (insertHandler.succeeded()) {
-                LOGGER.debug("Insert handler = " + insertHandler.result().toString());
                 JsonObject result = new JsonObject();
                 result.put("result", insertHandler.result());
                 promise.complete(result);
@@ -144,7 +140,6 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     Query deleteQuery = queryGenerator.deleteQuery(id);
 
-    LOGGER.debug("index : " + fileMetadataIndex);
     client
         .deleteAsync(fileMetadataIndex, deleteQuery)
         .onComplete(

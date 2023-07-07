@@ -42,10 +42,10 @@ public class Constants {
 
   // RMQ queues and exchanges.
   public static String INVALID_SUB_Q = "fs-invalid-sub";
-  public static final String ITEM_TYPE_RESOURCE = "iudx:Resource";
-  public static final String ITEM_TYPE_RESOURCE_GROUP = "iudx:ResourceGroup";
-  public static final String ITEM_TYPE_RESOURCE_SERVER = "iudx:ResourceServer";
-  public static final String ITEM_TYPE_PROVIDER = "iudx:Provider";
+  public static final String ITEM_TYPE_RESOURCE = "Resource";
+  public static final String ITEM_TYPE_RESOURCE_GROUP = "ResourceGroup";
+  public static final String ITEM_TYPE_RESOURCE_SERVER = "ResourceServer";
+  public static final String ITEM_TYPE_PROVIDER = "Provider";
   public static final ArrayList<String> ITEM_TYPES =
       new ArrayList<String>(
           Arrays.asList(

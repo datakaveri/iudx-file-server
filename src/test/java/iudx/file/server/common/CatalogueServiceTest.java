@@ -191,11 +191,9 @@ public class CatalogueServiceTest {
                     "failed invalid catalogue call (/iudx/cat/v1/item) " + handler.cause());
               }
             });
-
-    //    Wanted but not invoked !
-    //    verify(client,times(2)).get(anyInt(),anyString(),anyString());
-    //    verify(httpRequest, times(2)).addQueryParam(any(), any());
-    //    verify(httpRequest,times(2)).send(any());
+    verify(client, times(3)).get(anyInt(), anyString(), anyString());
+    verify(httpRequest, times(5)).addQueryParam(any(), any());
+    verify(httpRequest, times(3)).send(any());
   }
 
   @Test
@@ -248,8 +246,8 @@ public class CatalogueServiceTest {
                 vertxTestContext.completeNow();
               }
             });
-    /* verify(client, times(2)).get(anyInt(), anyString(), anyString());
-    verify(httpRequest, times(2)).addQueryParam(any(), any());
-    verify(httpRequest, times(2)).send(any());*/
+    verify(client, times(3)).get(anyInt(), anyString(), anyString());
+    verify(httpRequest, times(5)).addQueryParam(any(), any());
+    verify(httpRequest, times(3)).send(any());
   }
 }

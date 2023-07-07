@@ -420,7 +420,6 @@ public class FileServerVerticle extends AbstractVerticle {
     JsonObject uploadJson = new JsonObject();
     JsonObject responseJson = new JsonObject();
     Future<Boolean> requestValidatorFuture = requestValidator.isValidArchiveRequest(params);
-    LOGGER.debug(requestValidatorFuture.result());
     requestValidatorFuture
         .compose(
             requestValidatorhandler -> {

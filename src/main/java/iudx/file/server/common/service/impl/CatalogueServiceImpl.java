@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -140,7 +141,6 @@ public class CatalogueServiceImpl implements CatalogueService {
 
   private void callCatalogueApi(String id, Handler<AsyncResult<List<String>>> handler) {
     List<String> filters = new ArrayList<String>();
-    LOGGER.debug("port: " + port + " " + "host: " + host + " " + "catRelPath: " + catSearchPath);
     webClient
         .get(port, host, catItemPath)
         .addQueryParam("id", id)
@@ -156,7 +156,7 @@ public class CatalogueServiceImpl implements CatalogueService {
                       }
                     });
                 handler.handle(Future.succeededFuture(filters));
-              } else  {
+              } else {
                 LOGGER.info("catalogue call (" + catItemPath + ") failed for id" + id);
                 handler.handle(
                     Future.failedFuture("catalogue call(" + catItemPath + ") failed for id" + id));
@@ -219,8 +219,11 @@ public class CatalogueServiceImpl implements CatalogueService {
 
                 Set<String> type = new HashSet<String>(new JsonArray().getList());
                 type = new HashSet<String>(response.getJsonArray("type").getList());
-                type.retainAll(ITEM_TYPES);
-                String itemType = type.toString().replaceAll("\\[", "").replaceAll("\\]", "");
+                Set<String> itemTypeSet =
+                    type.stream().map(e -> e.split(":")[1]).collect(Collectors.toSet());
+                itemTypeSet.retainAll(ITEM_TYPES);
+                String itemType =
+                    itemTypeSet.toString().replaceAll("\\[", "").replaceAll("\\]", "");
                 LOGGER.info("itemType: {} ", itemType);
                 response.put("type", itemType);
                 promise.complete(response);
