@@ -39,6 +39,7 @@ public class ValidationFailureHandler implements Handler<RoutingContext> {
           .putHeader(CONTENT_TYPE, APPLICATION_JSON)
           .setStatusCode(exception.getStatusCode())
           .end(response.toString());
+      return;
     }
 
     if (failure instanceof RuntimeException) {
@@ -49,6 +50,7 @@ public class ValidationFailureHandler implements Handler<RoutingContext> {
           .putHeader(CONTENT_TYPE, APPLICATION_JSON)
           .setStatusCode(HttpStatus.SC_BAD_REQUEST)
           .end(validationFailureResponse().toString());
+      return;
     }
     routingContext.next();
   }

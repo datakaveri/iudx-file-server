@@ -62,7 +62,7 @@ public class FileIdTypeValidator implements Validator {
 
   private boolean isValidId(String id) {
     String[] idcomponents = id.split("/");
-    return idcomponents.length >= 5;
+    return idcomponents.length >= 2;
   }
 
   private boolean isValidLength(String id) {

@@ -30,16 +30,16 @@ public class FileIdTypeValidatorTest {
     // Add any valid value which will pass successfully.
     return Stream.of(
         Arguments.of(
-            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/sample.txt",
+            "iisc.ac.in-89a36273d77dac4cf38114fca1bbe64392547f86/sample.txt",
             true),
         Arguments.of(
-            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/sample.txt",
+            "iisc.ac.in89a36273d77dac4cf3811/sample.txt",
             false),
         Arguments.of(
-            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/asdad-aasd8ad.txt",
+            "iisc.ac.insurat-itms-live-eta/asdad-aasd8ad.txt",
             true),
         Arguments.of(
-            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/file.iudx.io/surat-itms-realtime-information/ada-89ad.txt",
+            "surat-itms-realtime-information/ada-89ad.txt",
             false),
         Arguments.of(null, false));
   }
@@ -58,10 +58,10 @@ public class FileIdTypeValidatorTest {
   static Stream<Arguments> invalidValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
-        Arguments.of("iisc.ac.in/sample.txt",true),
-        Arguments.of("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/sample.txt",true),
-        Arguments.of("asdad-aasd8ad.txt",true),
-        Arguments.of(RandomStringUtils.random(513),true),
+        Arguments.of("iiscacinsample.txt", true),
+        Arguments.of("iiscacin-89a36273d77dac4cf38114fca1bbe64392547f86sample.txt", true),
+        Arguments.of("asdad-aasd8ad.txt", true),
+        Arguments.of(RandomStringUtils.random(513), true),
         Arguments.of("  ", true),
         Arguments.of(null, true));
   }

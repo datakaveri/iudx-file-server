@@ -23,7 +23,6 @@ import iudx.file.server.common.service.CatalogueService;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -150,7 +149,6 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             })
         .onComplete(
             completeHandler -> {
-              LOGGER.debug("completion handler");
               if (completeHandler.succeeded()) {
                 handler.handle(Future.succeededFuture(completeHandler.result()));
               } else {
@@ -192,32 +190,36 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     } else {
       // cache miss
       LOGGER.debug("Cache miss calling cat server");
-      String[] idComponents = id.split("/");
-      if (idComponents.length < 4) {
-        promise.fail("Not Found " + id);
-        return promise.future();
-      }
-      String groupId =
-          (idComponents.length == 4)
-              ? id
-              : String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
-
-      // 1. check group accessPolicy.
-      // 2. check resource exist, if exist set accessPolicy to group accessPolicy. else fail
-      Future<String> groupAclFuture = getGroupAccessPolicy(groupId);
-      groupAclFuture
-          .compose(
-              groupAclResult -> {
-                String groupPolicy = groupAclResult;
-                return isResourceExist(id, groupPolicy);
-              })
+      catalogueService
+          .getRelItem(id)
           .onSuccess(
-              handler -> {
-                promise.complete(resourceIdCache.getIfPresent(id));
+              result -> {
+                String groupId;
+                groupId =
+                    result.getString("type").equalsIgnoreCase(ITEM_TYPE_RESOURCE)
+                        ? result.getString("resourceGroup")
+                        : result.getString("id");
+                Future<String> groupAclFuture = getGroupAccessPolicy(groupId);
+                groupAclFuture
+                    .compose(
+                        groupAclResult -> {
+                          String groupPolicy = groupAclResult;
+                          return isResourceExist(id, groupPolicy);
+                        })
+                    .onSuccess(
+                        handler -> {
+                          promise.complete(resourceIdCache.getIfPresent(id));
+                        })
+                    .onFailure(
+                        handler -> {
+                          LOGGER.error(
+                              "cat response failed for Id : (" + id + ")" + handler.getCause());
+                          promise.fail("Not Found " + id);
+                        });
               })
           .onFailure(
-              handler -> {
-                LOGGER.error("cat response failed for Id : (" + id + ")" + handler.getCause());
+              filure -> {
+                LOGGER.info("cat server error " + filure.getMessage());
                 promise.fail("Not Found " + id);
               });
     }
@@ -264,7 +266,6 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   }
 
   private Future<String> getGroupAccessPolicy(String groupId) {
-
     LOGGER.trace("getGroupAccessPolicy() started");
     Promise<String> promise = Promise.promise();
     String groupAcl = resourceGroupCache.getIfPresent(groupId);
@@ -412,14 +413,11 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     CacheType cacheType = CacheType.REVOKED_CLIENT;
     String subId = jwtData.getSub();
     JsonObject requestJson = new JsonObject().put("type", cacheType).put("key", subId);
-
-    LOGGER.debug("requestJson : " + requestJson);
     cache.get(
         requestJson,
         handler -> {
           if (handler.succeeded()) {
             JsonObject responseJson = handler.result();
-            LOGGER.debug("responseJson : " + responseJson);
             String timestamp =
                 responseJson.getJsonArray("result").getJsonObject(0).getString("value");
 

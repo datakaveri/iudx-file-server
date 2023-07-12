@@ -3,7 +3,7 @@ package iudx.file.server.apiserver;
 import static iudx.file.server.apiserver.response.ResponseUrn.*;
 import static iudx.file.server.apiserver.response.ResponseUrn.SUCCESS;
 import static iudx.file.server.apiserver.utilities.Constants.*;
-import static iudx.file.server.apiserver.utilities.Utilities.getFileIdComponents;
+import static iudx.file.server.apiserver.utilities.Constants.FORWARD_SLASH;
 import static iudx.file.server.apiserver.utilities.Utilities.getQueryType;
 import static iudx.file.server.auditing.util.Constants.*;
 import static iudx.file.server.auditing.util.Constants.RESPONSE_SIZE;
@@ -51,6 +51,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -314,17 +315,12 @@ public class FileServerVerticle extends AbstractVerticle {
     MultiMap formParam = request.formAttributes();
     String id = formParam.get("id");
     response.putHeader("content-type", "application/json");
-    LOGGER.debug("id :" + id);
-
     JsonObject auditParams =
         new JsonObject()
             .put("api", request.path())
             .put(USER_ID, routingContext.data().get("AuthResult"))
             .put(RESOURCE_ID, id);
-
-    String[] fileIdComponent = getFileIdComponents(id);
-    StringBuilder uploadPath = new StringBuilder();
-    uploadPath.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
+    StringBuilder uploadPath = new StringBuilder(id);
     Boolean isExternalStorage = Boolean.parseBoolean(request.getHeader("externalStorage"));
     Boolean isSample = Boolean.valueOf(formParam.get("isSample"));
 
@@ -351,9 +347,9 @@ public class FileServerVerticle extends AbstractVerticle {
           saveRecordHandler -> {
             if (saveRecordHandler.succeeded()) {
               responseJson
-                  .put("type", SUCCESS.getUrn())
-                  .put("title", "Success")
-                  .put("results", new JsonArray().add(new JsonObject().put("fileId", fileId)));
+                  .put(JSON_TYPE, SUCCESS.getUrn())
+                  .put(JSON_TITLE, "Success")
+                  .put(RESULTS, new JsonArray().add(new JsonObject().put("fileId", fileId)));
 
               handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
               auditParams.put(RESPONSE_SIZE, 0);
@@ -363,9 +359,7 @@ public class FileServerVerticle extends AbstractVerticle {
             }
           });
     } else if (isSample) {
-      if (fileIdComponent.length >= 5) {
-        uploadPath.append("/" + fileIdComponent[4]);
-      }
+      LOGGER.debug("uploadPath: " + uploadPath);
       sampleFileUpload(response, files, "sample", uploadPath.toString(), id);
     } else {
       archiveFileUpload(response, formParam, files, uploadPath.toString(), id, auditParams);
@@ -394,9 +388,10 @@ public class FileServerVerticle extends AbstractVerticle {
             JsonObject uploadResult = uploadHandler.result();
             JsonObject responseJson = new JsonObject();
             String fileId = id + "/" + uploadResult.getString("file-id");
+
             responseJson
-                .put("type", SUCCESS.getUrn())
-                .put("title", "Success")
+                .put(JSON_TYPE, SUCCESS.getUrn())
+                .put(JSON_TITLE, "Success")
                 .put("results", new JsonArray().add(new JsonObject().put("fileId", fileId)));
             // insertFileRecord(params, fileId); no need to insert in DB
             handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
@@ -425,7 +420,6 @@ public class FileServerVerticle extends AbstractVerticle {
     JsonObject uploadJson = new JsonObject();
     JsonObject responseJson = new JsonObject();
     Future<Boolean> requestValidatorFuture = requestValidator.isValidArchiveRequest(params);
-    LOGGER.debug(requestValidatorFuture.result());
     requestValidatorFuture
         .compose(
             requestValidatorhandler -> {
@@ -451,10 +445,10 @@ public class FileServerVerticle extends AbstractVerticle {
             handler -> {
               if (handler.succeeded()) {
                 responseJson
-                    .put("type", SUCCESS.getUrn())
-                    .put("title", "Success")
+                    .put(JSON_TYPE, SUCCESS.getUrn())
+                    .put(JSON_TITLE, "Success")
                     .put(
-                        "results",
+                        RESULTS,
                         new JsonArray()
                             .add(new JsonObject().put("fileId", uploadJson.getString("fileId"))));
                 handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
@@ -464,13 +458,11 @@ public class FileServerVerticle extends AbstractVerticle {
                 LOGGER.debug(handler.cause());
                 if (uploadJson.containsKey("upload") && uploadJson.getBoolean("upload")) {
                   // fail, run Compensating service to clean/undo upload.
-                  String[] fileIdComponent = getFileIdComponents(uploadJson.getString("fileId"));
-                  StringBuilder uploadDir = new StringBuilder();
-                  uploadDir.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
-                  String fileuuId =
-                      fileIdComponent.length >= 6 ? fileIdComponent[5] : fileIdComponent[4];
-
-                  LOGGER.debug("deleting file :" + fileuuId);
+                  String fileId = uploadJson.getString("fileId");
+                  String resource = StringUtils.substringBeforeLast(fileId, FORWARD_SLASH);
+                  StringBuilder uploadDir = new StringBuilder(resource);
+                  String fileuuId = StringUtils.substringAfterLast(fileId, FORWARD_SLASH);
+                  LOGGER.debug("deleting file :" + fileuuId + " uploadDir: " + uploadDir);
                   vertx.fileSystem().deleteBlocking(directory + "/" + uploadDir + "/" + fileuuId);
                 }
                 processResponse(response, handler.cause().getMessage());
@@ -529,26 +521,17 @@ public class FileServerVerticle extends AbstractVerticle {
     response.setChunked(true);
     String id = request.getParam("file-id");
     LOGGER.debug("id: " + id);
-    String resourceId = id.substring(0, id.indexOf('/', id.lastIndexOf('/')));
+    String resourceId = StringUtils.substringBeforeLast(id, FORWARD_SLASH);
+    StringBuilder uploadDir = new StringBuilder(resourceId);
+    String fileuuId = StringUtils.substringAfterLast(id, FORWARD_SLASH);
 
-    String[] fileIdComponent = getFileIdComponents(id);
-    StringBuilder uploadDir = new StringBuilder();
-    uploadDir.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
-    // extract the file-uuid from supplied id, since position of file-id in id will be different for
-    // group level(pos:5) and resource level(pos:4)
-    String fileuuId = fileIdComponent.length >= 6 ? fileIdComponent[5] : fileIdComponent[4];
-    LOGGER.debug(fileuuId);
     String fileName = id.substring(id.lastIndexOf("/"));
     JsonObject auditParams =
         new JsonObject()
             .put("api", request.path())
             .put(USER_ID, routingContext.data().get("AuthResult"))
             .put(RESOURCE_ID, resourceId);
-
-    if (fileuuId.contains("sample") && fileIdComponent.length >= 6) {
-      uploadDir.append("/" + fileIdComponent[4]);
-    }
-    LOGGER.debug(uploadDir);
+    LOGGER.debug("uploadDir: " + uploadDir + "; fileuuId: " + fileuuId + "; fileName: " + fileName);
     fileService
         .download(fileuuId, uploadDir.toString(), response)
         .onComplete(
@@ -565,11 +548,6 @@ public class FileServerVerticle extends AbstractVerticle {
               // content-disposition.
             });
   }
-  /**
-   * query service allows to query/search a file from the server.
-   *
-   * @param context Handles web request in Vert.x web
-   */
 
   public void query(RoutingContext context) {
     HttpServerResponse response = context.response();
@@ -649,35 +627,25 @@ public class FileServerVerticle extends AbstractVerticle {
    * Download File service allows to download a file from the server after authenticating the user.
    */
   public void delete(RoutingContext routingContext) {
-    LOGGER.debug("DELETE IN FSV at 612");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     response.putHeader("content-type", "application/json");
     String id = request.getParam("file-id");
-    String resourceId = id.substring(0, id.indexOf('/', id.lastIndexOf('/')));
-
+    String resourceId = StringUtils.substringBefore(id, FORWARD_SLASH);
     JsonObject auditParams =
         new JsonObject()
             .put("api", request.path())
             .put(USER_ID, routingContext.data().get("AuthResult"))
             .put(RESOURCE_ID, resourceId);
 
-    String[] fileIdComponent = getFileIdComponents(id);
-    StringBuilder uploadDir = new StringBuilder();
-    uploadDir.append(fileIdComponent[1] + "/" + fileIdComponent[3]);
-    // extract the file-uuid from supplied id, since position of file-id in id will be different for
-    // group level(pos:5) and resource level(pos:4)
-    String fileuuId = fileIdComponent.length >= 6 ? fileIdComponent[5] : fileIdComponent[4];
-    LOGGER.debug(fileuuId);
+    StringBuilder uploadDir = new StringBuilder(resourceId);
+    String fileuuId = StringUtils.substringAfterLast(id, FORWARD_SLASH);
     boolean isArchiveFile = true;
     if (fileuuId.contains("sample")) {
       isArchiveFile = false;
-      if (fileIdComponent.length >= 6) {
-        uploadDir.append("/" + fileIdComponent[4]);
-      }
     }
-    LOGGER.debug(uploadDir);
-    LOGGER.debug("is archieve : " + isArchiveFile);
+    LOGGER.debug("uploadDir: " + uploadDir + "; fileuuId: " + fileuuId);
+
     Boolean isExternalStorage = Boolean.parseBoolean(request.getHeader("externalStorage"));
 
     if (isExternalStorage) {
@@ -686,15 +654,15 @@ public class FileServerVerticle extends AbstractVerticle {
           handlers -> {
             if (handlers.succeeded()) {
               JsonObject dbHandlerResult = handlers.result();
-              String resultTitle = dbHandlerResult.getJsonObject("result").getString("title");
-              int resultType = dbHandlerResult.getJsonObject("result").getInteger("type");
+              String resultTitle = dbHandlerResult.getJsonObject("result").getString(TITLE);
+              int resultType = dbHandlerResult.getJsonObject("result").getInteger(TYPE_KEY);
               HttpStatusCode code = HttpStatusCode.getByValue(resultType);
               ResponseUrn urn = urnFromCode(resultTitle);
               if (urn.equals(SUCCESS)) {
                 JsonObject responseJson =
                     new JsonObject()
-                        .put("type", SUCCESS.getUrn())
-                        .put("title", "Successful Operation")
+                        .put(TYPE_KEY, SUCCESS.getUrn())
+                        .put(TITLE, "Successful Operation")
                         .put(
                             "results",
                             new JsonArray()
@@ -708,7 +676,6 @@ public class FileServerVerticle extends AbstractVerticle {
                 updateAuditTable(auditParams);
               } else if (urn.equals(RESOURCE_NOT_FOUND)) {
                 String resultDetails = dbHandlerResult.getJsonObject("result").getString("details");
-                LOGGER.debug("resultDetails: " + resultDetails);
                 handleResponse(response, code, urn, resultDetails);
               }
             } else {
@@ -721,8 +688,8 @@ public class FileServerVerticle extends AbstractVerticle {
       deleteSampleFile(response, id, fileuuId, uploadDir.toString());
     }
   }
-  /** get list of metatdata form server. */
 
+  /** get list of metatdata form server. */
   public void listMetadata(RoutingContext context) {
     HttpServerRequest request = context.request();
     HttpServerResponse response = context.response();
@@ -738,7 +705,6 @@ public class FileServerVerticle extends AbstractVerticle {
     searchDbFuture.onComplete(
         handler -> {
           if (handler.succeeded()) {
-            LOGGER.info("Success: Search Success");
             handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
             auditParams.put(RESPONSE_SIZE, response.bytesWritten());
             Future.future(fu -> updateAuditTable(auditParams));
@@ -759,10 +725,10 @@ public class FileServerVerticle extends AbstractVerticle {
               if (handler.succeeded()) {
                 JsonObject responseJson =
                     new JsonObject()
-                        .put("type", SUCCESS.getUrn())
-                        .put("title", "Successful Operation")
+                        .put(JSON_TYPE, SUCCESS.getUrn())
+                        .put(JSON_TITLE, "Successful Operation")
                         .put(
-                            "results",
+                            RESULTS,
                             new JsonArray()
                                 .add(
                                     new JsonObject()
@@ -794,10 +760,10 @@ public class FileServerVerticle extends AbstractVerticle {
                       if (handler.succeeded()) {
                         JsonObject responseJson =
                             new JsonObject()
-                                .put("type", SUCCESS.getUrn())
-                                .put("title", "Successful Operation")
+                                .put(TYPE_KEY, SUCCESS.getUrn())
+                                .put(TITLE, "Successful Operation")
                                 .put(
-                                    "results",
+                                    RESULTS,
                                     new JsonArray()
                                         .add(
                                             new JsonObject()
@@ -856,7 +822,6 @@ public class FileServerVerticle extends AbstractVerticle {
   }
 
   private void processResponse(HttpServerResponse response, String failureMessage) {
-    LOGGER.debug("Info : line 723=" + failureMessage);
     try {
       JsonObject json = new JsonObject(failureMessage);
       int type = json.getInteger(JSON_TYPE);
@@ -965,29 +930,35 @@ public class FileServerVerticle extends AbstractVerticle {
    */
   private void updateAuditTable(JsonObject auditInfo) {
     LOGGER.info("Updating audit table on successful transaction " + auditInfo);
+    catalogueService
+        .getRelItem(auditInfo.getString(ID))
+        .onComplete(
+            catHandler -> {
+              if (catHandler.succeeded()) {
+                JsonObject json = catHandler.result();
+                String providerId = json.getString("provider");
+                auditInfo.put(PROVIDER_ID, providerId);
 
-    /* getting provider id from the resource id */
-    String resourceId = auditInfo.getString(RESOURCE_ID);
-    String providerId =
-        resourceId.substring(0, resourceId.indexOf('/', resourceId.indexOf('/') + 1));
-    auditInfo.put("providerID", providerId);
+                ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+                long epochTime = zst.toInstant().toEpochMilli();
+                String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
 
-    ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
-    long epochTime = zst.toInstant().toEpochMilli();
-    String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
+                auditInfo.put(EPOCH_TIME, epochTime);
+                auditInfo.put(ISO_TIME, isoTime);
 
-    auditInfo.put(EPOCH_TIME, epochTime);
-    auditInfo.put(ISO_TIME, isoTime);
-
-    auditingService.executeWriteQuery(
-        auditInfo,
-        auditHandler -> {
-          if (auditHandler.succeeded()) {
-            LOGGER.info("audit table updated");
-          } else {
-            LOGGER.error("failed to update audit table");
-          }
-        });
+                auditingService.executeWriteQuery(
+                    auditInfo,
+                    auditHandler -> {
+                      if (auditHandler.succeeded()) {
+                        LOGGER.info("audit table updated");
+                      } else {
+                        LOGGER.error("failed to update audit table");
+                      }
+                    });
+              } else {
+                LOGGER.error("failed to update audit table");
+              }
+            });
   }
 
   @Override
@@ -996,12 +967,10 @@ public class FileServerVerticle extends AbstractVerticle {
   }
 
   private void handleSuccessResponse(HttpServerResponse response, int statusCode, String result) {
-    LOGGER.debug("result: " + result);
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(statusCode).end(result);
   }
 
   private void processBackendResponse(HttpServerResponse response, String failureMessage) {
-    LOGGER.debug("Info : " + failureMessage);
     try {
       JsonObject json = new JsonObject(failureMessage);
       int type = json.getInteger(TYPE_KEY);

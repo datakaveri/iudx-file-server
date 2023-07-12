@@ -63,6 +63,9 @@ public class JwtAuthServiceTest {
   HttpRequest<Buffer> httpRequestMock;
   @Mock
   HttpResponse<Buffer> httpResponseMock;
+  @Mock
+  JsonObject jsonObjectMock;
+
 
   private static String delegateJwt =
       "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJhMTNlYjk1NS1jNjkxLTRmZDMtYjIwMC1mMThiYzc4ODEwYjUiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoiZm9vYmFyLml1ZHguaW8iLCJleHAiOjE2MjgxODIzMjcsImlhdCI6MTYyODEzOTEyNywiaWlkIjoicmk6ZXhhbXBsZS5jb20vNzllN2JmYTYyZmFkNmM3NjViYWM2OTE1NGMyZjI0Yzk0Yzk1MjIwYS9yZXNvdXJjZS1ncm91cC9yZXNvdXJjZSIsInJvbGUiOiJkZWxlZ2F0ZSIsImNvbnMiOnsiYWNjZXNzIjpbImFwaSIsInN1YnMiLCJpbmdlc3QiLCJmaWxlIl19fQ.tUoO1L-tXByxNtjY_iK41neeshCiYrNr505wWn1hC1ACwoeL9frebABeFiCqJQGrsBsGOZ1-OACZdHBNcetwyw";
@@ -697,7 +700,6 @@ public class JwtAuthServiceTest {
       }
     });
   }
-
   @Test
   @DisplayName("success - is open resource")
   public void success4openResource(VertxTestContext testContext) {
@@ -737,7 +739,7 @@ public class JwtAuthServiceTest {
   public void failure4openResource(VertxTestContext testContext) {
     JsonObject authInfo = new JsonObject();
 
-    String id = "example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group";
+    String id = "5b7556b5-0779-4c47-9cf2-3f209779aa22";
 
     authInfo.put("token", consumerJwt);
     authInfo.put("id", id);
@@ -753,13 +755,18 @@ public class JwtAuthServiceTest {
     jwtData.setRole("consumer");
     jwtData.setCons(new JsonObject().put("access", new JsonArray().add("file")));
 
-    jwtAuthenticationService.isOpenResource(id).onComplete(openResourceHandler -> {
-      if (openResourceHandler.succeeded()) {
-        testContext.failNow("open resource validation failed");
-      } else {
-        testContext.completeNow();
-      }
-    });
+    when(catalogueServiceMock.getRelItem(anyString())).thenReturn(Future.failedFuture("cat fail"));
+
+    jwtAuthenticationService
+        .isOpenResource(id)
+        .onComplete(
+            openResourceHandler -> {
+              if (openResourceHandler.succeeded()) {
+                testContext.failNow("open resource validation failed");
+              } else {
+                testContext.completeNow();
+              }
+            });
   }
 
   @Test
@@ -804,26 +811,38 @@ public class JwtAuthServiceTest {
     when(httpResponseMock.statusCode()).thenReturn(200);
 
     when(httpResponseMock.bodyAsJsonObject()).thenReturn(jsonObject);
-    doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>() {
-      @Override
-      public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(0)).handle(asyncResultMock);
-        return null;
-      }
-    }).when(httpRequestMock).send(any());
 
-    jwtAuthenticationService.isOpenResource(id).onComplete(openResourceHandler -> {
-      if (openResourceHandler.succeeded()) {
-        assertEquals("Dummy Access Policy", openResourceHandler.result());
-        vertxTestContext.completeNow();
-      } else {
-        vertxTestContext
-            .failNow("open resource validation failed : " + openResourceHandler.cause());
+    when(catalogueServiceMock.getRelItem(anyString()))
+        .thenReturn(Future.succeededFuture(jsonObjectMock));
+    when(jsonObjectMock.getString("type")).thenReturn("abc");
+    when(jsonObjectMock.getString("id")).thenReturn("asdf");
 
-      }
-    });
+    doAnswer(
+            new Answer<AsyncResult<HttpResponse<Buffer>>>() {
+              @Override
+              public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0)
+                  throws Throwable {
+                ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(0))
+                    .handle(asyncResultMock);
+                return null;
+              }
+            })
+        .when(httpRequestMock)
+        .send(any());
+
+    jwtAuthenticationService
+        .isOpenResource(id)
+        .onComplete(
+            openResourceHandler -> {
+              if (openResourceHandler.succeeded()) {
+                assertEquals("Dummy Access Policy", openResourceHandler.result());
+                vertxTestContext.completeNow();
+              } else {
+                vertxTestContext.failNow(
+                    "open resource validation failed : " + openResourceHandler.cause());
+              }
+            });
   }
-
 
   @Test
   @DisplayName("Test isOpenResource method for Cache miss with 0 total hits")
@@ -850,23 +869,35 @@ public class JwtAuthServiceTest {
     when(httpResponseMock.statusCode()).thenReturn(200);
     when(httpResponseMock.bodyAsJsonObject()).thenReturn(jsonObject);
 
-    doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>() {
-      @Override
-      public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(0)).handle(asyncResultMock);
-        return null;
-      }
-    }).when(httpRequestMock).send(any());
+    when(catalogueServiceMock.getRelItem(anyString()))
+        .thenReturn(Future.succeededFuture(jsonObjectMock));
+    when(jsonObjectMock.getString("type")).thenReturn("abc");
+    when(jsonObjectMock.getString("id")).thenReturn("asdf");
 
-    jwtAuthenticationService.isOpenResource(id).onComplete(openResourceHandler -> {
-      if (openResourceHandler.succeeded()) {
-        vertxTestContext
-            .failNow("open resource validation failed : " + openResourceHandler.cause());
-      } else {
-        assertNull(openResourceHandler.result());
-        vertxTestContext.completeNow();
-      }
-    });
+    doAnswer(
+            new Answer<AsyncResult<HttpResponse<Buffer>>>() {
+              @Override
+              public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0)
+                  throws Throwable {
+                ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(0))
+                    .handle(asyncResultMock);
+                return null;
+              }
+            })
+        .when(httpRequestMock)
+        .send(any());
+
+    jwtAuthenticationService
+        .isOpenResource(id)
+        .onComplete(
+            openResourceHandler -> {
+              if (openResourceHandler.succeeded()) {
+                vertxTestContext.failNow(
+                    "open resource validation failed : " + openResourceHandler.cause());
+              } else {
+                assertNull(openResourceHandler.result());
+                vertxTestContext.completeNow();
+              }
+            });
   }
-
 }
