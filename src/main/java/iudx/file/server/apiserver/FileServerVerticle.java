@@ -320,9 +320,9 @@ public class FileServerVerticle extends AbstractVerticle {
             .put("api", request.path())
             .put(USER_ID, routingContext.data().get("AuthResult"))
             .put(RESOURCE_ID, id);
-    StringBuilder uploadPath = new StringBuilder(id);
     Boolean isExternalStorage = Boolean.parseBoolean(request.getHeader("externalStorage"));
     Boolean isSample = Boolean.valueOf(formParam.get("isSample"));
+    Future<String> uploadPathFuture = getPath(id);
 
     List<FileUpload> files = routingContext.fileUploads();
     if (!isExternalStorage && (files.size() == 0 || !isValidFileContentType(files))) {
@@ -338,32 +338,41 @@ public class FileServerVerticle extends AbstractVerticle {
       processResponse(response, message);
       return;
     }
-    if (isExternalStorage) {
-      JsonObject responseJson = new JsonObject();
-      String fileId = id + "/" + UUID.randomUUID();
-      Future<Boolean> saveRecordFuture = saveFileRecord(formParam, fileId);
+    uploadPathFuture.onComplete(
+        itemHadler -> {
+          if (itemHadler.succeeded()) {
+            String uploadPath = itemHadler.result();
+            if (isExternalStorage) {
+              JsonObject responseJson = new JsonObject();
+              String fileId = id + "/" + UUID.randomUUID();
+              Future<Boolean> saveRecordFuture = saveFileRecord(formParam, fileId);
 
-      saveRecordFuture.onComplete(
-          saveRecordHandler -> {
-            if (saveRecordHandler.succeeded()) {
-              responseJson
-                  .put(JSON_TYPE, SUCCESS.getUrn())
-                  .put(JSON_TITLE, "Success")
-                  .put(RESULTS, new JsonArray().add(new JsonObject().put("fileId", fileId)));
+              saveRecordFuture.onComplete(
+                  saveRecordHandler -> {
+                    if (saveRecordHandler.succeeded()) {
+                      responseJson
+                          .put(JSON_TYPE, SUCCESS.getUrn())
+                          .put(JSON_TITLE, "Success")
+                          .put(
+                              RESULTS, new JsonArray().add(new JsonObject().put("fileId", fileId)));
 
-              handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
-              auditParams.put(RESPONSE_SIZE, 0);
-              updateAuditTable(auditParams);
+                      handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
+                      auditParams.put(RESPONSE_SIZE, 0);
+                      updateAuditTable(auditParams);
+                    } else {
+                      processResponse(response, saveRecordHandler.cause().getMessage());
+                    }
+                  });
+            } else if (isSample) {
+              sampleFileUpload(response, files, "sample", uploadPath, id);
             } else {
-              processResponse(response, saveRecordHandler.cause().getMessage());
+              archiveFileUpload(response, formParam, files, uploadPath, id, auditParams);
             }
-          });
-    } else if (isSample) {
-      LOGGER.debug("uploadPath: " + uploadPath);
-      sampleFileUpload(response, files, "sample", uploadPath.toString(), id);
-    } else {
-      archiveFileUpload(response, formParam, files, uploadPath.toString(), id, auditParams);
-    }
+          } else {
+            LOGGER.debug("unable to construct folder structure");
+            processResponse(response, itemHadler.cause().getMessage());
+          }
+        });
   }
 
   /**
@@ -460,10 +469,10 @@ public class FileServerVerticle extends AbstractVerticle {
                   // fail, run Compensating service to clean/undo upload.
                   String fileId = uploadJson.getString("fileId");
                   String resource = StringUtils.substringBeforeLast(fileId, FORWARD_SLASH);
-                  StringBuilder uploadDir = new StringBuilder(resource);
+                  //StringBuilder uploadDir = new StringBuilder(resource);
                   String fileuuId = StringUtils.substringAfterLast(fileId, FORWARD_SLASH);
-                  LOGGER.debug("deleting file :" + fileuuId + " uploadDir: " + uploadDir);
-                  vertx.fileSystem().deleteBlocking(directory + "/" + uploadDir + "/" + fileuuId);
+                  LOGGER.debug("deleting file :" + fileuuId + " uploadDir: " + filePath);
+                  vertx.fileSystem().deleteBlocking(directory + "/" + filePath + "/" + fileuuId);
                 }
                 processResponse(response, handler.cause().getMessage());
               }
@@ -521,32 +530,42 @@ public class FileServerVerticle extends AbstractVerticle {
     response.setChunked(true);
     String id = request.getParam("file-id");
     LOGGER.debug("id: " + id);
-    String resourceId = StringUtils.substringBeforeLast(id, FORWARD_SLASH);
-    StringBuilder uploadDir = new StringBuilder(resourceId);
+    String resource = StringUtils.substringBeforeLast(id, FORWARD_SLASH);
     String fileuuId = StringUtils.substringAfterLast(id, FORWARD_SLASH);
-
-    String fileName = id.substring(id.lastIndexOf("/"));
+    String fileName = id.substring(id.lastIndexOf(FORWARD_SLASH));
+    Future<String> uploadDirFuture = getPath(resource);
     JsonObject auditParams =
         new JsonObject()
             .put("api", request.path())
             .put(USER_ID, routingContext.data().get("AuthResult"))
-            .put(RESOURCE_ID, resourceId);
-    LOGGER.debug("uploadDir: " + uploadDir + "; fileuuId: " + fileuuId + "; fileName: " + fileName);
-    fileService
-        .download(fileuuId, uploadDir.toString(), response)
-        .onComplete(
-            handler -> {
-              if (handler.failed()) {
-                processResponse(response, handler.cause().getMessage());
-              } else {
-                if (!fileName.toLowerCase().contains("sample")) {
-                  auditParams.put(RESPONSE_SIZE, response.bytesWritten());
-                  updateAuditTable(auditParams);
-                }
-              }
-              // do nothing response is already written and file is served using
-              // content-disposition.
-            });
+            .put(RESOURCE_ID, resource);
+
+    uploadDirFuture.onComplete(
+        dirHanler -> {
+          if (dirHanler.succeeded()) {
+            String uploadDir = dirHanler.result();
+            LOGGER.debug(
+                "uploadDir: " + uploadDir + "; fileuuId: " + fileuuId + "; fileName: " + fileName);
+            fileService
+                .download(fileuuId, uploadDir, response)
+                .onComplete(
+                    handler -> {
+                      if (handler.failed()) {
+                        processResponse(response, handler.cause().getMessage());
+                      } else {
+                        if (!fileName.toLowerCase().contains("sample")) {
+                          auditParams.put(RESPONSE_SIZE, response.bytesWritten());
+                          updateAuditTable(auditParams);
+                        }
+                      }
+                      // do nothing response is already written and file is served using
+                      // content-disposition.
+                    });
+          } else {
+            LOGGER.debug("unable to construct folder structure");
+            processResponse(response, dirHanler.cause().getMessage());
+          }
+        });
   }
 
   public void query(RoutingContext context) {
@@ -631,23 +650,22 @@ public class FileServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     response.putHeader("content-type", "application/json");
     String id = request.getParam("file-id");
-    String resourceId = StringUtils.substringBefore(id, FORWARD_SLASH);
+    String resource = StringUtils.substringBefore(id, FORWARD_SLASH);
     JsonObject auditParams =
         new JsonObject()
             .put("api", request.path())
             .put(USER_ID, routingContext.data().get("AuthResult"))
-            .put(RESOURCE_ID, resourceId);
-
-    StringBuilder uploadDir = new StringBuilder(resourceId);
+            .put(RESOURCE_ID, resource);
     String fileuuId = StringUtils.substringAfterLast(id, FORWARD_SLASH);
-    boolean isArchiveFile = true;
+    boolean isArchiveFile;
     if (fileuuId.contains("sample")) {
       isArchiveFile = false;
+    } else {
+      isArchiveFile = true;
     }
-    LOGGER.debug("uploadDir: " + uploadDir + "; fileuuId: " + fileuuId);
 
     Boolean isExternalStorage = Boolean.parseBoolean(request.getHeader("externalStorage"));
-
+    Future<String> uploadDirFuture = getPath(resource);
     if (isExternalStorage) {
       Future<JsonObject> deleteDbFuture = database.delete(id);
       deleteDbFuture.onComplete(
@@ -682,11 +700,28 @@ public class FileServerVerticle extends AbstractVerticle {
               processResponse(response, handlers.cause().getMessage());
             }
           });
-    } else if (isArchiveFile) {
-      deleteArchiveFile(response, id, fileuuId, uploadDir.toString(), auditParams);
-    } else {
-      deleteSampleFile(response, id, fileuuId, uploadDir.toString());
     }
+    uploadDirFuture.onComplete(
+        dirHanler -> {
+          if (dirHanler.succeeded()) {
+            String uploadDir = dirHanler.result();
+            LOGGER.debug(
+                "uploadDir: "
+                    + uploadDir
+                    + "; fileuuId: "
+                    + fileuuId
+                    + "; auditParams: "
+                    + auditParams);
+            if (isArchiveFile) {
+              deleteArchiveFile(response, id, fileuuId, uploadDir, auditParams);
+            } else {
+              deleteSampleFile(response, id, fileuuId, uploadDir);
+            }
+          } else {
+            LOGGER.debug("unable to construct folder structure");
+            processResponse(response, dirHanler.cause().getMessage());
+          }
+        });
   }
 
   /** get list of metatdata form server. */
@@ -754,7 +789,7 @@ public class FileServerVerticle extends AbstractVerticle {
         handlers -> {
           if (handlers.succeeded()) {
             fileService
-                .delete(fileuuId, uploadDir.toString())
+                .delete(fileuuId, uploadDir)
                 .onComplete(
                     handler -> {
                       if (handler.succeeded()) {
@@ -991,5 +1026,31 @@ public class FileServerVerticle extends AbstractVerticle {
       LOGGER.error("ERROR : Expecting Json from backend service [ jsonFormattingException ]");
       handleResponse(response, HttpStatusCode.BAD_REQUEST, BACKING_SERVICE_FORMAT_URN);
     }
+  }
+
+  private Future<String> getPath(String id) {
+    Promise promise = Promise.promise();
+    catalogueService
+        .getRelItem(id)
+        .onComplete(
+            itemHadler -> {
+              if (itemHadler.succeeded()) {
+                JsonObject catItemJson = itemHadler.result();
+                StringBuilder uploadPath;
+                if (catItemJson.containsKey("resourceGroup")) {
+                  uploadPath =
+                      new StringBuilder()
+                          .append(catItemJson.getString("resourceGroup"))
+                          .append("/")
+                          .append(id);
+                } else {
+                  uploadPath = new StringBuilder(id);
+                }
+                promise.complete(uploadPath.toString());
+              } else {
+                promise.fail("fail");
+              }
+            });
+    return promise.future();
   }
 }
