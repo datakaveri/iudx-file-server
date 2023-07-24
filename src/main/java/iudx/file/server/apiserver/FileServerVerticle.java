@@ -468,8 +468,6 @@ public class FileServerVerticle extends AbstractVerticle {
                 if (uploadJson.containsKey("upload") && uploadJson.getBoolean("upload")) {
                   // fail, run Compensating service to clean/undo upload.
                   String fileId = uploadJson.getString("fileId");
-                  String resource = StringUtils.substringBeforeLast(fileId, FORWARD_SLASH);
-                  //StringBuilder uploadDir = new StringBuilder(resource);
                   String fileuuId = StringUtils.substringAfterLast(fileId, FORWARD_SLASH);
                   LOGGER.debug("deleting file :" + fileuuId + " uploadDir: " + filePath);
                   vertx.fileSystem().deleteBlocking(directory + "/" + filePath + "/" + fileuuId);
