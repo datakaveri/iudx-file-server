@@ -84,6 +84,9 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     String id = authenticationInfo.getString("id");
     String token = authenticationInfo.getString("token");
     String endPoint = authenticationInfo.getString("apiEndpoint");
+    boolean skipIdCheck =
+        endPoint.equalsIgnoreCase(api.getApiFileUpload())
+            || endPoint.equalsIgnoreCase(api.getApiFileDelete());
 
     Future<JwtData> jwtDecodeFuture = decodeJwt(token);
     Future<Boolean> isItemExistFuture = catalogueService.isItemExist(id);
@@ -123,7 +126,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
                 return Future.succeededFuture(true);
               } else if (checkQueryEndPoints(endPoint)) {
                 return Future.succeededFuture(true);
-              } else if (!result.isOpen) {
+              } else if (!result.isOpen && !skipIdCheck) {
                 return isValidId(result.jwtData, id);
               } else {
                 return Future.succeededFuture(true);
