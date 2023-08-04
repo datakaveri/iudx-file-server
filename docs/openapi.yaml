@@ -14,7 +14,7 @@ consumes:
 
 info:
   title: "Data Exchange File Server APIs"
-  version: 4.5.0
+  version: 5.0.0
   description: |
     
     # Introduction
@@ -113,7 +113,7 @@ paths:
             curl --location --request POST 'https://example-fs.com/iudx/v1/upload' \
             --header 'token: <tokenValue>' \
             --form 'file=@"/home/user/uploadFile.txt"' \
-            --form 'id="iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"' \
+            --form 'id="80f18fc8-ef83-47e2-a946-d88a3f39eeda"' \
             --form 'isSample="true"'
 
       requestBody:
@@ -125,6 +125,7 @@ paths:
               properties:
                 id:
                   type: string
+                  format: uuid
                   description: valid DX group or resource id
                 file:
                   type: string
@@ -205,7 +206,7 @@ paths:
         - lang: 'cURL'
           label: 'download a file'
           source: |
-            curl --location --request GET 'https://example-fs.com/iudx/v1/download?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/sample.txt' \
+            curl --location --request GET 'https://example-fs.com/iudx/v1/download?file-id=80f18fc8-ef83-47e2-a946-d88a3f39eeda/sample.txt' \
             --header 'token: <tokenValue>'
       
 
@@ -265,7 +266,7 @@ paths:
         - lang: 'cURL'
           label: 'delete file'
           source: |
-            curl --location --request DELETE 'https://example-fs.com/iudx/v1/delete?file-id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/dbc537b3-8b52-4651-ae3c-1835528b94fe' \
+            curl --location --request DELETE 'https://example-fs.com/iudx/v1/delete?file-id=80f18fc8-ef83-47e2-a946-d88a3f39eeda/dbc537b3-8b52-4651-ae3c-1835528b94fe' \
             --header 'token: <tokenValue>' \
             --header 'externalStorage: true'
 
@@ -311,7 +312,7 @@ paths:
           required: true
           schema:
             type: string
-            maxLength: 512
+            format: uuid
         - name: time
           in: query
           description: start time in `ISO8601`
@@ -364,7 +365,7 @@ paths:
         - lang: 'cURL'
           label: 'search for a file'
           source: |
-            curl --location --request GET 'https://example-fs.com/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&time=2020-09-10T00:00:00Z&endTime=2020-09-15T00:00:00Z&timerel=between' \
+            curl --location --request GET 'https://example-fs.com/ngsi-ld/v1/temporal/entities?id=8a728957-1530-43a2-b844-88a593a94608&time=2020-09-10T00:00:00Z&endTime=2020-09-15T00:00:00Z&timerel=between' \
             --header 'token: <tokenValue>'
 
 
@@ -401,13 +402,13 @@ paths:
           required: true
           schema:
             type: string
-            maxLength: 512
+            format: uuid
 
       x-codeSamples:
         - lang: 'cURL'
           label: 'list metadata'
           source: |
-            curl --location --request GET 'https://example-fs.com/iudx/v1/list?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055' \
+            curl --location --request GET 'https://example-fs.com/iudx/v1/list?id=8a728957-1530-43a2-b844-88a593a94608' \
             --header 'token: <tokenValue>'
 
 
@@ -462,7 +463,7 @@ components:
         type: urn:dx:rs:success
         title: Success
         results: [{
-          "fileId": "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta/sample.txt"
+          "fileId": "80f18fc8-ef83-47e2-a946-d88a3f39eeda/sample.txt"
         }]
     standardInvalidTokenErrorResponse:
       title: standardInvalidTokenErrorResponse
@@ -513,12 +514,12 @@ components:
         title: Success
         results: [
           {
-            "id": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055",
+            "id": "8a728957-1530-43a2-b844-88a593a94608",
             "timeRange": {
               "gte": "2020-09-05T00:00:00Z",
               "lte": "2020-09-15T00:00:00Z"
             },
-            "fileId": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055/0cb04afb-32f5-44dd-982d-323b5900bcca.txt",
+            "fileId": "8a728957-1530-43a2-b844-88a593a94608/0cb04afb-32f5-44dd-982d-323b5900bcca.txt",
             "location": {
               "type": "point",
               "coordinates": [
@@ -545,5 +546,5 @@ components:
         type: urn:dx:rs:success
         title: Successful Operation
         results:
-          - detail: 'File with id : iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/sample.txt deleted successfully'
+          - detail: 'File with id : 80f18fc8-ef83-47e2-a946-d88a3f39eeda/sample.txt deleted successfully'
 
