@@ -968,17 +968,23 @@ public class FileServerVerticle extends AbstractVerticle {
         .onComplete(
             catHandler -> {
               if (catHandler.succeeded()) {
-                JsonObject json = catHandler.result();
-                String providerId = json.getString("provider");
-                auditInfo.put(PROVIDER_ID, providerId);
-
+                JsonObject catResult = catHandler.result();
+                String providerId = catResult.getString("provider");
+                String type =
+                    catResult.containsKey(RESOURCE_GROUP) ? "RESOURCE" : "RESOURCE_GROUP";
+                String resourceGroup =
+                    catResult.containsKey(RESOURCE_GROUP)
+                        ? catResult.getString(RESOURCE_GROUP)
+                        : catResult.getString(ID);
                 ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
                 long epochTime = zst.toInstant().toEpochMilli();
                 String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
-
+                auditInfo.put(RESOURCE_GROUP, resourceGroup);
+                auditInfo.put(TYPE_KEY, type);
+                auditInfo.put(PROVIDER_ID, providerId);
                 auditInfo.put(EPOCH_TIME, epochTime);
                 auditInfo.put(ISO_TIME, isoTime);
-
+                LOGGER.info("Updating audit table on successful transaction " + auditInfo);
                 auditingService.executeWriteQuery(
                     auditInfo,
                     auditHandler -> {
