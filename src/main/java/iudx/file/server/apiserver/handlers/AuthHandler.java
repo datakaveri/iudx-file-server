@@ -65,6 +65,7 @@ public class AuthHandler implements Handler<RoutingContext> {
         && fileName.toLowerCase().contains("sample")
         && "GET".equalsIgnoreCase(method)) {
       LOGGER.info("sampleFile : " + fileName);
+      context.data().put("authInfo", new JsonObject());
       context.next();
       return;
     }
