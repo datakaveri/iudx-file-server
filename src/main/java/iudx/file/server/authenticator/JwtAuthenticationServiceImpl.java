@@ -97,6 +97,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
         .compose(
             decodeHandler -> {
               result.jwtData = decodeHandler;
+
               return isValidAudienceValue(result.jwtData);
             })
         .compose(
@@ -353,6 +354,9 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       JsonObject jsonResponse = new JsonObject();
       jsonResponse.put(JSON_IID, jwtId);
       jsonResponse.put(JSON_USERID, jwtData.getSub());
+      jsonResponse.put(ROLE, jwtData.getRole());
+      jsonResponse.put(DRL, jwtData.getDrl());
+      jsonResponse.put(DID, jwtData.getDid());
       return Future.succeededFuture(jsonResponse);
     }
 
@@ -361,6 +365,9 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       JsonObject jsonResponse = new JsonObject();
       jsonResponse.put(JSON_IID, jwtId);
       jsonResponse.put(JSON_USERID, jwtData.getSub());
+      jsonResponse.put(ROLE, jwtData.getRole());
+      jsonResponse.put(DRL, jwtData.getDrl());
+      jsonResponse.put(DID, jwtData.getDid());
       return Future.succeededFuture(jsonResponse);
     }
 
@@ -376,6 +383,9 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     if (jwtAuthStrategy.isAuthorized(authRequest, jwtData)) {
       JsonObject jsonResponse = new JsonObject();
       jsonResponse.put(JSON_USERID, jwtData.getSub());
+      jsonResponse.put(ROLE, jwtData.getRole());
+      jsonResponse.put(DRL, jwtData.getDrl());
+      jsonResponse.put(DID, jwtData.getDid());
       promise.complete(jsonResponse);
     } else {
       LOGGER.info("failed");

@@ -66,4 +66,5 @@ public class Constants extends iudx.file.server.common.Constants {
   public static final String RESPONSE_SIZE = "response_size";
   public static final String USER_ID = "userid";
   public static final String FORWARD_SLASH = "/";
+  public static final String DELEGATOR_ID = "delegatorId";
 }
