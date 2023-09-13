@@ -7,6 +7,9 @@ import static iudx.file.server.apiserver.utilities.Constants.FORWARD_SLASH;
 import static iudx.file.server.apiserver.utilities.Utilities.getQueryType;
 import static iudx.file.server.auditing.util.Constants.*;
 import static iudx.file.server.auditing.util.Constants.RESPONSE_SIZE;
+import static iudx.file.server.authenticator.utilities.Constants.DID;
+import static iudx.file.server.authenticator.utilities.Constants.DRL;
+import static iudx.file.server.authenticator.utilities.Constants.ROLE;
 import static iudx.file.server.common.Constants.AUDIT_SERVICE_ADDRESS;
 import static iudx.file.server.common.Constants.DB_SERVICE_ADDRESS;
 import static iudx.file.server.common.QueryType.TEMPORAL_GEO;
@@ -313,13 +316,18 @@ public class FileServerVerticle extends AbstractVerticle {
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     MultiMap formParam = request.formAttributes();
+    JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
     String id = formParam.get("id");
     response.putHeader("content-type", "application/json");
     JsonObject auditParams =
         new JsonObject()
             .put("api", request.path())
-            .put(USER_ID, routingContext.data().get("AuthResult"))
+            .put(USER_ID, authInfo.getString(USER_ID))
+            .put(ROLE, authInfo.getString(ROLE))
+            .put(DRL, authInfo.getString(DRL))
+            .put(DID, authInfo.getString(DID))
             .put(RESOURCE_ID, id);
+
     Boolean isExternalStorage = Boolean.parseBoolean(request.getHeader("externalStorage"));
     Boolean isSample = Boolean.valueOf(formParam.get("isSample"));
     Future<String> uploadPathFuture = getPath(id);
@@ -525,6 +533,7 @@ public class FileServerVerticle extends AbstractVerticle {
   public void download(RoutingContext routingContext) {
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
+    JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
     response.setChunked(true);
     String id = request.getParam("file-id");
     LOGGER.debug("id: " + id);
@@ -535,7 +544,10 @@ public class FileServerVerticle extends AbstractVerticle {
     JsonObject auditParams =
         new JsonObject()
             .put("api", request.path())
-            .put(USER_ID, routingContext.data().get("AuthResult"))
+            .put(USER_ID, authInfo.getString(USER_ID))
+            .put(ROLE, authInfo.getString(ROLE))
+            .put(DRL, authInfo.getString(DRL))
+            .put(DID, authInfo.getString(DID))
             .put(RESOURCE_ID, resource);
 
     uploadDirFuture.onComplete(
@@ -568,6 +580,7 @@ public class FileServerVerticle extends AbstractVerticle {
 
   public void query(RoutingContext context) {
     HttpServerResponse response = context.response();
+    JsonObject authInfo = (JsonObject) context.data().get("authInfo");
     MultiMap queryParams = getQueryParams(context, response).get();
     Future<Boolean> queryParamsValidator = requestValidator.isValid(queryParams);
     Future<List<String>> allowedFilters =
@@ -584,7 +597,10 @@ public class FileServerVerticle extends AbstractVerticle {
         new JsonObject()
             .put(RESOURCE_ID, query.getString("id"))
             .put("api", context.request().path())
-            .put(USER_ID, context.data().get("AuthResult"));
+            .put(USER_ID, authInfo.getString(USER_ID))
+            .put(ROLE, authInfo.getString(ROLE))
+            .put(DRL, authInfo.getString(DRL))
+            .put(DID, authInfo.getString(DID));
 
     queryParamsValidator
         .compose(
@@ -646,14 +662,19 @@ public class FileServerVerticle extends AbstractVerticle {
   public void delete(RoutingContext routingContext) {
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
+    JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
     response.putHeader("content-type", "application/json");
     String id = request.getParam("file-id");
     String resource = StringUtils.substringBefore(id, FORWARD_SLASH);
     JsonObject auditParams =
         new JsonObject()
             .put("api", request.path())
-            .put(USER_ID, routingContext.data().get("AuthResult"))
+            .put(USER_ID, authInfo.getString(USER_ID))
+            .put(ROLE, authInfo.getString(ROLE))
+            .put(DRL, authInfo.getString(DRL))
+            .put(DID, authInfo.getString(DID))
             .put(RESOURCE_ID, resource);
+
     String fileuuId = StringUtils.substringAfterLast(id, FORWARD_SLASH);
     boolean isArchiveFile;
     if (fileuuId.contains("sample")) {
@@ -726,12 +747,16 @@ public class FileServerVerticle extends AbstractVerticle {
   public void listMetadata(RoutingContext context) {
     HttpServerRequest request = context.request();
     HttpServerResponse response = context.response();
+    JsonObject authInfo = (JsonObject) context.data().get("authInfo");
     String id = request.getParam("id");
     JsonObject query = new JsonObject().put("id", id);
     JsonObject auditParams =
         new JsonObject()
             .put("api", request.path())
-            .put(USER_ID, context.data().get("AuthResult"))
+            .put(USER_ID, authInfo.getString(USER_ID))
+            .put(ROLE, authInfo.getString(ROLE))
+            .put(DRL, authInfo.getString(DRL))
+            .put(DID, authInfo.getString(DID))
             .put(RESOURCE_ID, id);
 
     Future<JsonObject> searchDbFuture = database.search(query, QueryType.LIST);
@@ -962,7 +987,6 @@ public class FileServerVerticle extends AbstractVerticle {
    * @param auditInfo contains userid, api-endpoint and the resourceid
    */
   private void updateAuditTable(JsonObject auditInfo) {
-    LOGGER.info("Updating audit table on successful transaction " + auditInfo);
     catalogueService
         .getRelItem(auditInfo.getString(ID))
         .onComplete(
@@ -970,8 +994,7 @@ public class FileServerVerticle extends AbstractVerticle {
               if (catHandler.succeeded()) {
                 JsonObject catResult = catHandler.result();
                 String providerId = catResult.getString("provider");
-                String type =
-                    catResult.containsKey(RESOURCE_GROUP) ? "RESOURCE" : "RESOURCE_GROUP";
+                String type = catResult.containsKey(RESOURCE_GROUP) ? "RESOURCE" : "RESOURCE_GROUP";
                 String resourceGroup =
                     catResult.containsKey(RESOURCE_GROUP)
                         ? catResult.getString(RESOURCE_GROUP)
@@ -984,7 +1007,13 @@ public class FileServerVerticle extends AbstractVerticle {
                 auditInfo.put(PROVIDER_ID, providerId);
                 auditInfo.put(EPOCH_TIME, epochTime);
                 auditInfo.put(ISO_TIME, isoTime);
-                LOGGER.info("Updating audit table on successful transaction " + auditInfo);
+                String role = auditInfo.getString(ROLE);
+                String drl = auditInfo.getString(DRL);
+                if (role.equalsIgnoreCase("delegate") && drl != null) {
+                  auditInfo.put(DELEGATOR_ID, auditInfo.getString(DID));
+                } else {
+                  auditInfo.put(DELEGATOR_ID, auditInfo.getString(USER_ID));
+                }
                 auditingService.executeWriteQuery(
                     auditInfo,
                     auditHandler -> {

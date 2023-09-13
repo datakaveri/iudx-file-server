@@ -15,4 +15,7 @@ public class Constants extends iudx.file.server.common.Constants {
   public static final String JSON_EXPIRY = "expiry";
   public static final String JSON_USERID = "userid";
   public static final String JSON_CONSUMER = "consumer";
+  public static final String ROLE = "role";
+  public static final String DRL = "drl";
+  public static final String DID = "did";
 }
