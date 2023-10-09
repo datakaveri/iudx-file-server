@@ -719,28 +719,29 @@ public class FileServerVerticle extends AbstractVerticle {
               processResponse(response, handlers.cause().getMessage());
             }
           });
-    }
-    uploadDirFuture.onComplete(
-        dirHanler -> {
-          if (dirHanler.succeeded()) {
-            String uploadDir = dirHanler.result();
-            LOGGER.debug(
-                "uploadDir: "
-                    + uploadDir
-                    + "; fileuuId: "
-                    + fileuuId
-                    + "; auditParams: "
-                    + auditParams);
-            if (isArchiveFile) {
-              deleteArchiveFile(response, id, fileuuId, uploadDir, auditParams);
+    } else {
+      uploadDirFuture.onComplete(
+          dirHanler -> {
+            if (dirHanler.succeeded()) {
+              String uploadDir = dirHanler.result();
+              LOGGER.debug(
+                  "uploadDir: "
+                      + uploadDir
+                      + "; fileuuId: "
+                      + fileuuId
+                      + "; auditParams: "
+                      + auditParams);
+              if (isArchiveFile) {
+                deleteArchiveFile(response, id, fileuuId, uploadDir, auditParams);
+              } else {
+                deleteSampleFile(response, id, fileuuId, uploadDir);
+              }
             } else {
-              deleteSampleFile(response, id, fileuuId, uploadDir);
+              LOGGER.debug("unable to construct folder structure");
+              processResponse(response, dirHanler.cause().getMessage());
             }
-          } else {
-            LOGGER.debug("unable to construct folder structure");
-            processResponse(response, dirHanler.cause().getMessage());
-          }
-        });
+          });
+    }
   }
 
   /** get list of metatdata form server. */

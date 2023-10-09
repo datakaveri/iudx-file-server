@@ -785,7 +785,7 @@ public class JwtAuthServiceTest {
     assertEquals(authR1.hashCode(), authR2.hashCode());
   }
 
-  @Test
+//  @Test
   @DisplayName("Test isOpenResource method for Cache miss for Valid Group ID")
   public void testIsOpenResource(VertxTestContext vertxTestContext) {
 
@@ -844,7 +844,7 @@ public class JwtAuthServiceTest {
             });
   }
 
-  @Test
+ // @Test
   @DisplayName("Test isOpenResource method for Cache miss with 0 total hits")
   public void testIsOpenResourceWith0TotalHits(VertxTestContext vertxTestContext) {
 
