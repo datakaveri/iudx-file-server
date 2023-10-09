@@ -187,13 +187,13 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     LOGGER.trace("isOpenResource() started");
     Promise<String> promise = Promise.promise();
 
-    String acl = resourceIdCache.getIfPresent(id);
+    String aclResorce = resourceIdCache.getIfPresent(id);
     String aclGroup = resourceGroupCache.getIfPresent(id);
-    if (acl != null) {
-      LOGGER.debug("Cache Hit");
-      promise.complete(acl);
+    if (aclResorce != null) {
+      LOGGER.debug("resourceIdCache Hit");
+      promise.complete(aclResorce);
     } else if (aclGroup != null) {
-      LOGGER.debug("Cache Hit");
+      LOGGER.debug("resourceGroupCache Hit");
       promise.complete(aclGroup);
     } else {
       // cache miss
@@ -204,11 +204,12 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
           .onSuccess(
               catResult -> {
                 if (catResult.containsKey("accessPolicy")
-                    && !catResult.containsKey("resourceGroup")) {
+                    && catResult.containsKey("resourceGroup")) {
                   resourceIdCache.put(id, catResult.getString("accessPolicy"));
                   promise.complete(catResult.getString("accessPolicy"));
                   return;
                 }
+                LOGGER.debug("policy not available in RL now checking in RG");
                 String groupId =
                     catResult.getString("type").equalsIgnoreCase(ITEM_TYPE_RESOURCE)
                         ? catResult.getString("resourceGroup")
@@ -251,6 +252,9 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
         .onSuccess(
             user -> {
               JwtData jwtData = new JwtData(user.principal());
+              jwtData.setExp(user.get("exp"));
+              jwtData.setIat(user.get("iat"));
+              LOGGER.debug("jwt: "+jwtData);
               promise.complete(jwtData);
             })
         .onFailure(

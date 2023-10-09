@@ -10,8 +10,8 @@ public final class JwtData {
   private String sub;
   private String iss;
   private String aud;
-  private long exp;
-  private long iat;
+  private Integer exp;
+  private Integer iat;
   private String iid;
   private String role;
   private JsonObject cons;
@@ -89,19 +89,19 @@ public final class JwtData {
     this.cons = cons;
   }
 
-  public long getExp() {
+  public Integer getExp() {
     return exp;
   }
 
-  public void setExp(long exp) {
+  public void setExp(Integer exp) {
     this.exp = exp;
   }
 
-  public long getIat() {
+  public Integer getIat() {
     return iat;
   }
 
-  public void setIat(long iat) {
+  public void setIat(Integer iat) {
     this.iat = iat;
   }
 

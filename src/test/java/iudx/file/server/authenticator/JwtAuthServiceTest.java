@@ -200,8 +200,8 @@ public class JwtAuthServiceTest {
     JwtData jwtData = new JwtData();
     jwtData.setIss("auth.test.com");
     jwtData.setAud("file.iudx.io");
-    jwtData.setExp(1627408865L);
-    jwtData.setIat(1627408865L);
+    jwtData.setExp(1627408865);
+    jwtData.setIat(1627408865);
     jwtData.setIid(
         "ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("consumer");
@@ -368,8 +368,8 @@ public class JwtAuthServiceTest {
     JwtData jwtData = new JwtData();
     jwtData.setIss("auth.test.com");
     jwtData.setAud("file.iudx.io");
-    jwtData.setExp(1627408865L);
-    jwtData.setIat(1627408865L);
+    jwtData.setExp(1627408865);
+    jwtData.setIat(1627408865);
     jwtData.setIid(
         "ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("consumer");
@@ -401,8 +401,8 @@ public class JwtAuthServiceTest {
     JwtData jwtData = new JwtData();
     jwtData.setIss("auth.test.com");
     jwtData.setAud("file.iudx.io");
-    jwtData.setExp(1627408865L);
-    jwtData.setIat(1627408865L);
+    jwtData.setExp(1627408865);
+    jwtData.setIat(1627408865);
     jwtData.setIid(
         "ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("delegate");
@@ -435,8 +435,8 @@ public class JwtAuthServiceTest {
     JwtData jwtData = new JwtData();
     jwtData.setIss("auth.test.com");
     jwtData.setAud("file.iudx.io");
-    jwtData.setExp(1627408865L);
-    jwtData.setIat(1627408865L);
+    jwtData.setExp(1627408865);
+    jwtData.setIat(1627408865);
     jwtData.setIid(
         "ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("consumer");
@@ -467,8 +467,8 @@ public class JwtAuthServiceTest {
     JwtData jwtData = new JwtData();
     jwtData.setIss("auth.test.com");
     jwtData.setAud("file.iudx.io");
-    jwtData.setExp(1627408865L);
-    jwtData.setIat(1627408865L);
+    jwtData.setExp(1627408865);
+    jwtData.setIat(1627408865);
     jwtData.setIid(
         "ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("provider");
@@ -716,8 +716,8 @@ public class JwtAuthServiceTest {
     JwtData jwtData = new JwtData();
     jwtData.setIss("auth.test.com");
     jwtData.setAud("file.iudx.io");
-    jwtData.setExp(1627408865L);
-    jwtData.setIat(1627408865L);
+    jwtData.setExp(1627408865);
+    jwtData.setIat(1627408865);
     jwtData.setIid(
         "ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("consumer");
@@ -749,8 +749,8 @@ public class JwtAuthServiceTest {
     JwtData jwtData = new JwtData();
     jwtData.setIss("auth.test.com");
     jwtData.setAud("file.iudx.io");
-    jwtData.setExp(1627408865L);
-    jwtData.setIat(1627408865L);
+    jwtData.setExp(1627408865);
+    jwtData.setIat(1627408865);
     jwtData.setIid("ri:example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group");
     jwtData.setRole("consumer");
     jwtData.setCons(new JsonObject().put("access", new JsonArray().add("file")));
