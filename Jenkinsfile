@@ -38,21 +38,21 @@ pipeline {
       }
       post{
             always {
-                      recordIssues(
-                        enabledForFailure: true,
-                        blameDisabled: true,
-                        forensicsDisabled: true,
-                        qualityGates: [[threshold:0, type: 'TOTAL', unstable: false]],
-                        tool: checkStyle(pattern: 'target/checkstyle-result.xml')
-                      )
-                      recordIssues(
-                        enabledForFailure: true,
-                      	blameDisabled: true,
-                        forensicsDisabled: true,
-                        qualityGates: [[threshold:4, type: 'TOTAL', unstable: false]],
-                        tool: pmdParser(pattern: 'target/pmd.xml')
-                      )
-                    }
+              recordIssues(
+                enabledForFailure: true,
+                blameDisabled: true,
+                forensicsDisabled: true,
+                qualityGates: [[threshold:0, type: 'TOTAL', unstable: false]],
+                tool: checkStyle(pattern: 'target/checkstyle-result.xml')
+              )
+              recordIssues(
+                enabledForFailure: true,
+                blameDisabled: true,
+                forensicsDisabled: true,
+                qualityGates: [[threshold:4, type: 'TOTAL', unstable: false]],
+                tool: pmdParser(pattern: 'target/pmd.xml')
+              )
+            }
         failure{
           script{
             sh 'docker compose -f docker-compose.test.yml down --remove-orphans'
@@ -135,8 +135,8 @@ pipeline {
           steps {
             script {
               docker.withRegistry( registryUri, registryCredential ) {
-                devImage.push("5.0.0-alpha-${env.GIT_HASH}")
-                deplImage.push("5.0.0-alpha-${env.GIT_HASH}")
+                devImage.push("5.5.0-alpha-${env.GIT_HASH}")
+                deplImage.push("5.5.0-alpha-${env.GIT_HASH}")
               }
             }
           }
@@ -144,7 +144,7 @@ pipeline {
         stage('Docker Swarm deployment') {
           steps {
             script {
-              sh "ssh azureuser@docker-swarm 'docker service update file-server_file-server --image ghcr.io/datakaveri/fs-depl:5.0.0-alpha-${env.GIT_HASH}'"
+              sh "ssh azureuser@docker-swarm 'docker service update file-server_file-server --image ghcr.io/datakaveri/fs-depl:5.5.0-alpha-${env.GIT_HASH}'"
               sh 'sleep 10'
             }
           }
