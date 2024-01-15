@@ -1,18 +1,22 @@
-package iudx.file.server.apiserver.integrationtests.upload;
+package iudx.file.server.apiserver.integrationtests.files;
 
 import io.restassured.http.ContentType;
+import io.vertx.core.json.JsonObject;
 import iudx.file.server.apiserver.integrationtests.RestAssuredConfiguration;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import java.io.*;
+
+
+import static iudx.file.server.authenticator.TokensForITs.*;
 import static org.hamcrest.Matchers.equalTo;
 import static io.restassured.RestAssured.given;
-import static iudx.file.server.apiserver.integrationtests.TokenHelper.delegateToken;
+
 import static org.hamcrest.Matchers.notNullValue;
 
 @ExtendWith(RestAssuredConfiguration.class)
-public class FileServerUploadIntegrationTest {
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+public class FileServerIntegrationTests {
 
     private File createTempFileWithContent() {
         // Create a temporary file
@@ -35,15 +39,24 @@ public class FileServerUploadIntegrationTest {
     // Create a temporary file and get its reference
     File tempFile = createTempFileWithContent();
     String id ="83c2e5c2-3574-4e11-9530-2b1fbdfce832";
+
+    private static String sampleFileId;
+    private static String archiveFileId;
+    private static String externalStorageFileId;
+    String invalidFileId = "_abced";
+    String nonExistingArchiveId ="83c2e5c2-3574-4e11-9530-2b1fbdfce832/8185010f-705d-4966-ac44-2050887c68f3_invalid.txt";
+
     boolean isSample=true;
     String invalidToken ="abc";
     String fileDownloadURL = "https://docs.google.com/document/d/19f6oOIxHVjC3twcRHQATjrEXJsDO0rLixoFgLV7xMxk/edit?usp=sharing";
 
+    //File Upload
     @Test
+    @Order(1)
     @DisplayName("200 (Success) DX file upload - Resource level (sample)")
-    public void fileUploadSuccessTest() {
+    public void sampleFileUploadSuccessTest() {
 
-        given()
+        JsonObject respJson = new JsonObject(given()
                 .multiPart("file", tempFile, "text/plain")
                 .formParam("id", id)
                 .formParam("isSample", isSample)
@@ -55,11 +68,16 @@ public class FileServerUploadIntegrationTest {
                 .log().body()
                 .contentType(ContentType.JSON)
                 .body("results", notNullValue())
-                .body("results[0].fileId", notNullValue());
+                .body("results[0].fileId", notNullValue())
+                .extract()
+                .asString());
+        sampleFileId = respJson.getJsonArray("results").getJsonObject(0).getString("fileId");
+
     }
     @Test
+    @Order(2)
     @DisplayName("401 (not authorized) DX file upload - Resource level (sample)")
-    public void unauthorisedFileUploadTest() {
+    public void unauthorisedSampleFileUploadTest() {
 
         given()
                 .multiPart("file", tempFile, "text/plain")
@@ -77,11 +95,12 @@ public class FileServerUploadIntegrationTest {
                 .body("detail", equalTo("Token is invalid"));
     }
     @Test
+    @Order(3)
     @DisplayName("200 (Success) - Archive Resource Level")
-    public void successArchiveTest() {
+    public void archiveFileUploadSuccessTest() {
         // Create a temporary file and get its reference
         //File tempFile = createTempFileWithContent();
-        given()
+        JsonObject respJson = new JsonObject(given()
                 .multiPart("file", tempFile, "text/plain")
                 .formParam("id", id)
                 .formParam("startTime", "2020-09-05T00:00:00Z")
@@ -98,11 +117,16 @@ public class FileServerUploadIntegrationTest {
                 .body("type", equalTo("urn:dx:rs:success"))
                 .body("title", equalTo("Success"))
                 .body("results", notNullValue())
-                .body("results[0].fileId", notNullValue());
+                .body("results[0].fileId", notNullValue())
+                .extract()
+                .asString());
+        archiveFileId = respJson.getJsonArray("results").getJsonObject(0).getString("fileId");
+
     }
     @Test
-    @DisplayName("200 (Success) - Archive Resource Level")
-    public void unauthorisedArchiveTest() {
+    @Order(4)
+    @DisplayName("401 (not authorized) DX file upload - Resource level (Archive)")
+    public void unauthorisedArchiveFileTest() {
         // Create a temporary file and get its reference
         //File tempFile = createTempFileWithContent();
 
@@ -125,6 +149,7 @@ public class FileServerUploadIntegrationTest {
                 .body("detail", equalTo("Token is invalid"));
     }
     @Test
+    @Order(5)
     @DisplayName("400 (No id param in request) DX file upload")
     public void invalidParamFileUploadTest() {
         // Create a temporary file and get its reference
@@ -146,6 +171,7 @@ public class FileServerUploadIntegrationTest {
                 .body("detail", equalTo("Validation error : null or blank value for required mandatory field"));
     }
     @Test
+    @Order(6)
     @DisplayName("400 (Invalid isSample value) DX file upload")
     public void invalidIsSampleFileUploadTest() {
         // Create a temporary file and get its reference
@@ -166,11 +192,12 @@ public class FileServerUploadIntegrationTest {
                 .body("detail", equalTo("Validation error : Invalid isSample field value [ true1 ]"));
     }
     @Test
+    @Order(7)
     @DisplayName("200 (Success) DX file upload - Resource level (External Storage)")
-    public void fileUploadExternalStorageTest() {
+    public void externalStorageFileUploadSuccessTest() {
         // Create a temporary file and get its reference
         //File tempFile = createTempFileWithContent();
-        given()
+        JsonObject respJson = new JsonObject(given()
                 .multiPart("file", tempFile, "text/plain")
                 .formParam("id", id)
                 .formParam("startTime", "2020-09-05T00:00:00Z")
@@ -188,7 +215,99 @@ public class FileServerUploadIntegrationTest {
                 .body("type", equalTo("urn:dx:rs:success"))
                 .body("title", equalTo("Success"))
                 .body("results", notNullValue())
-                .body("results[0].fileId", notNullValue());
+                .body("results[0].fileId", notNullValue())
+                .extract()
+                .asString());
+        externalStorageFileId = respJson.getJsonArray("results").getJsonObject(0).getString("fileId");
     }
 
+    // File Download
+    @Test
+    @Order(8)
+    @DisplayName("200 (Success) DX file download - RL (Sample file )")
+    public void sampleFileDownloadSuccessTest() {
+        given()
+                .param("file-id", sampleFileId)
+                .header("token", openResourceToken)
+                .when()
+                .get("/download")
+                .then()
+                .log().body()
+                .statusCode(200);
+    }
+    @Test
+    @Order(9)
+    @DisplayName("400 (invalid file id) DX file download")
+    public void invalidIdSampleFileDownloadTest() {
+        given()
+                .header("token", openResourceToken)
+                .param("file-id", invalidFileId)
+                .when()
+                .get("/download")
+                .then()
+                .statusCode(400)
+                .log().body()
+                .contentType(ContentType.JSON)
+                .body("type", equalTo("urn:dx:rs:invalidAttributeValue"))
+                .body("title", equalTo("Bad Request"))
+                .body("detail", equalTo("Validation error : invalid file id [ " + invalidFileId + " ]"));
+    }
+    @Test
+    @Order(10)
+    @DisplayName("200 (Success) DX file download -Resource level (Archive file )")
+    public void archiveFileDownloadSuccessTest(){
+        given()
+                .param("file-id", archiveFileId)
+                .header("token", secureResourceToken)
+                .when()
+                .get("/download")
+                .then()
+                .log().body()
+                .statusCode(200);
+    }
+    @Test
+    @Order(11)
+    @DisplayName("401 (not authorized) DX file download - RL (Archive file )")
+    public void unauthorisedArchiveFileDownloadTest() {
+        given()
+                .header("token", invalidToken)
+                .param("file-id", archiveFileId)
+                .when()
+                .get("/download")
+                .then()
+                .statusCode(401)
+                .log().body()
+                .contentType(ContentType.JSON)
+                .body("type", equalTo("urn:dx:rs:invalidAuthorizationToken"))
+                .body("title", equalTo("Not authorized"))
+                .body("detail", equalTo("Token is invalid"));
+    }
+    @Test
+    @Order(12)
+    @DisplayName("404 (Not Found) DX file download -Resource level (Archive file )")
+    public void nonExistingArchiveFileDownloadTest() {
+        given()
+                .header("token", secureResourceToken)
+                .param("file-id", nonExistingArchiveId)
+                .when()
+                .get("/download")
+                .then()
+                .statusCode(404)
+                .log().body()
+                .contentType(ContentType.JSON)
+                .body("type", equalTo("urn:dx:rs:resourceNotFound"))
+                .body("title", equalTo("Not Found"))
+                .body("detail", equalTo("Document of given id does not exist"));
+    }
+
+
+    @AfterEach
+    public void tearDown() {
+        // Introduce a delay
+        try {
+            Thread.sleep(1000); // 1 second delay
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 }
