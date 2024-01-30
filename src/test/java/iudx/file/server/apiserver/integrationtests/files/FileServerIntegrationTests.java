@@ -1,22 +1,28 @@
 package iudx.file.server.apiserver.integrationtests.files;
 
 import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import io.vertx.core.json.JsonObject;
 import iudx.file.server.apiserver.integrationtests.RestAssuredConfiguration;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
+import static org.hamcrest.Matchers.*;
 
 
+import static io.restassured.RestAssured.*;
 import static iudx.file.server.authenticator.TokensForITs.*;
 import static org.hamcrest.Matchers.equalTo;
-import static io.restassured.RestAssured.given;
 
 import static org.hamcrest.Matchers.notNullValue;
 
 @ExtendWith(RestAssuredConfiguration.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class FileServerIntegrationTests {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileServerIntegrationTests.class);
 
     private File createTempFileWithContent() {
         // Create a temporary file
@@ -39,6 +45,8 @@ public class FileServerIntegrationTests {
     // Create a temporary file and get its reference
     File tempFile = createTempFileWithContent();
     String id ="83c2e5c2-3574-4e11-9530-2b1fbdfce832";
+    String open_rs_id = "b58da193-23d9-43eb-b98a-a103d4b6103c";
+    String open_rsgrp_id = "5b7556b5-0779-4c47-9cf2-3f209779aa22";
 
     private static String sampleFileId;
     private static String archiveFileId;
@@ -55,7 +63,8 @@ public class FileServerIntegrationTests {
     @Order(1)
     @DisplayName("200 (Success) DX file upload - Resource level (sample)")
     public void sampleFileUploadSuccessTest() {
-
+        System.out.println(basePath);
+        System.out.println(baseURI);
         JsonObject respJson = new JsonObject(given()
                 .multiPart("file", tempFile, "text/plain")
                 .formParam("id", id)
@@ -298,6 +307,266 @@ public class FileServerIntegrationTests {
                 .body("type", equalTo("urn:dx:rs:resourceNotFound"))
                 .body("title", equalTo("Not Found"))
                 .body("detail", equalTo("Document of given id does not exist"));
+    }
+    //For query APIs
+    @Test
+    @Order(13)
+    @DisplayName("200 (Success) Search for Files of an open resource (using openToken)")
+    void GetResourceLevelSample() {
+        given()
+                .header("token", openResourceToken)
+                .param("id", open_rs_id)
+                .param("time", "2020-09-10T00:00:00Z")
+                .param("endTime", "2020-09-15T00:00:00Z")
+                .param("timerel", "between")
+                .when()
+                .get(baseURI+"/ngsi-ld/v1/temporal/entities")
+                .then()
+                .statusCode(200)
+                .body("type", is(200))
+                .body("title", is("urn:dx:rs:success"));
+    }
+    @Test
+    @Order(14)
+    @DisplayName("200 (Success) Search for Files of an open resource group (using openToken)")
+    void GetResourceGroupSample() {
+        given()
+                .header("token", openResourceToken)
+                .param("id", open_rsgrp_id)
+                .param("time", "2020-09-10T00:00:00Z")
+                .param("endTime", "2020-09-15T00:00:00Z")
+                .param("timerel", "between")
+                .when()
+                .get(baseURI+"/ngsi-ld/v1/temporal/entities")
+                .then()
+                .statusCode(200)
+                .body("type", is(200))
+                .body("title", is("urn:dx:rs:success"));
+    }
+    @Test
+    @Order(15)
+    @DisplayName("401 (Not Authorized) Search for Files")
+    void SearchForFilesUnAuth() {
+        given()
+                .param("id", "8b95ab80-2aaf-4636-a65e-7f2563d0d371")
+                .param("time", "2020-09-10T00:00:00Z")
+                .param("endTime", "2020-09-15T00:00:00Z")
+                .param("timerel", "between")
+                .when()
+                .get(baseURI+"/ngsi-ld/v1/temporal/entities")
+                .then()
+                .statusCode(401)
+                .body("type", is("urn:dx:rs:missingAuthorizationToken"))
+                .body("title", is("Not authorized"))
+                .body("detail", is("Token needed and not present"));
+    }
+    @Test
+    @Order(16)
+    @DisplayName("200 (Success) Search for Files using Spatial [geo(circle)]")
+    void SearchForFilesUsingSpatialGeoCircle(){
+        Response response = given()
+                .header("token", secureResourceToken)
+                .param("id", id)
+                .param("georel","near;maxDistance=10000")
+                .param("geometry","point")
+                .param("coordinates", "[72.79,21.16]")
+                .when()
+                .get(baseURI+"/ngsi-ld/v1/entities")
+                .then()
+                .statusCode(200)
+                .body("type", is(200))
+                .body("title", is("urn:dx:rs:success"))
+                .extract()
+                .response();
+        LOGGER.info("response.."+response);
+    }
+    @Test
+    @Order(17)
+    @DisplayName("200 (Success) Search for Files using Spatial [geo(Polygon)]")
+    void SearchForFilesUsingSpatialGeoPolygon() {
+        given()
+                .header("token", secureResourceToken)
+                .param("id", id)
+                .param("georel","within")
+                .param("geometry", "polygon")
+                .param("coordinates", "[[[72.7815,21.1726],[72.7856,21.1519],[72.807,21.1527],[72.8170,21.1680],[72.800,21.1808],[72.7815,21.1726]]]")
+                .when()
+                .get(baseURI+"/ngsi-ld/v1/entities")
+                .then()
+                .statusCode(200)
+                .body("type", is(200))
+                .body("title", is("urn:dx:rs:success"));
+    }
+    @Test
+    @Order(18)
+    @DisplayName("200 (Success) Complex Search [temporal+geo(Circle) search]")
+    void ComplexSearchForFilesUsingTemporalPlusGeoPolygon() {
+        given()
+                .header("token", secureResourceToken)
+                .param("id", id)
+                .param("time", "2020-09-10T00:00:00Z")
+                .param("endTime", "2020-09-15T00:00:00Z")
+                .param("timerel", "between")
+                .param("georel","near;maxDistance=10000")
+                .param("geometry", "point")
+                .param("coordinates", "[72.79,21.16]")
+                .when()
+                .get(baseURI+"/ngsi-ld/v1/temporal/entities")
+                .then()
+                .statusCode(200)
+                .body("type", is(200))
+                .body("title", is("urn:dx:rs:success"));
+    }
+    @Test
+    @Order(19)
+    @DisplayName("401 (not authorized) Complex Search [temporal+geo(Circle) search]")
+    void ComplexSearchForFilesUsingTemporalPlusGeoPolygonUnAuth() {
+        given()
+                .param("id", id)
+                .param("time", "2020-09-10T00:00:00Z")
+                .param("endTime", "2020-09-15T00:00:00Z")
+                .param("timerel", "between")
+                .param("georel","near;maxDistance=10000")
+                .param("geometry", "point")
+                .param("coordinates", "[72.79,21.16]")
+                .when()
+                .get(baseURI+"/ngsi-ld/v1/temporal/entities")
+                .then()
+                .statusCode(401)
+                .body("type", is("urn:dx:rs:missingAuthorizationToken"))
+                .body("title", is("Not authorized"))
+                .body("detail", is("Token needed and not present"));
+    }
+    @Test
+    @Order(20)
+    @DisplayName("200 (Success) List metadata of an open resource (using openToken)")
+    void ListMetaDataOfOpenResource() {
+        given()
+                .header("token", openResourceToken)
+                .param("id", open_rs_id)
+                .when()
+                .get("/list")
+                .then()
+                .statusCode(200)
+                .body("type", is(200))
+                .body("title", is("urn:dx:rs:success"));
+    }
+    @Test
+    @Order(21)
+    @DisplayName("200 (Success) List metadata of an open resource group (using openToken)")
+    void ListMetaDataOfOpenResourceGroup() {
+        given()
+                .header("token", openResourceToken)
+                .param("id", open_rsgrp_id)
+                .when()
+                .get("/list")
+                .then()
+                .statusCode(200)
+                .body("type", is(200))
+                .body("title", is("urn:dx:rs:success"));
+    }
+    @Test
+    @Order(22)
+    @DisplayName("200 (Success) List metadata of a secure resource (using secureToken)")
+    void ListMetaDataOfSecureResource() {
+        given()
+                .header("token", secureResourceToken)
+                .param("id", id)
+                .when()
+                .get("/list")
+                .then()
+                .statusCode(200)
+                .body("type", is(200))
+                .body("title", is("urn:dx:rs:success"));
+    }
+    @Test
+    @Order(23)
+    @DisplayName("401 (Not authorized) List metadata ")
+    void ListMetaDataUnAuth() {
+        given()
+                .param("id", id)
+                .when()
+                .get("/list")
+                .then()
+                .statusCode(401)
+                .body("type", is("urn:dx:rs:missingAuthorizationToken"))
+                .body("title", is("Not authorized"))
+                .body("detail", is("Token needed and not present"));
+    }
+    @Test
+    @Order(24)
+    @DisplayName("200 (Success) DX file delete -RL  (sample file)")
+    void DeleteRLSampleFile() {
+        LOGGER.debug("rl sample..."+sampleFileId);
+        given()
+                .header("token", delegateToken)
+                .param("file-id", sampleFileId)
+                .when()
+                .delete("/delete")
+                .then()
+                .statusCode(200)
+                .body("type", is("urn:dx:rs:success"))
+                .body("title", is("Successful Operation"));
+    }
+    @Test
+    @Order(25)
+    @DisplayName("404 (Not Found) DX file delete - RL  (sample file)")
+    void DeleteRLSampleFileNotFound() {
+        given()
+                .header("token", delegateToken)
+                .param("file-id", nonExistingArchiveId)
+                .when()
+                .delete("/delete")
+                .then()
+                .statusCode(404)
+                .body("type", is("urn:dx:rs:resourceNotFound"))
+                .body("title", is("Not Found"))
+                .body("detail", is("Document of given id does not exist"));
+    }
+    @Test
+    @Order(26)
+    @DisplayName("200 (Success) DX file delete - RL  (Archive file)")
+    void DeleteRLSampleArchiveFile() {
+        LOGGER.debug("rl archive file id..."+archiveFileId);
+        given()
+                .header("token", delegateToken)
+                .param("file-id", archiveFileId)
+                .when()
+                .delete("/delete")
+                .then()
+                .statusCode(200)
+                .body("type", is("urn:dx:rs:success"))
+                .body("title", is("Successful Operation"));
+    }
+    @Test
+    @Order(27)
+    @DisplayName("404 (Not Found) DX file delete - RL (Archive file)")
+    void DeleteRLSampleArchiveFileNotFound() {
+        given()
+                .header("token", delegateToken)
+                .param("file-id", nonExistingArchiveId)
+                .when()
+                .delete("/delete")
+                .then()
+                .statusCode(404)
+                .body("type", is("urn:dx:rs:resourceNotFound"))
+                .body("title", is("Not Found"))
+                .body("detail", is("Document of given id does not exist"));
+    }
+    @Test
+    @Order(28)
+    @DisplayName("200 (Success) DX file delete - RL  (External Storage)")
+    void DeleteRLSampleExternalFile() {
+        LOGGER.debug("rl external storage file id..."+externalStorageFileId);
+        given()
+                .header("token", delegateToken)
+                .param("file-id", externalStorageFileId)
+                .when()
+                .delete("/delete")
+                .then()
+                .statusCode(200)
+                .body("type", is("urn:dx:rs:success"))
+                .body("title", is("Successful Operation"));
     }
 
 
