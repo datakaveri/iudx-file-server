@@ -31,7 +31,7 @@ pipeline {
           sh 'docker compose -f docker-compose.test.yml up test'
         }
         xunit (
-          thresholds: [ skipped(failureThreshold: '1'), failed(failureThreshold: '2') ],
+          thresholds: [ skipped(failureThreshold: '0'), failed(failureThreshold: '0') ],
           tools: [ JUnit(pattern: 'target/surefire-reports/*.xml') ]
         )
         jacoco classPattern: 'target/classes', execPattern: 'target/jacoco.exec', sourcePattern: 'src/main/java', exclusionPattern: 'iudx/file/server/apiserver/FileServerVerticle.class,iudx/file/server/apiserver/FileServerVerticle**,iudx/file/server/authenticator/AuthenticationService.class,iudx/file/server/database/DatabaseService.class,**/JwtDataConverter.class,**/*VertxEBProxy.class,**/Constants.class,**/*VertxProxyHandler.class,**/*Verticle.class,iudx/file/server/deploy/**,iudx/file/server/databroker/DataBrokerServiceImpl.class'
@@ -70,7 +70,6 @@ pipeline {
     stage('Start File-Server for Performance and Integration Testing'){
       steps{
         script{
-            sh 'scp Jmeter/FileServer.jmx jenkins@jenkins-master:/var/lib/jenkins/iudx/rs/Jmeter/'
             sh 'docker compose -f docker-compose.test.yml up -d perfTest'
             sh 'sleep 45'
         }
@@ -93,7 +92,7 @@ pipeline {
           }
         }
         script{
-            sh 'scp /home/ubuntu/configs/rs-config-test.json ./configs/config-test.json'
+            sh 'scp /home/ubuntu/configs/fs-config-test.json ./configs/config-test.json'
             sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestProxyHost=jenkins-master-priv -DintTestProxyPort=8090 -DintTestHost=jenkins-slave1 -DintTestPort=8080'
         }
         node('built-in') {
