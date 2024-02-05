@@ -1,9 +1,9 @@
-package iudx.file.server.apiserver.integrationtests.files;
+package iudx.file.server.apiserver.integrationTests.files;
 
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.vertx.core.json.JsonObject;
-import iudx.file.server.apiserver.integrationtests.RestAssuredConfiguration;
+import iudx.file.server.apiserver.integrationTests.RestAssuredConfiguration;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
@@ -44,19 +44,18 @@ public class FileServerIntegrationTests {
     }
     // Create a temporary file and get its reference
     File tempFile = createTempFileWithContent();
-    String id ="83c2e5c2-3574-4e11-9530-2b1fbdfce832";
-    String open_rs_id = "b58da193-23d9-43eb-b98a-a103d4b6103c";
-    String open_rsgrp_id = "5b7556b5-0779-4c47-9cf2-3f209779aa22";
 
+    private static final String rsId = RestAssuredConfiguration.getRsId();
+    private static final String openRsId = RestAssuredConfiguration.getOpenRsId();
+    private static final String openRsGroupId = RestAssuredConfiguration.getOpenRsGroupId();
     private static String sampleFileId;
     private static String archiveFileId;
     private static String externalStorageFileId;
+    private static final String nonExistingArchiveId = RestAssuredConfiguration.getNonExistingArchiveId();
+    private static final String fileDownloadURL = RestAssuredConfiguration.getFileDownloadURL();
     String invalidFileId = "_abced";
-    String nonExistingArchiveId ="83c2e5c2-3574-4e11-9530-2b1fbdfce832/8185010f-705d-4966-ac44-2050887c68f3_invalid.txt";
-
     boolean isSample=true;
     String invalidToken ="abc";
-    String fileDownloadURL = "https://docs.google.com/document/d/19f6oOIxHVjC3twcRHQATjrEXJsDO0rLixoFgLV7xMxk/edit?usp=sharing";
 
     //File Upload
     @Test
@@ -67,7 +66,7 @@ public class FileServerIntegrationTests {
         System.out.println(baseURI);
         JsonObject respJson = new JsonObject(given()
                 .multiPart("file", tempFile, "text/plain")
-                .formParam("id", id)
+                .formParam("id", rsId)
                 .formParam("isSample", isSample)
                 .header("token", delegateToken)
                 .when()
@@ -90,7 +89,7 @@ public class FileServerIntegrationTests {
 
         given()
                 .multiPart("file", tempFile, "text/plain")
-                .formParam("id", id)
+                .formParam("id", rsId)
                 .formParam("isSample", isSample)
                 .header("token", invalidToken)
                 .when()
@@ -111,7 +110,7 @@ public class FileServerIntegrationTests {
         //File tempFile = createTempFileWithContent();
         JsonObject respJson = new JsonObject(given()
                 .multiPart("file", tempFile, "text/plain")
-                .formParam("id", id)
+                .formParam("id", rsId)
                 .formParam("startTime", "2020-09-05T00:00:00Z")
                 .formParam("endTime", "2020-09-15T00:00:00Z")
                 .formParam("geometry", "point")
@@ -141,7 +140,7 @@ public class FileServerIntegrationTests {
 
         given()
                 .multiPart("file", tempFile, "text/plain")
-                .formParam("id", id)
+                .formParam("id", rsId)
                 .formParam("startTime", "2020-09-05T00:00:00Z")
                 .formParam("endTime", "2020-09-15T00:00:00Z")
                 .formParam("geometry", "point")
@@ -166,7 +165,7 @@ public class FileServerIntegrationTests {
 
         given()
                 .multiPart("file", tempFile, "text/plain")
-                .formParam("id1", id)
+                .formParam("id1", rsId)
                 .formParam("isSample", isSample)
                 .header("token",delegateToken)
                 .when()
@@ -187,7 +186,7 @@ public class FileServerIntegrationTests {
         //File tempFile = createTempFileWithContent();
         given()
                 .multiPart("file", tempFile, "text/plain")
-                .formParam("id", id)
+                .formParam("id", rsId)
                 .formParam("isSample", "true1")
                 .header("token",delegateToken)
                 .when()
@@ -208,7 +207,7 @@ public class FileServerIntegrationTests {
         //File tempFile = createTempFileWithContent();
         JsonObject respJson = new JsonObject(given()
                 .multiPart("file", tempFile, "text/plain")
-                .formParam("id", id)
+                .formParam("id", rsId)
                 .formParam("startTime", "2020-09-05T00:00:00Z")
                 .formParam("endTime", "2020-09-15T00:00:00Z")
                 .formParam("geometry", "point")
@@ -315,7 +314,7 @@ public class FileServerIntegrationTests {
     void GetResourceLevelSample() {
         given()
                 .header("token", openResourceToken)
-                .param("id", open_rs_id)
+                .param("id", openRsId)
                 .param("time", "2020-09-10T00:00:00Z")
                 .param("endTime", "2020-09-15T00:00:00Z")
                 .param("timerel", "between")
@@ -332,7 +331,7 @@ public class FileServerIntegrationTests {
     void GetResourceGroupSample() {
         given()
                 .header("token", openResourceToken)
-                .param("id", open_rsgrp_id)
+                .param("id", openRsGroupId)
                 .param("time", "2020-09-10T00:00:00Z")
                 .param("endTime", "2020-09-15T00:00:00Z")
                 .param("timerel", "between")
@@ -366,7 +365,7 @@ public class FileServerIntegrationTests {
     void SearchForFilesUsingSpatialGeoCircle(){
         Response response = given()
                 .header("token", secureResourceToken)
-                .param("id", id)
+                .param("id", rsId)
                 .param("georel","near;maxDistance=10000")
                 .param("geometry","point")
                 .param("coordinates", "[72.79,21.16]")
@@ -386,7 +385,7 @@ public class FileServerIntegrationTests {
     void SearchForFilesUsingSpatialGeoPolygon() {
         given()
                 .header("token", secureResourceToken)
-                .param("id", id)
+                .param("id", rsId)
                 .param("georel","within")
                 .param("geometry", "polygon")
                 .param("coordinates", "[[[72.7815,21.1726],[72.7856,21.1519],[72.807,21.1527],[72.8170,21.1680],[72.800,21.1808],[72.7815,21.1726]]]")
@@ -403,7 +402,7 @@ public class FileServerIntegrationTests {
     void ComplexSearchForFilesUsingTemporalPlusGeoPolygon() {
         given()
                 .header("token", secureResourceToken)
-                .param("id", id)
+                .param("id", rsId)
                 .param("time", "2020-09-10T00:00:00Z")
                 .param("endTime", "2020-09-15T00:00:00Z")
                 .param("timerel", "between")
@@ -422,7 +421,7 @@ public class FileServerIntegrationTests {
     @DisplayName("401 (not authorized) Complex Search [temporal+geo(Circle) search]")
     void ComplexSearchForFilesUsingTemporalPlusGeoPolygonUnAuth() {
         given()
-                .param("id", id)
+                .param("id", rsId)
                 .param("time", "2020-09-10T00:00:00Z")
                 .param("endTime", "2020-09-15T00:00:00Z")
                 .param("timerel", "between")
@@ -443,7 +442,7 @@ public class FileServerIntegrationTests {
     void ListMetaDataOfOpenResource() {
         given()
                 .header("token", openResourceToken)
-                .param("id", open_rs_id)
+                .param("id", openRsId)
                 .when()
                 .get("/list")
                 .then()
@@ -457,7 +456,7 @@ public class FileServerIntegrationTests {
     void ListMetaDataOfOpenResourceGroup() {
         given()
                 .header("token", openResourceToken)
-                .param("id", open_rsgrp_id)
+                .param("id", openRsGroupId)
                 .when()
                 .get("/list")
                 .then()
@@ -471,7 +470,7 @@ public class FileServerIntegrationTests {
     void ListMetaDataOfSecureResource() {
         given()
                 .header("token", secureResourceToken)
-                .param("id", id)
+                .param("id", rsId)
                 .when()
                 .get("/list")
                 .then()
@@ -484,7 +483,7 @@ public class FileServerIntegrationTests {
     @DisplayName("401 (Not authorized) List metadata ")
     void ListMetaDataUnAuth() {
         given()
-                .param("id", id)
+                .param("id", rsId)
                 .when()
                 .get("/list")
                 .then()

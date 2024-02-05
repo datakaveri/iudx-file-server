@@ -1,4 +1,4 @@
-package iudx.file.server.apiserver.integrationtests;
+package iudx.file.server.apiserver.integrationTests;
 
 import io.restassured.RestAssured;
 import io.vertx.core.Vertx;
@@ -20,32 +20,51 @@ import static iudx.file.server.authenticator.TokensForITs.*;
 public class RestAssuredConfiguration implements BeforeAllCallback {
 
     private static final Logger logger = LoggerFactory.getLogger(RestAssuredConfiguration.class);
+    private static String rsId;
+    private static String openRsId;
+    private static String openRsGroupId;
+    private static String nonExistingArchiveId;
+    private static String fileDownloadURL;
 
     @Override
     public void beforeAll(ExtensionContext context) {
         Vertx vertx = Vertx.vertx();
         Configuration fileServerConfig = new Configuration();
         JsonObject config = fileServerConfig.configLoader(0, vertx);
-        String testHost = config.getString("ip");
-        //  String testHost = System.getProperty("intTestHost");
-        //System.out.println("testHost:"+testHost);
+        JsonObject testValues = config.getJsonObject("testValues");
+
+        rsId = testValues.getString("rsId");
+        openRsId = testValues.getString("openRsId");
+        openRsGroupId = testValues.getString("openRsGroupId");
+        nonExistingArchiveId = testValues.getString("nonExistingArchiveId");
+        fileDownloadURL = testValues.getString("fileDownloadURL");
+
         JsonObject config2 = fileServerConfig.configLoader(1, vertx);
         String authServerHost = config2.getString("authHost");
 
-        if (testHost != null) {
-            baseURI = "http://" + testHost;
+        boolean testOnDepl = Boolean.parseBoolean(System.getProperty("intTestDepl"));
+        if (testOnDepl) {
+            String testHost = "file-test.iudx.io";
+            baseURI = "https://" + testHost;
+            port = 443;
         } else {
-            baseURI = "http://localhost";
+            String testHost = System.getProperty("intTestHost");
+
+            if (testHost != null) {
+                baseURI = "http://" + testHost;
+            } else {
+                baseURI = "http://localhost";
+            }
+
+            String testPort = System.getProperty("intTestPort");
+
+            if (testPort != null) {
+                port = Integer.parseInt(testPort);
+            } else {
+                port = 8081;
+            }
         }
 
-        String testPort = config.getString("httpPort");
-        // String testPort = System.getProperty("intTestPort");
-        if (testPort != null) {
-            port = Integer.parseInt(testPort);
-        } else {
-            port = 8443;
-        }
-        // System.out.println(testPort+","+testHost);
         basePath = "/iudx/v1";
         String dxAuthBasePath = "auth/v1";
         String authEndpoint = "https://"+ authServerHost + "/" + dxAuthBasePath +  "/token";
@@ -66,6 +85,28 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
         waitForTokens();
         enableLoggingOfRequestAndResponseIfValidationFails();
     }
+
+    // Getter methods for configuration values
+    public static String getRsId() {
+        return rsId;
+    }
+
+    public static String getOpenRsId() {
+        return openRsId;
+    }
+
+    public static String getOpenRsGroupId() {
+        return openRsGroupId;
+    }
+
+    public static String getNonExistingArchiveId() {
+        return nonExistingArchiveId;
+    }
+
+    public static String getFileDownloadURL() {
+        return fileDownloadURL;
+    }
+
     private void waitForTokens() {
         int maxAttempts = 5;
         int attempt = 0;
@@ -75,7 +116,7 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
             logger.info("Waiting for tokens to be available. Attempt: " + (attempt + 1));
             // Introduce a delay between attempts
             try {
-                Thread.sleep(3000); // Adjust the delay as we needed
+                Thread.sleep(3000); // Adjust the delay as we aneeded
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
