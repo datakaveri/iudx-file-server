@@ -44,11 +44,12 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
 
         boolean testOnDepl = Boolean.parseBoolean(System.getProperty("intTestDepl"));
         if (testOnDepl) {
-            String testHost = "file-test.iudx.io";
+            String testHost = config.getString("host");
             baseURI = "https://" + testHost;
             port = 443;
         } else {
             String testHost = System.getProperty("intTestHost");
+            //String testHost = config.getString("host");
 
             if (testHost != null) {
                 baseURI = "http://" + testHost;
@@ -61,7 +62,7 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
             if (testPort != null) {
                 port = Integer.parseInt(testPort);
             } else {
-                port = 8081;
+                port = 8443;
             }
         }
 
