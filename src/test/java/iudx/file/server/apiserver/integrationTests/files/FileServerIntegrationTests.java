@@ -1,28 +1,25 @@
 package iudx.file.server.apiserver.integrationTests.files;
 
 import io.restassured.http.ContentType;
-import io.restassured.response.Response;
+import static io.restassured.RestAssured.*;
+import io.restassured.specification.RequestSpecification;
 import io.vertx.core.json.JsonObject;
 import iudx.file.server.apiserver.integrationTests.RestAssuredConfiguration;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.*;
 import static org.hamcrest.Matchers.*;
-
-
-import static io.restassured.RestAssured.*;
 import static iudx.file.server.authenticator.TokensForITs.*;
 import static org.hamcrest.Matchers.equalTo;
-
 import static org.hamcrest.Matchers.notNullValue;
 
 @ExtendWith(RestAssuredConfiguration.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class FileServerIntegrationTests {
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileServerIntegrationTests.class);
+    private static final Logger LOGGER = LogManager.getLogger(FileServerIntegrationTests.class);
 
     private File createTempFileWithContent() {
         // Create a temporary file
@@ -357,26 +354,30 @@ public class FileServerIntegrationTests {
                 .body("title", is("Not authorized"))
                 .body("detail", is("Token needed and not present"));
     }
-    @Test
-    @Order(16)
-    @DisplayName("200 (Success) Search for Files using Spatial [geo(circle)]")
-    void SearchForFilesUsingSpatialGeoCircle(){
-        Response response = given()
-                .header("token", secureResourceToken)
-                .param("id", rsId)
-                .param("georel","near;maxDistance=10000")
-                .param("geometry","point")
-                .param("coordinates", "[72.79,21.16]")
-                .when()
-                .get(baseURI+"/ngsi-ld/v1/entities")
-                .then()
-                .statusCode(200)
-                .body("type", is(200))
-                .body("title", is("urn:dx:rs:success"))
-                .extract()
-                .response();
-        LOGGER.info("response.."+response);
-    }
+@Test
+@Order(16)
+@DisplayName("200 (Success) Search for Files using Spatial [geo(circle)]")
+void searchForFilesUsingSpatialGeoCircle() {
+    String georel = "near;maxDistance=10000";
+    String geometry = "point";
+    String coordinates = "[72.79,21.16]";
+    RequestSpecification requestSpec = given().urlEncodingEnabled(false);
+    given()
+            .header("token", secureResourceToken)
+            .spec(requestSpec)
+            .queryParam("id", rsId)
+            .queryParam("georel", georel)
+            .queryParam("geometry", geometry)
+            .queryParam("coordinates", coordinates)
+            .when()
+            .get(baseURI + "/ngsi-ld/v1/entities")
+            .then()
+            .statusCode(200)
+            .body("type", is(200))
+            .body("title", is("urn:dx:rs:success"))
+            .extract()
+            .response();
+}
     @Test
     @Order(17)
     @DisplayName("200 (Success) Search for Files using Spatial [geo(Polygon)]")
