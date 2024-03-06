@@ -187,7 +187,7 @@
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright [yyyy] [name of copyright owner]
+   Copyright 2024 IUDX Programme Unit, Society of Innovation and Development, Indian Institute of Science, Bangalore
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -208,21 +208,14 @@ IUDX OVERALL LICENSE INFORMATION
 A. Introduction
 ------------
 Most of the developments follow Apache license. You will find a LICENSE file which provides all the information related the license.
-However each project repositories may be using various different modules or other internal repositories. As a practice, the community decided to add all the related dependent license information also within the LINCESE file. Please note that it is a best practice approach and please report if you find any module license in the master section in such LICENSE file.
+However, each project repositories may be using various different modules or other internal repositories. 
+As a practice, the community decided to add all the related dependent license information though dependant license file. 
+Please note that it is a best practice approach and please report if you find any module license mismatches.
 
 B. All Licenses
 ------------
-B.1) This repo : Apache License Version 2.0 (for the compliance the license information is added at the top of this file)
-B.2) All related modules:
-[If you notice, any link broken or suggestions, please report through an issue to the corresponding repository]
-<Module / Repository >  <License Information>
-Elastic Search Server   Server Side Public License VERSION 1, ELASTIC-LICENSE-2.0,
-                        Apache License Version 2.0
-Elastic Search Client   Apache License Version 2.0
-Postgres                PostgreSQL Licence
-Postgres Client         BSD 2-Clause "Simplified" License
-RabbitMQ Client         Apache License Version 2.0
-Zookeeper               Hazelcast Community License Agreement, Version 1.0
+B.1) This repo : Apache License Version 2.0 (for the compliance, the license information is added at the top of this file)
+B.2) Dependant packages and their license details can be found in the file 'dep-licenses' in the current folder.
 
 C. License Remarks (if nothing to be added, please add "No Remarks")
 -------------------------------------------------------------------

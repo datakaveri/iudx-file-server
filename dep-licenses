@@ -1,0 +1,66 @@
+<Dependant Module / Repository >     <License Information>                                 <Modification Description>
+---------------------------------------------------------------------------------------------------------------------
+openjdk                              GNU General Public License (GPL) 2.0                  None
+vert.x                               Apache 2.0, Eclipse Public License 1.0                None
+vert.x                               Apache 2.0, Eclipse Public License 1.0                None
+hazelcast                            Apache 2.0                                            None
+hazelcast-zookeeper                  Hazelcast Community License Agreement, Version 1.0    None
+micrometer                           Apache 2.0                                            None
+micrometer-core                      Apache 2.0                                            None
+micrometer-registry-prometheus       Apache 2.0                                            None
+curator                              Apache 2.0                                            None
+curator-x-discovery                  Apache 2.0                                            None
+junit-jupiter-api                    Eclipse Public License 2.0                            None
+junit-jupiter-params                 Eclipse Public License 2.0                            None
+junit-jupiter-engine                 Eclipse Public License 2.0                            None
+testcontainers                       MIT                                                   None
+testcontainers-elastic               MIT                                                   None
+elasticsearch                        MIT                                                   None
+testcontainer-postgres               MIT                                                   None
+log4j2                               Apache 2.0                                            None
+log4j-bom                            Apache 2.0                                            None
+log4j-core                           Apache 2.0                                            None
+log4j-api                            Apache 2.0                                            None
+log4j-slf4j-impl                     Apache 2.0                                            None
+disruptor                            Apache 2.0                                            None
+junit-jupiter                        MIT                                                   None
+elasticsearch-rest-client            Apache 2.0                                            None
+jacoco-maven-plugin                  Eclipse Public License 2.0                            None
+checkstyle                           LGPL 2.1                                              None
+maven-shade-plugin                   Apache 2.0                                            None
+maven-javadoc-plugin                 Apache 2.0                                            None
+exec-maven-plugin                    Apache 2.0                                            None
+maven-surefire-plugin                Apache 2.0                                            None
+maven-checkstyle-plugin              Apache 2.0                                            None
+maven-compiler-plugin                Apache 2.0                                            None
+maven-pmd-plugin                     Apache 2.0                                            None
+maven-surefire-report-plugin         Apache 2.0                                            None
+vertx-stack-depchain                 Apache 2.0, Eclipse Public License 1.0                None
+vertx-codegen                        Apache 2.0, Eclipse Public License 1.0                None
+vertx-core                           Apache 2.0, Eclipse Public License 1.0                None
+vertx-web                            Apache 2.0, Eclipse Public License 1.0                None
+vertx-service-proxy                  Apache 2.0, Eclipse Public License 1.0                None
+vertx-web-client                     Apache 2.0, Eclipse Public License 1.0                None
+vertx-junit5                         Apache 2.0, Eclipse Public License 1.0                None
+vertx-unit                           Apache 2.0, Eclipse Public License 1.0                None
+vertx-micrometer-metrics             Apache 2.0, Eclipse Public License 1.0                None
+vertx-hazelcast                      Apache 2.0, Eclipse Public License 1.0                None
+vertx-web-validation                 Apache 2.0, Eclipse Public License 1.0                None
+vertx-auth-jwt                       Apache 2.0, Eclipse Public License 1.0                None
+vertx-pg-client                      Apache 2.0, Eclipse Public License 1.0                None
+vertx-rabbitmq-client                Apache 2.0, Eclipse Public License 1.0                None
+rest-assured                         Apache 2.0                                            None
+client                               BSD 2-clause                                          None
+org.postgresql -> postgresql         BSD 2-clause                                          None
+elasticsearch-java                   Apache 2.0                                            None
+jackson-databind                     Apache 2.0                                            None
+mockito-inline                       MIT                                                   None
+mockito-junit-jupiter                MIT                                                   None
+com.google.guava -> guava            Apache 2.0                                            None
+jackson-core                         Apache 2.0                                            None
+jackson-annotations                  Apache 2.0                                            None
+immudb                               Business Source License                               None
+Elastic Search Server                Server Side Public License VERSION 1                  None
+                                     ELASTIC-LICENSE-2.0
+                                     Apache 2.0
+Postgres                             PostgreSQL Licence                                    None
