@@ -142,7 +142,7 @@
         <!-- slf4j to log4j2 bridge adapter, needed for 'io.netty' logs -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
             <version>${log4j2.version}</version>
         </dependency>
         <!--LMAX Disruptor for enabling Asynchronous log4j2 Logging -->
