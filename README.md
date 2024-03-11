@@ -194,5 +194,5 @@ We follow Git Merge based workflow
 3. Commit to your fork and raise a Pull Request with upstream
 
 ## License
-[MIT](./LICENSE.txt)   
+[View License](./LICENSE)
    
