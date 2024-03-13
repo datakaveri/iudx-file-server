@@ -18,8 +18,8 @@ import static org.hamcrest.Matchers.notNullValue;
 
 @ExtendWith(RestAssuredConfiguration.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class FileServerIntegrationTests {
-    private static final Logger LOGGER = LogManager.getLogger(FileServerIntegrationTests.class);
+public class FileServerIT {
+    private static final Logger LOGGER = LogManager.getLogger(FileServerIT.class);
 
     private File createTempFileWithContent() {
         // Create a temporary file
