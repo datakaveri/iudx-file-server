@@ -67,10 +67,10 @@ pipeline {
       }
     }
 
-    stage('Start File-Server for Performance and Integration Testing'){
+    stage('Start File-Server for Integration Tests'){
       steps{
         script{
-            sh 'docker compose -f docker-compose.test.yml up -d perfTest'
+            sh 'docker compose -f docker-compose.test.yml up -d integTest'
             sh 'sleep 45'
         }
       }
@@ -93,7 +93,7 @@ pipeline {
         }
         script{
             sh 'scp /home/ubuntu/configs/fs-config-test.json ./configs/config-test.json'
-            sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestProxyHost=jenkins-master-priv -DintTestProxyPort=8090 -DintTestHost=jenkins-slave1 -DintTestPort=8080'
+            sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestProxyHost=jenkins-master-priv -DintTestProxyPort=8090 -DintTestHost=jenkins-slave1 -DintTestPort=8443'
         }
         node('built-in') {
           script{
