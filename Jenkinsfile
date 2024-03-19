@@ -93,7 +93,6 @@ pipeline {
         }
         script{
             sh 'scp /home/ubuntu/configs/fs-config-test.json ./example-configs/config-test.json'
-            sh 'cp /home/ubuntu/configs/file_upload_test.txt .'
             sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestProxyHost=jenkins-master-priv -DintTestProxyPort=8090 -DintTestHost=jenkins-slave1 -DintTestPort=8443'
         }
         node('built-in') {

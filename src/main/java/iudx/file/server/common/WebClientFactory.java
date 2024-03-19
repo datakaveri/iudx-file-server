@@ -36,11 +36,7 @@ public class WebClientFactory {
         new WebClientOptions()
             .setTrustAll(true)
             .setVerifyHost(false)
-            .setSsl(true)
-            .setKeyStoreOptions(
-                new JksOptions()
-                    .setPath(config.getString("file-keystore"))
-                    .setPassword(config.getString("file-keystorePassword")));
+            .setSsl(true);
     return WebClient.create(vertx, options);
   }
 
@@ -49,11 +45,7 @@ public class WebClientFactory {
         new WebClientOptions()
             .setTrustAll(true)
             .setVerifyHost(false)
-            .setSsl(true)
-            .setKeyStoreOptions(
-                new JksOptions()
-                    .setPath(config.getString("rs-keystore"))
-                    .setPassword(config.getString("rs-keystorePassword")));
+            .setSsl(true);
     return WebClient.create(vertx, options);
   }
 }

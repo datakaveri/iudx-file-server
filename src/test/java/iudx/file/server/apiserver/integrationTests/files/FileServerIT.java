@@ -38,7 +38,11 @@ public class FileServerIT {
 
   private File createTempFileWithContent() {
     // Create a temporary file
-    tempFile = new File("./file_upload_test.txt");
+    try {
+      tempFile = File.createTempFile("test", ".txt");
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to create a temporary file", e);
+    }
 
     // Write content to the file
     try (FileWriter writer = new FileWriter(tempFile)) {
