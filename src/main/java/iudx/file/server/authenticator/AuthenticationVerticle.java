@@ -48,7 +48,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
   @Override
   public void start() {
 
-    webClientFactory = new WebClientFactory(vertx, config());
+    webClientFactory = new WebClientFactory(vertx);
     catalogueService = new CatalogueServiceImpl(webClientFactory, config());
     getJwtPublicKey(vertx, config())
         .onSuccess(

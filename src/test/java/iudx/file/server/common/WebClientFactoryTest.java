@@ -26,7 +26,7 @@ public class WebClientFactoryTest {
         config = new JsonObject();
         config.put("catalogueHost", "abcdefg");
         config.put("cataloguePort", 123);
-        webClientFactory = new WebClientFactory(vertx, config);
+        webClientFactory = new WebClientFactory(vertx);
     }
 
     @DisplayName("Test getWebClientFor method for Unknown serverType")

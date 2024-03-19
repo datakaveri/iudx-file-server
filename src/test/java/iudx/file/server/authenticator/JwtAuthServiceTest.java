@@ -112,7 +112,7 @@ public class JwtAuthServiceTest {
                                                              // test
     JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
 
-    webClientFactory = new WebClientFactory(vertx, authConfig);
+    webClientFactory = new WebClientFactory(vertx);
     // catalogueService = new CatalogueServiceImpl(vertx, webClientFactory, authConfig);
     catalogueServiceMock = mock(CatalogueServiceImpl.class);
     cacheServiceMock = mock(CacheService.class);

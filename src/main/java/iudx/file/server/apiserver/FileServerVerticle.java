@@ -145,7 +145,7 @@ public class FileServerVerticle extends AbstractVerticle {
               requestHandler.next();
             });
 
-    webClientFactory = new WebClientFactory(vertx, config());
+    webClientFactory = new WebClientFactory(vertx);
 
     // authService = new AuthServiceImpl(vertx, webClientFactory, config());
     catalogueService = new CatalogueServiceImpl(webClientFactory, config());
