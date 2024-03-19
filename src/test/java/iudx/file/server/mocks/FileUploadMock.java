@@ -1,5 +1,6 @@
 package iudx.file.server.mocks;
 
+import io.vertx.core.Future;
 import io.vertx.ext.web.FileUpload;
 
 public class FileUploadMock implements FileUpload{
@@ -42,5 +43,10 @@ public class FileUploadMock implements FileUpload{
   @Override
   public boolean cancel() {
     return false;
+  }
+
+  @Override
+  public Future<Void> delete() {
+    return Future.succeededFuture();
   }
 }

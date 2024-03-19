@@ -25,7 +25,7 @@ pipeline {
       }
     }
 
-    stage('Unit Tests and CodeCoverage Test'){
+    stage('Unit Tests and Code Coverage Test'){
       steps{
         script{
           sh 'docker compose -f docker-compose.test.yml up test'
@@ -37,22 +37,22 @@ pipeline {
         jacoco classPattern: 'target/classes', execPattern: 'target/jacoco.exec', sourcePattern: 'src/main/java', exclusionPattern: 'iudx/file/server/apiserver/FileServerVerticle.class,iudx/file/server/apiserver/FileServerVerticle**,iudx/file/server/authenticator/AuthenticationService.class,iudx/file/server/database/DatabaseService.class,**/JwtDataConverter.class,**/*VertxEBProxy.class,**/Constants.class,**/*VertxProxyHandler.class,**/*Verticle.class,iudx/file/server/deploy/**,iudx/file/server/databroker/DataBrokerServiceImpl.class'
       }
       post{
-            always {
-              recordIssues(
-                enabledForFailure: true,
-                blameDisabled: true,
-                forensicsDisabled: true,
-                qualityGates: [[threshold:0, type: 'TOTAL', unstable: false]],
-                tool: checkStyle(pattern: 'target/checkstyle-result.xml')
-              )
-              recordIssues(
-                enabledForFailure: true,
-                blameDisabled: true,
-                forensicsDisabled: true,
-                qualityGates: [[threshold:4, type: 'TOTAL', unstable: false]],
-                tool: pmdParser(pattern: 'target/pmd.xml')
-              )
-            }
+        always {
+          recordIssues(
+            enabledForFailure: true,
+            blameDisabled: true,
+            forensicsDisabled: true,
+            qualityGates: [[threshold:0, type: 'TOTAL', unstable: false]],
+            tool: checkStyle(pattern: 'target/checkstyle-result.xml')
+          )
+          recordIssues(
+            enabledForFailure: true,
+            blameDisabled: true,
+            forensicsDisabled: true,
+            qualityGates: [[threshold:4, type: 'TOTAL', unstable: false]],
+            tool: pmdParser(pattern: 'target/pmd.xml')
+          )
+        }
         failure{
           script{
             sh 'docker compose -f docker-compose.test.yml down --remove-orphans'
@@ -67,10 +67,9 @@ pipeline {
       }
     }
 
-    stage('Start File server for Integration Tests'){
+    stage('Start File-Server for Integration Tests'){
       steps{
         script{
-            sh 'scp src/test/resources/iudx-file-server-api.Release-v5.0.0.postman_collection.json jenkins@jenkins-master:/var/lib/jenkins/iudx/fs/Newman/'
             sh 'docker compose -f docker-compose.test.yml up -d integTest'
             sh 'sleep 45'
         }
@@ -84,24 +83,34 @@ pipeline {
       }
     }
 
-    stage('Integration tests & OWASP ZAP pen test'){
+    stage('Integration Tests and OWASP ZAP pen test'){
       steps{
         node('built-in') {
           script{
-            startZap ([host: 'localhost', port: 8090, zapHome: '/var/lib/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/OWASP_ZAP/ZAP_2.11.0'])
-              sh 'curl http://127.0.0.1:8090/JSON/pscan/action/disableScanners/?ids=10096'
-              sh 'HTTP_PROXY=\'127.0.0.1:8090\' newman run /var/lib/jenkins/iudx/fs/Newman/iudx-file-server-api.Release-v5.0.0.postman_collection.json -e /home/ubuntu/configs/fs-postman-env.json -n 2 --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/fs/Newman/report/report.html --reporter-htmlextra-skipSensitiveData'
-            runZapAttack()
+            startZap ([host: '0.0.0.0', port: 8090, zapHome: '/var/lib/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/OWASP_ZAP/ZAP_2.11.0'])
+            sh 'curl http://0.0.0.0:8090/JSON/pscan/action/disableScanners/?ids=10096'
           }
+        }
+        script{
+            sh 'scp /home/ubuntu/configs/fs-config-test.json ./example-configs/config-test.json'
+            sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestProxyHost=jenkins-master-priv -DintTestProxyPort=8090 -DintTestHost=jenkins-slave1 -DintTestPort=8443'
+        }
+        node('built-in') {
+          script{
+            runZapAttack()
+            }
         }
       }
       post{
         always{
+           xunit (
+             thresholds: [ skipped(failureThreshold: '0'), failed(failureThreshold: '0') ],
+             tools: [ JUnit(pattern: 'target/failsafe-reports/*.xml') ]
+             )
           node('built-in') {
             script{
               archiveZap failHighAlerts: 1, failMediumAlerts: 1, failLowAlerts: 1
-            }  
-            publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/fs/Newman/report/', reportFiles: 'report.html', reportTitles: '', reportName: 'Integration Test Report'])
+            }
           }
         }
         failure{
@@ -156,19 +165,16 @@ pipeline {
         }
         stage('Integration test on swarm deployment') {
           steps {
-            node('built-in') {
               script{
-                sh 'newman run /var/lib/jenkins/iudx/fs/Newman/iudx-file-server-api.Release-v5.0.0.postman_collection.json -e /home/ubuntu/configs/cd/fs-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/fs/Newman/report/cd-report.html --reporter-htmlextra-skipSensitiveData'
+                sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestDepl=true'
               }
-            }
           }
           post{
             always{
-              node('built-in') {
-                script{
-                  publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/fs/Newman/report/', reportFiles: 'cd-report.html', reportTitles: '', reportName: 'Docker-Swarm Integration Test Report'])
-                }
-              }
+             xunit (
+               thresholds: [ skipped(failureThreshold: '0'), failed(failureThreshold: '0') ],
+               tools: [ JUnit(pattern: 'target/failsafe-reports/*.xml') ]
+               )
             }
             failure{
               error "Test failure. Stopping pipeline execution!"
