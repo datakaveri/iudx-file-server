@@ -1,4 +1,4 @@
-# This github workflow will automatically update docker image tags of fs-depl in the datakaveri/iudx-deployment repository files, whenever docker image is pushed to ghcr.io/datakaveri/fs-depl .Based on tag it will update the master/latest branch (if its 5.0.0-alpha-) or 4.5.0 stable branch (if its 4.5.0-)
+# This github workflow will automatically update docker image tags of fs-depl in the datakaveri/iudx-deployment repository files, whenever docker image is pushed to ghcr.io/datakaveri/fs-depl .Based on tag it will update the master/latest branch (if its 5.5.0-alpha-) or 5.0.0 stable branch (if its 5.0.0-)
 name: Update FS docker image tags
 
 # This trigger will run the workflow whenever a new package is published to the registry
@@ -28,14 +28,14 @@ jobs:
       env: 
         GH_TOKEN: ${{ secrets.JENKINS_UPDATE}}
       run: | 
-        # Get the latest version of 4.5.0 and 5.0.0-alpha tags from the container registry using GitHub API
-        export newtag4_5_0=`(head -n 1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/fs-depl/versions | jq ' .[].metadata.container.tags[0]'  | grep 4.5.0 | sed -e 's/^"//' -e 's/"$//'))`
-        export newtag5_0_0=`(head -n 1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/fs-depl/versions | jq ' .[].metadata.container.tags[0]'  | grep 5.0.0-alpha | sed -e 's/^"//' -e 's/"$//'))`
+        # Get the latest version of 5.0.0 and 5.5.0-alpha tags from the container registry using GitHub API
+        export newtag5_0_0=`(head -n 1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/fs-depl/versions | jq ' .[].metadata.container.tags[0]'  | grep 5.0.0 | sed -e 's/^"//' -e 's/"$//'))`
+        export newtag5_5_0=`(head -n 1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/fs-depl/versions | jq ' .[].metadata.container.tags[0]'  | grep 5.5.0-alpha | sed -e 's/^"//' -e 's/"$//'))`
         
         # Get the old tags from the YAML files
-        export oldtag5_0_0=`yq -r .services.file-server.image Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml | cut -d : -f 2`
-        git checkout 4.5.0
-        export oldtag4_5_0=$(yq -r .services.file-server.image Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml | cut -d : -f 2)      
+        export oldtag5_5_0=`yq -r .services.file-server.image Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml | cut -d : -f 2`
+        git checkout 5.0.0
+        export oldtag5_0_0=$(yq -r .services.file-server.image Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml | cut -d : -f 2)      
         
         # Set Git user
         git config --global user.name 'jenkins-datakaveri'
@@ -43,41 +43,16 @@ jobs:
 
 
         # Update the YAML files and create a new branch for each tag update
-        if [ "$newtag4_5_0" != "$oldtag4_5_0" ]
-        then
-         git checkout -b fs-4.5.0-automatic-updates/$newtag4_5_0
-
-          # Uses sed to find and replace $oldtag4_5_0 with $newtag4_5_0 in Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml file
-         sed -i s/$oldtag4_5_0/$newtag4_5_0/g Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml
-
-         # Exports the current version of the application from K8s-deployment/Charts/file-server/Chart.yaml file
-         export oldappversion=`yq -r .version K8s-deployment/Charts/file-server/Chart.yaml`
-
-         # Uses awk to increment the version number in K8s-deployment/Charts/file-server/Chart.yaml file
-         export newappversion=`yq -r .version K8s-deployment/Charts/file-server/Chart.yaml | awk -F. -v OFS=. 'NF==1{print ++$NF}; NF>1{if(length($NF+1)>length($NF))$(NF-1)++; $NF=sprintf("%0*d", length($NF), ($NF+1)%(10^length($NF))); print}' `
-         
-         # Uses sed to find and replace $oldappversion with $newappversion in K8s-deployment/Charts/file-server/Chart.yaml and K8s-deployment/Charts/file-server/values.yaml files
-         sed -i s/$oldappversion/$newappversion/g K8s-deployment/Charts/file-server/Chart.yaml
-         sed -i s/$oldtag4_5_0/$newtag4_5_0/g K8s-deployment/Charts/file-server/values.yaml
-         git add Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml K8s-deployment/Charts/file-server/values.yaml K8s-deployment/Charts/file-server/Chart.yaml
-         git commit --allow-empty -m "updated FS docker image tag to $newtag4_5_0"
-         git push --set-upstream origin fs-4.5.0-automatic-updates/$newtag4_5_0
-
-         # Creates a new pull request on the datakaveri/iudx-deployment repository with the base branch 4.5.0
-         gh pr create -R datakaveri/iudx-deployment --base 4.5.0 --fill 
-        fi
-        
         if [ "$newtag5_0_0" != "$oldtag5_0_0" ]
         then
-         git checkout master
-         git checkout -b fs-automatic-updates/$newtag5_0_0
+         git checkout -b fs-5.0.0-automatic-updates/$newtag5_0_0
 
-         # Uses sed to find and replace $oldtag5_0_0 with $newtag5_0_0 in Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml file
+          # Uses sed to find and replace $oldtag5_0_0 with $newtag5_0_0 in Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml file
          sed -i s/$oldtag5_0_0/$newtag5_0_0/g Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml
-         
+
          # Exports the current version of the application from K8s-deployment/Charts/file-server/Chart.yaml file
          export oldappversion=`yq -r .version K8s-deployment/Charts/file-server/Chart.yaml`
-         
+
          # Uses awk to increment the version number in K8s-deployment/Charts/file-server/Chart.yaml file
          export newappversion=`yq -r .version K8s-deployment/Charts/file-server/Chart.yaml | awk -F. -v OFS=. 'NF==1{print ++$NF}; NF>1{if(length($NF+1)>length($NF))$(NF-1)++; $NF=sprintf("%0*d", length($NF), ($NF+1)%(10^length($NF))); print}' `
          
@@ -86,7 +61,32 @@ jobs:
          sed -i s/$oldtag5_0_0/$newtag5_0_0/g K8s-deployment/Charts/file-server/values.yaml
          git add Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml K8s-deployment/Charts/file-server/values.yaml K8s-deployment/Charts/file-server/Chart.yaml
          git commit --allow-empty -m "updated FS docker image tag to $newtag5_0_0"
-         git push --set-upstream origin fs-automatic-updates/$newtag5_0_0
+         git push --set-upstream origin fs-5.0.0-automatic-updates/$newtag5_0_0
+
+         # Creates a new pull request on the datakaveri/iudx-deployment repository with the base branch 5.0.0
+         gh pr create -R datakaveri/iudx-deployment --base 5.0.0 --fill 
+        fi
+        
+        if [ "$newtag5_5_0" != "$oldtag5_5_0" ]
+        then
+         git checkout master
+         git checkout -b fs-automatic-updates/$newtag5_5_0
+
+         # Uses sed to find and replace $oldtag5_5_0 with $newtag5_5_0 in Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml file
+         sed -i s/$oldtag5_5_0/$newtag5_5_0/g Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml
+         
+         # Exports the current version of the application from K8s-deployment/Charts/file-server/Chart.yaml file
+         export oldappversion=`yq -r .version K8s-deployment/Charts/file-server/Chart.yaml`
+         
+         # Uses awk to increment the version number in K8s-deployment/Charts/file-server/Chart.yaml file
+         export newappversion=`yq -r .version K8s-deployment/Charts/file-server/Chart.yaml | awk -F. -v OFS=. 'NF==1{print ++$NF}; NF>1{if(length($NF+1)>length($NF))$(NF-1)++; $NF=sprintf("%0*d", length($NF), ($NF+1)%(10^length($NF))); print}' `
+         
+         # Uses sed to find and replace $oldappversion with $newappversion in K8s-deployment/Charts/file-server/Chart.yaml and K8s-deployment/Charts/file-server/values.yaml files
+         sed -i s/$oldappversion/$newappversion/g K8s-deployment/Charts/file-server/Chart.yaml
+         sed -i s/$oldtag5_5_0/$newtag5_5_0/g K8s-deployment/Charts/file-server/values.yaml
+         git add Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml K8s-deployment/Charts/file-server/values.yaml K8s-deployment/Charts/file-server/Chart.yaml
+         git commit --allow-empty -m "updated FS docker image tag to $newtag5_5_0"
+         git push --set-upstream origin fs-automatic-updates/$newtag5_5_0
          
          # Creates a new pull request on the datakaveri/iudx-deployment repository with the base branch master
          gh pr create -R datakaveri/iudx-deployment --base master --fill 
