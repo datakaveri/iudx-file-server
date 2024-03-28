@@ -1,4 +1,4 @@
-# This github workflow will automatically update docker image tags of fs-depl in the datakaveri/iudx-deployment repository files, whenever docker image is pushed to ghcr.io/datakaveri/fs-depl .Based on tag it will update the master/latest branch (if its 5.5.0-alpha-) or 5.0.0 stable branch (if its 5.0.0-)
+# This github workflow will automatically update docker image tags of fs-depl in the datakaveri/iudx-deployment repository files, whenever docker image is pushed to ghcr.io/datakaveri/fs-depl .Based on tag it will update the master/latest branch (if its 5.5.1-alpha-) or 5.5.0 stable branch (if its 5.5.0-)
 name: Update FS docker image tags
 
 # This trigger will run the workflow whenever a new package is published to the registry
