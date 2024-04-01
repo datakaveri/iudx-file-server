@@ -154,7 +154,7 @@ pipeline {
           steps {
             script {
               sh "ssh azureuser@docker-swarm 'docker service update file-server_file-server --image ghcr.io/datakaveri/fs-depl:5.5.0-alpha-${env.GIT_HASH}'"
-              sh 'sleep 10'
+              sh 'sleep 20'
             }
           }
           post{
