@@ -55,7 +55,6 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
     JsonObject testValues = config.getJsonObject("testValues");
     Boolean isSsl = config.getBoolean("ssl");
 
-    logger.debug(config.encodePrettily());
     rsId = testValues.getString("rsId");
     openRsId = testValues.getString("openRsId");
     openRsGroupId = testValues.getString("openRsGroupId");
