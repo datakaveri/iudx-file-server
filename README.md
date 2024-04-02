@@ -1,3 +1,4 @@
+
 [![Build Status](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins.iudx.io%2Fjob%2Fiudx%2520file-server%2520%28master%29%2520pipeline%2F)](https://jenkins.iudx.io/job/iudx%20file-server%20(master)%20pipeline/lastBuild/)
 [![Jenkins Coverage](https://img.shields.io/jenkins/coverage/jacoco?jobUrl=https%3A%2F%2Fjenkins.iudx.io%2Fjob%2Fiudx%2520file-server%2520%28master%29%2520pipeline%2F)](https://jenkins.iudx.io/job/iudx%20file-server%20(master)%20pipeline/lastBuild/jacoco/)
 [![Unit Tests](https://img.shields.io/jenkins/tests?jobUrl=https%3A%2F%2Fjenkins.iudx.io%2Fjob%2Fiudx%2520file-server%2520%28master%29%2520pipeline%2F)](https://jenkins.iudx.io/job/iudx%20file-server%20(master)%20pipeline/lastBuild/testReport/)
@@ -171,21 +172,16 @@ $ java $FS_JAVA_OPTS -jar target/iudx.file.server-dev-0.0.1-SNAPSHOT-fat.jar ...
 ### Testing
 
 ### Unit tests
-1. Run the server through either docker or maven
-2. Run the unit tests and generate a surefire report 
-   `mvn clean test-compile surefire:test surefire-report:report`
-3. Reports are stored in `./target/`
+1. Run the tests using `mvn clean test checkstyle:checkstyle pmd:pmd`  
+2. Reports are stored in `./target/`
+
 
 ### Integration tests
-Integration tests are through Postman/Newman whose script can be found from [here](./src/test/resources/iudx-file-server-api.Release-v2.5.postman_collection.json).
-1. Install prerequisites 
-   - [postman](https://www.postman.com/) + [newman](https://www.npmjs.com/package/newman)
-   - [newman reporter-htmlextra](https://www.npmjs.com/package/newman-reporter-htmlextra)
-2. Example Postman environment can be found [here](./src/test/resources/file.iudx.io.Release-v2.5.postman_environment.json)
-3. Run the server through either docker or maven
-4. Run the integration tests and generate the newman report 
-   `newman run <postman-collection-path> -e <postman-environment> --insecure -r htmlextra --reporter-htmlextra-export .`
-5. Reports are stored in `./target/`
+Integration tests are through Rest Assured 
+1. Run the server through either docker, maven or redeployer
+2. Run the integration tests `mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestHost=localhost -DintTestPort=8080`
+3. Reports are stored in `./target/`
+
 
 ## Contributing
 We follow Git Merge based workflow 
@@ -195,4 +191,3 @@ We follow Git Merge based workflow
 
 ## License
 [View License](./LICENSE)
-   
