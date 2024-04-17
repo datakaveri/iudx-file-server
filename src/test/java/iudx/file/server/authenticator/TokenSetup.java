@@ -13,8 +13,10 @@ import static iudx.file.server.authenticator.TokensForITs.*;
 public class TokenSetup {
     private static final Logger logger = LoggerFactory.getLogger(TokenSetup.class);
     private static WebClient webClient;
+    private static String audience4Admin;
 
-    public static void setupTokens(String authEndpoint, String clientId, String clientSecret, String delegationId) {
+    public static void setupTokens(String authEndpoint, String clientId, String clientSecret, String delegationId, String audience) {
+        audience4Admin = audience;
         // Fetch tokens asynchronously and wait for all completions
         CompositeFuture.all(
                 fetchToken("openResourceToken", authEndpoint, clientId, clientSecret),
@@ -99,6 +101,7 @@ public class TokenSetup {
                         }
                         promise.complete(accessToken);
                     } else {
+                        logger.error("error : "+response.bodyAsString());
                         promise.fail("Failed to get token. Status code: " + response.statusCode());
                     }
                     return Future.succeededFuture();
@@ -129,7 +132,7 @@ public class TokenSetup {
                 jsonPayload.put("role", "consumer");
                 break;
             case "adminToken":
-                jsonPayload.put("itemId", "rs.iudx.io");
+                jsonPayload.put("itemId", audience4Admin);
                 jsonPayload.put("itemType", "resource_server");
                 jsonPayload.put("role", "admin");
                 break;
