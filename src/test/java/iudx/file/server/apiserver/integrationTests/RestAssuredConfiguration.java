@@ -54,7 +54,6 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
     JsonObject config = fileServerConfig.configLoader(0, vertx);
     JsonObject testValues = config.getJsonObject("testValues");
     Boolean isSsl = config.getBoolean("ssl");
-
     rsId = testValues.getString("rsId");
     openRsId = testValues.getString("openRsId");
     openRsGroupId = testValues.getString("openRsGroupId");
@@ -63,6 +62,7 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
 
     JsonObject config2 = fileServerConfig.configLoader(1, vertx);
     String authServerHost = config2.getString("authHost");
+    String  audience = config2.getString("audience");
 
     boolean testOnDepl = Boolean.parseBoolean(System.getProperty("intTestDepl"));
     if (testOnDepl) {
@@ -102,7 +102,7 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
       proxy(proxyHost, Integer.parseInt(proxyPort));
     }
     logger.info("setting up the tokens");
-    TokenSetup.setupTokens(authEndpoint, clientId, clientSecret, delegationId);
+    TokenSetup.setupTokens(authEndpoint, clientId, clientSecret, delegationId,audience);
 
     // Wait for tokens to be available before proceeding
     waitForTokens();
