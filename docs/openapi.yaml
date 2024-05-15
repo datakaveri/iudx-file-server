@@ -66,6 +66,9 @@ info:
   contact:
     name: For support contact IUDX Team at
     email: support@iudx.org.in
+    url: https://iudx.org.in/
+  license:
+    name: Apache 2.0
 
 tags:
   -  name: Files
