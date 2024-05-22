@@ -38,7 +38,7 @@ public class AuthHandler implements Handler<RoutingContext> {
     HttpServerRequest request = context.request();
 
     String token = request.getHeader(HEADER_TOKEN);
-    if (((token == null)||token.isEmpty())) {
+    if (token == null||token.isEmpty()) {
       token = request.getParam(HEADER_TOKEN);
     }
     final String path = request.path();
