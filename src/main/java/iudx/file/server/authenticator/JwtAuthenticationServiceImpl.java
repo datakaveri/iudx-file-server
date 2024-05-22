@@ -6,14 +6,11 @@ import static iudx.file.server.common.Constants.CAT_SEARCH_PATH;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import io.vertx.core.*;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.authentication.TokenCredentials;
 import io.vertx.ext.auth.jwt.JWTAuth;
-import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
-import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import iudx.file.server.authenticator.authorization.*;
 import iudx.file.server.authenticator.utilities.JwtData;
 import iudx.file.server.cache.CacheService;
@@ -24,7 +21,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.concurrent.TimeUnit;
-import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -254,7 +250,6 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
               JwtData jwtData = new JwtData(user.principal());
               jwtData.setExp(user.get("exp"));
               jwtData.setIat(user.get("iat"));
-              LOGGER.debug("jwt: "+jwtData);
               promise.complete(jwtData);
             })
         .onFailure(
