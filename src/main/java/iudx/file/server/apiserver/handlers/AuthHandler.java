@@ -11,6 +11,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+
 import iudx.file.server.apiserver.response.ResponseUrn;
 import iudx.file.server.apiserver.utilities.HttpStatusCode;
 import iudx.file.server.authenticator.AuthenticationService;
@@ -38,6 +39,9 @@ public class AuthHandler implements Handler<RoutingContext> {
     HttpServerRequest request = context.request();
 
     String token = request.getHeader(HEADER_TOKEN);
+    if ((token.isEmpty()) || (token == null)) {
+      token = request.getParam(HEADER_TOKEN);
+    }
     final String path = request.path();
     LOGGER.debug("path : " + path);
     final String method = context.request().method().toString();
