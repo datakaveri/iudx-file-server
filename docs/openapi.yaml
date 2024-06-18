@@ -392,6 +392,77 @@ paths:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
           description: 'Unauthorized'
 
+  /entities:
+    get:
+      servers:
+        - url: 'https://example.com/ngsi-ld/v1'
+          description: 'Development Server URL'
+      tags:
+        - Discovery
+      summary: search for files
+      operationId: search-files
+      parameters:
+        - name: id
+          in: query
+          description: valid DX group or resource id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: georel
+          in: query
+          description: 'The relation type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> The relation <b> near </b> should be always accomodated with a <b> maxdistance </b> property. <br/> Apart from <b> maxdistance</b> , all other fields in the Enum list are <b> case sensitive </b> fields. <br/> The relation <b> near;maxdistance </b> is applicable only for a <b> point </b>.  <br/> The relation <b> within </b> and  <b> intersects </b> are applicable only for <b> bbox, polygon and linestring</b>.'
+          required: true
+          schema:
+            type: string
+            enum: [near;maxdistance=<distance_in_meters>, within, intersects]
+        - name: geometry
+          in: query
+          description: 'The geometry type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/>The list is <b>case sensitive</b> '
+          required: true
+          schema:
+            type: string
+            enum: [Point (or) point, Polygon (or) polygon, LineString (or) linestring, bbox]
+        - name: coordinates
+          in: query
+          description: 'The coordinates for a specific geometry query type. <br/> This parameter accepts both <b> one dimentional array and multi dimentional arrays </b> based on the <b> geometry</b> type. <br/> For e.g, [longitude-1,latitude-1] should be used for geometry <b>point</b>.  <br/>[[[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]]] should be used for geometry <b>polygon</b>. <br/> [[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]] should be used for geometry <b>bbox and linestring </b>. <br/> Maximum of 10 latitude, longitude pairs can be used for geometry <b>polygon, bbox and linestring </b>. <br/> Note: The data-type of this field is a string, therefore the coordinates are a string encoded multidimensional array.<br/> Maximum precision allowed is upto 6 decimal places.'
+          required: true
+          schema:
+            type: array
+            minItems: 2
+            maxItems: 10
+            items:
+              type: number
+            format: double
+
+      x-codeSamples:
+        - lang: 'cURL'
+          label: 'search for a file'
+          source: |
+            curl --location --request GET 'https://example-fs.com/ngsi-ld/v1/entities?id=8a728957-1530-43a2-b844-88a593a94608georel=near;maxDistance=10000&geometry=point&coordinates=[72.79,21.16]' \
+            --header 'token: <tokenValue>'
+
+
+      responses:
+        '200':
+          description: 'Query result'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/standardQueryResponse2'
+        '400':
+          description: 'Bad query'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/standardBadRequestErrorResponse'
+        '401':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+
   /list:
     get:
       tags:
@@ -515,6 +586,48 @@ components:
       example:
         type: urn:dx:rs:success
         title: Success
+        results: [
+          {
+            "id": "8a728957-1530-43a2-b844-88a593a94608",
+            "timeRange": {
+              "gte": "2020-09-05T00:00:00Z",
+              "lte": "2020-09-15T00:00:00Z"
+            },
+            "fileId": "8a728957-1530-43a2-b844-88a593a94608/0cb04afb-32f5-44dd-982d-323b5900bcca.txt",
+            "location": {
+              "type": "point",
+              "coordinates": [
+                72.81,
+                21.16
+              ]
+            }
+          }
+        ]
+        "limit": 5000,
+        "offset": 0,
+        "totalHits": 1
+
+    standardQueryResponse2:
+      title: standardBadRequestErrorResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        results:
+          description: An array of objects
+          type: array
+          items:
+            type: object
+        limit:
+          type: integer
+        offset:
+          type: integer
+        totalHits:
+          type: integer
+      example:
+        type: 200
+        title: urn:dx:rs:success
         results: [
           {
             "id": "8a728957-1530-43a2-b844-88a593a94608",
