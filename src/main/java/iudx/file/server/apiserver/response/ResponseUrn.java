@@ -57,7 +57,8 @@ public enum ResponseUrn {
   BACKING_SERVICE_FORMAT("urn:dx:rs:backend", "format error from backing service [cat,auth etc.]"),
 
   YET_NOT_IMPLEMENTED("urn:dx:rs:general", "urn yet not implemented in backend verticle."),
-  DB_ERROR_URN("urn:dx:rs:dberror", "database error");
+  DB_ERROR_URN("urn:dx:rs:dberror", "database error"),
+  UNAUTHORIZED_URN("urn,dx:rs:unauthorizedResource", "Access to resource is not available");
 
   private final String urn;
   private final String message;
