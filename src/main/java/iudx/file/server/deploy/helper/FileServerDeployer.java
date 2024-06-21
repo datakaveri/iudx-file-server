@@ -11,7 +11,7 @@ import org.apache.logging.log4j.Logger;
 public class FileServerDeployer {
 
   private static final Logger logger = LogManager.getLogger(FileServerDeployer.class);
-  private static Vertx vertx;
+  public static Vertx vertx;
   private static ClusterManager mgr;
   private static VertxOptions options;
 
