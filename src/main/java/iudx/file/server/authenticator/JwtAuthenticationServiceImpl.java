@@ -1,24 +1,24 @@
 package iudx.file.server.authenticator;
+import iudx.file.server.apiserver.response.ResponseUrn;
 
 import static iudx.file.server.authenticator.utilities.Constants.*;
 import static iudx.file.server.common.Constants.CAT_SEARCH_PATH;
 
+import io.vertx.core.json.JsonArray;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import io.vertx.core.*;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.authentication.TokenCredentials;
 import io.vertx.ext.auth.jwt.JWTAuth;
-import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
-import io.vertx.ext.web.client.predicate.ResponsePredicate;
-import iudx.file.server.authenticator.authorization.*;
+import iudx.file.server.authenticator.authorization.* ;
 import iudx.file.server.authenticator.utilities.JwtData;
 import iudx.file.server.cache.CacheService;
 import iudx.file.server.cache.cacheimpl.CacheType;
 import iudx.file.server.common.Api;
+import iudx.file.server.common.Response;
 import iudx.file.server.common.service.CatalogueService;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import iudx.file.server.database.postgres.PostgresService;
 
 public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
@@ -40,6 +41,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   final String catBasePath;
   final CatalogueService catalogueService;
   final CacheService cache;
+  final PostgresService postgresService;
   final Api api;
   // resourceGroupCache will contains ACL info about all resource group in a resource server
   private final Cache<String, String> resourceGroupCache =
@@ -61,7 +63,10 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       final JsonObject config,
       final CatalogueService catalogueService,
       final CacheService cacheService,
-      final Api api) {
+      final PostgresService postgresService,
+      final Api api
+  )
+  {
     this.jwtAuth = jwtAuth;
     this.audience = config.getString("audience");
     this.catalogueService = catalogueService;
@@ -70,6 +75,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     port = config.getInteger("cataloguePort");
     this.catBasePath = config.getString("dxCatalogueBasePath");
     this.path = catBasePath + CAT_SEARCH_PATH;
+    this.postgresService= postgresService;
     this.api = api;
 
     WebClientOptions options = new WebClientOptions();
@@ -84,6 +90,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     String id = authenticationInfo.getString("id");
     String token = authenticationInfo.getString("token");
     String endPoint = authenticationInfo.getString("apiEndpoint");
+
     boolean skipIdCheck =
         endPoint.equalsIgnoreCase(api.getApiFileUpload())
             || endPoint.equalsIgnoreCase(api.getApiFileDelete());
@@ -149,12 +156,21 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
                 return Future.succeededFuture(jsonResponse);
               } else {
                 return validateAccess(result.jwtData, result.isOpen, authenticationInfo);
+
               }
             })
+//
+      .compose(
+        validateAccessHandler -> {
+          return validateAccessRestriction(validateAccessHandler, result);
+        }
+      )
         .onComplete(
+
             completeHandler -> {
+
               if (completeHandler.succeeded()) {
-                handler.handle(Future.succeededFuture(completeHandler.result()));
+                handler.handle(Future.succeededFuture( completeHandler.result()));
               } else {
                 LOGGER.error("error : " + completeHandler.cause());
                 LOGGER.error("error : " + completeHandler);
@@ -163,6 +179,48 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             });
 
     return this;
+  }
+
+  private Future<JsonObject> validateAccessRestriction(JsonObject authInfo, ResultContainer result) {
+    Promise<JsonObject> promise = Promise.promise();
+    String queryToExecute = DATA_ACCESS_RESTRICTION.replace("$1", result.jwtData.getSub());
+    postgresService.executeQuery(queryToExecute, queryResultHandler -> {
+      if(queryResultHandler.succeeded()) {
+        JsonObject queryResult = queryResultHandler.result();
+        JsonArray accessArray = result.jwtData.getCons().getJsonArray("access");
+
+        if (accessArray != null && !accessArray.isEmpty()) {
+          JsonObject accessRestrictionList  = accessArray.getJsonObject(0);
+          if (accessRestrictionList  != null) {
+            int fileLimit = Integer.parseInt((String) accessRestrictionList .getValue("file", "0"));
+            int apiLimit = Integer.parseInt((String) accessRestrictionList .getValue("api", "0"));
+
+            long numRows = (long) queryResult.getJsonArray("result").getJsonObject(0).getValue("num_rows", 0L);
+            long totalDataDownloaded =  queryResult.getJsonArray("result").getJsonObject(0).getNumber("total_data_downloaded").longValue();
+
+
+
+
+            if (numRows>apiLimit || totalDataDownloaded>fileLimit)  {
+              promise.fail("fail"); // Access denied
+            } else {
+              promise.complete(authInfo); // Access granted
+            }
+          }
+        } else {
+          Response unauthorizedResponse = new Response.Builder()
+            .withUrn(ResponseUrn.UNAUTHORIZED_URN.getUrn())
+            .withStatus(HttpStatus.SC_UNAUTHORIZED)
+            .withDetail("Access denied due to invalid access information")
+            .build();
+          promise.fail(unauthorizedResponse.toString());
+        }
+      } else {
+        //prmise fail
+        promise.fail("Invalid Query");
+      }
+    });
+    return promise.future();
   }
 
   private boolean checkQueryEndPoints(String endPoint) {
@@ -182,6 +240,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     }
     return false;
   }
+
 
   public Future<String> isOpenResource(String id) {
     LOGGER.trace("isOpenResource() started");
@@ -251,6 +310,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
         .authenticate(creds)
         .onSuccess(
             user -> {
+
               JwtData jwtData = new JwtData(user.principal());
               jwtData.setExp(user.get("exp"));
               jwtData.setIat(user.get("iat"));
@@ -264,14 +324,16 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             });
 
     return promise.future();
+
   }
 
   public Future<JsonObject> validateAccess(
       JwtData jwtData, boolean openResource, JsonObject authInfo) {
+    JsonObject Response = new JsonObject();
     LOGGER.trace("validateAccess() started");
+
     Promise<JsonObject> promise = Promise.promise();
     String jwtId = jwtData.getIid().split(":")[1];
-
     if (openResource && checkOpenEndPoints(authInfo.getString("apiEndpoint"))) {
       LOGGER.info("User access is allowed.");
       JsonObject jsonResponse = new JsonObject();
@@ -280,6 +342,16 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       jsonResponse.put(ROLE, jwtData.getRole());
       jsonResponse.put(DRL, jwtData.getDrl());
       jsonResponse.put(DID, jwtData.getDid());
+
+      JsonArray accessibleAttrs = jwtData.getCons().getJsonArray("attrs");
+      if (accessibleAttrs == null || accessibleAttrs.isEmpty()) {
+        jsonResponse.put(ACCESS, new JsonArray());
+      } else {
+        jsonResponse.put(ACCESS, accessibleAttrs);
+      }
+
+
+
       return Future.succeededFuture(jsonResponse);
     }
 
@@ -291,6 +363,13 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       jsonResponse.put(ROLE, jwtData.getRole());
       jsonResponse.put(DRL, jwtData.getDrl());
       jsonResponse.put(DID, jwtData.getDid());
+      JsonArray accessibleAttrs = jwtData.getCons().getJsonArray("attrs");
+      if (accessibleAttrs == null || accessibleAttrs.isEmpty()) {
+        jsonResponse.put(ACCESS, new JsonArray());
+      } else {
+        jsonResponse.put(ACCESS, accessibleAttrs);
+      }
+
       return Future.succeededFuture(jsonResponse);
     }
 
@@ -303,15 +382,25 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     LOGGER.info("strategy : " + authStrategy.getClass().getSimpleName());
     JwtAuthorization jwtAuthStrategy = new JwtAuthorization(authStrategy);
     LOGGER.info("endPoint : " + authInfo.getString("apiEndpoint"));
+
+
     if (jwtAuthStrategy.isAuthorized(authRequest, jwtData)) {
       JsonObject jsonResponse = new JsonObject();
       jsonResponse.put(JSON_USERID, jwtData.getSub());
       jsonResponse.put(ROLE, jwtData.getRole());
       jsonResponse.put(DRL, jwtData.getDrl());
       jsonResponse.put(DID, jwtData.getDid());
+      JsonArray accessibleAttrs = jwtData.getCons().getJsonArray("attrs");
+      if (accessibleAttrs == null || accessibleAttrs.isEmpty()) {
+        jsonResponse.put(ACCESS, new JsonArray());
+      } else {
+        jsonResponse.put(ACCESS, accessibleAttrs);
+      }
+
       promise.complete(jsonResponse);
     } else {
       LOGGER.info("failed");
+
       JsonObject result = new JsonObject().put("401", "no access provided to endpoint");
       promise.fail(result.toString());
     }
@@ -326,6 +415,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       LOGGER.error("Incorrect audience value in jwt");
       promise.fail("Incorrect audience value in jwt");
     }
+
+
     return promise.future();
   }
 

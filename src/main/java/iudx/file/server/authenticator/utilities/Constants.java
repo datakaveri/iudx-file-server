@@ -16,6 +16,11 @@ public class Constants extends iudx.file.server.common.Constants {
   public static final String JSON_USERID = "userid";
   public static final String JSON_CONSUMER = "consumer";
   public static final String ROLE = "role";
+  public static  final String ATTRS = "attrs";
+  public static  final String ACCESS = "access";
+
   public static final String DRL = "drl";
   public static final String DID = "did";
+
+  public static String DATA_ACCESS_RESTRICTION = "SELECT userid, COUNT(*) AS num_rows, SUM(size) AS total_data_downloaded FROM auditing_rs WHERE userid = '$1' GROUP BY userid " ;
 }

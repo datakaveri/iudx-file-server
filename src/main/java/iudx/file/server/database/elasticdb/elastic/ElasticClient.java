@@ -7,6 +7,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.search.SourceConfig;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
@@ -78,8 +79,11 @@ public class ElasticClient {
     Promise<JsonObject> promise = Promise.promise();
     SearchRequest searchRequest =
         SearchRequest.of(e -> e.index(index).query(query).size(size).from(from));
+   LOGGER.trace(searchRequest);
+
     asyncClient
         .search(searchRequest, ObjectNode.class)
+
         .whenCompleteAsync(
             (response, exception) -> {
               if (exception != null) {
@@ -87,11 +91,14 @@ public class ElasticClient {
                 promise.fail(exception);
                 return;
               }
+              //
+
               try {
                 JsonArray dbResponse = new JsonArray();
                 if (response.hits().total().value() == 0) {
                   responseBuilder = new ResponseBuilder().setTypeAndTitle(204);
                   responseBuilder.setMessage(EMPTY_RESPONSE);
+
                   promise.fail(responseBuilder.getResponse().toString());
                   return;
                 }
@@ -111,6 +118,8 @@ public class ElasticClient {
                 responseBuilder =
                     new ResponseBuilder().setTypeAndTitle(400).setMessage(dbException);
                 promise.fail(responseBuilder.getResponse().toString());
+
+
               }
             });
     return promise.future();
@@ -226,7 +235,7 @@ public class ElasticClient {
         .whenCompleteAsync(
             (response, exception) -> {
               if (exception != null) {
-                LOGGER.error("async count query failed : {}", exception);
+                //LOGGER.error("async count query failed : {}", exception);
                 promise.fail(exception);
                 return;
               }
@@ -244,7 +253,9 @@ public class ElasticClient {
                 responseBuilder.setCount(count);
                 promise.complete(responseBuilder.getResponse());
 
-              } catch (Exception ex) {
+
+              }
+              catch (Exception ex) {
                 LOGGER.error("Exception occurred while executing query: {}", ex);
                 JsonObject dbException = new JsonObject(ex.getMessage());
                 responseBuilder =

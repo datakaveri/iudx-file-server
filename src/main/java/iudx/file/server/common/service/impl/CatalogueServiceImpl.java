@@ -85,10 +85,16 @@ public class CatalogueServiceImpl implements CatalogueService {
                           }
                         });
               } else {
+
                 promise.complete(filters);
               }
+
+
+
             });
+
     return promise.future();
+
   }
 
   private Future<List<String>> fetchFilters4Item(String id, String groupId) {
@@ -219,14 +225,18 @@ public class CatalogueServiceImpl implements CatalogueService {
 
                 Set<String> type = new HashSet<String>(new JsonArray().getList());
                 type = new HashSet<String>(response.getJsonArray("type").getList());
+
                 Set<String> itemTypeSet =
                     type.stream().map(e -> e.split(":")[1]).collect(Collectors.toSet());
                 itemTypeSet.retainAll(ITEM_TYPES);
+
                 String itemType =
                     itemTypeSet.toString().replaceAll("\\[", "").replaceAll("\\]", "");
                 LOGGER.info("itemType: {} ", itemType);
                 response.put("type", itemType);
+
                 promise.complete(response);
+
               } else {
                 LOGGER.error("catalogue call search api failed: " + relHandler.cause());
                 promise.fail("catalogue call search api failed");
