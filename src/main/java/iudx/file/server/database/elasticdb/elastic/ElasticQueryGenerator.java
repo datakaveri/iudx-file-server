@@ -30,8 +30,6 @@ public class ElasticQueryGenerator {
     TermsQueryField termQueryField = TermsQueryField.of(e -> e.value(List.of(field)));
     Query idTermsQuery = TermsQuery.of(query -> query.field("id").terms(termQueryField))._toQuery();
 
-
-
     queryLists.get(FilterType.FILTER).add(idTermsQuery);
 
 

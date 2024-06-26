@@ -99,7 +99,6 @@ public class FileServerVerticle extends AbstractVerticle {
   private String dxApiBasePath;
   private String dxV1BasePath;
 
-  public JsonArray datalimit;
 
   @Override
   public void start() throws Exception {
@@ -536,7 +535,6 @@ public class FileServerVerticle extends AbstractVerticle {
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
-    LOGGER.info("authinfo inside download{}", authInfo);
     response.setChunked(true);
     String id = request.getParam("file-id");
     LOGGER.debug("id: " + id);
@@ -592,26 +590,7 @@ public class FileServerVerticle extends AbstractVerticle {
 
 
     MultiMap queryParams = getQueryParams(context, response).get();
-//    LOGGER.info(authInfo.getJsonArray("access").getValue(0).);
-    // Log queryParams details with DEBUG level
-//    LOGGER.debug("Extracted queryParams:");
-//    for (String key : queryParams.names()) {
-//      LOGGER.trace("  - {}: {}", key, queryParams);
-//    }
-
-    /*JsonArray accessArray = authInfo.getJsonArray("access");
-    if (accessArray != null && accessArray.size() > 0) {
-      JsonObject firstAccessObject = accessArray.getJsonObject(0);
-      if (firstAccessObject != null) {
-        String fileValue;
-          fileValue = firstAccessObject.getString("file", null);
-          // fileValue now contains the value of the "file" key from the first "access" array element
-        LOGGER.info("the file value is{}",   fileValue);
-      }
-    }*/
-
-//    LOGGER.debug("Extracted queryParams:");
-
+//
     Future<Boolean> queryParamsValidator = requestValidator.isValid(queryParams);
 
     Future<List<String>> allowedFilters =
@@ -679,8 +658,7 @@ public class FileServerVerticle extends AbstractVerticle {
                 LOGGER.error(handler.cause().getMessage());
                 handleResponse(response, HttpStatusCode.BAD_REQUEST, (ResponseUrn) null);
               }
-              //LOGGER.trace(JsonObject.mapFrom(params)); //{"id":"b58da193-23d9-43eb-b98a-a103d4b6103c","timerel":"between","time":"202
-             // 0-09-10T00:00:00Z","endTime":"2020-09-15T00:00:00Z"}
+
             });
   }
 
@@ -691,11 +669,6 @@ public class FileServerVerticle extends AbstractVerticle {
     searchDbFuture.onComplete(    /// before searchDbfuturecomplete we need to check , whether he is exceeding the file restriction
         handler -> {
           if (handler.succeeded()) {
-
-//            if (response.bytesWritten() > datalimit)
-
-
-
 
             LOGGER.info("Success: Search Success");
 
@@ -717,7 +690,6 @@ public class FileServerVerticle extends AbstractVerticle {
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
   JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
-//  JsonArray datalimit = authInfo.getJsonArray("access").getValue(2);
     response.putHeader("content-type", "application/json");
     String id = request.getParam("file-id");
     String resource = StringUtils.substringBefore(id, FORWARD_SLASH);

@@ -17,6 +17,7 @@ import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import iudx.file.server.common.Api;
+import iudx.file.server.database.postgres.PostgresService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
@@ -59,6 +60,8 @@ public class JwtAuthServiceTest {
   private static JwtAuthenticationServiceImpl jwtAuthImplSpy;
   private static WebClientFactory webClientFactory;
   private static CacheService cacheServiceMock;
+
+  private static PostgresService postgresServiceMock;
   @Mock
   HttpRequest<Buffer> httpRequestMock;
   @Mock
@@ -120,7 +123,7 @@ public class JwtAuthServiceTest {
     iudxApiBasePath = authConfig.getString("iudxApiBasePath");
     api = Api.getInstance(dxApiBasePath,iudxApiBasePath);
     jwtAuthenticationService = new JwtAuthenticationServiceImpl(vertx, jwtAuth, authConfig,
-        catalogueServiceMock, cacheServiceMock, api);
+        catalogueServiceMock, cacheServiceMock,postgresServiceMock, api);
     jwtAuthImplSpy = spy(jwtAuthenticationService);
 
     LOGGER.info("Auth tests setup complete");
@@ -261,8 +264,8 @@ public class JwtAuthServiceTest {
       }
     });
   }
-  
- 
+
+
   @Test
   @DisplayName("success - allow  access to query endpoint for close token")
   public void access4QueryAPICloseToken(VertxTestContext testContext) {
@@ -307,7 +310,7 @@ public class JwtAuthServiceTest {
     });
   }
 
-  //@Disabled  
+  //@Disabled
   @Test
   @DisplayName("success - allow  access to query open endpoint for open token")
   public void access4QueryOpenTokenOpenResource(VertxTestContext testContext) {

@@ -95,10 +95,6 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
         endPoint.equalsIgnoreCase(api.getApiFileUpload())
             || endPoint.equalsIgnoreCase(api.getApiFileDelete());
 
-    LOGGER.info("token is" + token);
-    LOGGER.info("the authenticationinfo look slike{}",authenticationInfo);
-    LOGGER.info("the request looks like{}",request);
-
     Future<JwtData> jwtDecodeFuture = decodeJwt(token);
     Future<Boolean> isItemExistFuture = catalogueService.isItemExist(id);
 
@@ -166,10 +162,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
 //
       .compose(
         validateAccessHandler -> {
-
-
           return validateAccessRestriction(validateAccessHandler, result);
-            //          return null;
         }
       )
         .onComplete(
@@ -177,7 +170,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             completeHandler -> {
 
               if (completeHandler.succeeded()) {
-                handler.handle(Future.succeededFuture((JsonObject) completeHandler.result()));
+                handler.handle(Future.succeededFuture( completeHandler.result()));
               } else {
                 LOGGER.error("error : " + completeHandler.cause());
                 LOGGER.error("error : " + completeHandler);
@@ -197,10 +190,10 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
         JsonArray accessArray = result.jwtData.getCons().getJsonArray("access");
 
         if (accessArray != null && !accessArray.isEmpty()) {
-          JsonObject firstAccessObject = accessArray.getJsonObject(0);
-          if (firstAccessObject != null) {
-            int fileLimit = Integer.parseInt((String) firstAccessObject.getValue("file", "0"));
-            int apiLimit = Integer.parseInt((String) firstAccessObject.getValue("api", "0"));
+          JsonObject accessRestrictionList  = accessArray.getJsonObject(0);
+          if (accessRestrictionList  != null) {
+            int fileLimit = Integer.parseInt((String) accessRestrictionList .getValue("file", "0"));
+            int apiLimit = Integer.parseInt((String) accessRestrictionList .getValue("api", "0"));
 
             long numRows = (long) queryResult.getJsonArray("result").getJsonObject(0).getValue("num_rows", 0L);
             long totalDataDownloaded =  queryResult.getJsonArray("result").getJsonObject(0).getNumber("total_data_downloaded").longValue();
@@ -356,7 +349,6 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       } else {
         jsonResponse.put(ACCESS, accessibleAttrs);
       }
-      jsonResponse.put(ACCESS, jwtData.getCons().getValue("access",new JsonArray()));
 
 
 
@@ -416,7 +408,6 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   }
 
   Future<Boolean> isValidAudienceValue(JwtData jwtData) {
-    JsonObject jsonResponse= new JsonObject();
     Promise<Boolean> promise = Promise.promise();
     if (audience != null && audience.equalsIgnoreCase(jwtData.getAud())) {
       promise.complete(true);

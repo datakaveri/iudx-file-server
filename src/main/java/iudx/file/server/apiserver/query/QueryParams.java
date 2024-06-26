@@ -186,11 +186,6 @@ public class QueryParams {
     this.from = from;
   }
 
-//  public List<String> getMaskedAttributes() {
-//    return maskedAttributes;
-//  }
-
-
   /**
    * set georel.
    *
