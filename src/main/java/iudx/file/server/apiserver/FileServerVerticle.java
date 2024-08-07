@@ -99,6 +99,7 @@ public class FileServerVerticle extends AbstractVerticle {
   private String dxApiBasePath;
   private String dxV1BasePath;
 
+
   @Override
   public void start() throws Exception {
     int port;
@@ -556,8 +557,11 @@ public class FileServerVerticle extends AbstractVerticle {
             String uploadDir = dirHanler.result();
             LOGGER.debug(
                 "uploadDir: " + uploadDir + "; fileuuId: " + fileuuId + "; fileName: " + fileName);
+            LOGGER.info(" response size is {}",response.bytesWritten());
+
             fileService
                 .download(fileuuId, uploadDir, response)
+
                 .onComplete(
                     handler -> {
                       if (handler.failed()) {
@@ -581,8 +585,14 @@ public class FileServerVerticle extends AbstractVerticle {
   public void query(RoutingContext context) {
     HttpServerResponse response = context.response();
     JsonObject authInfo = (JsonObject) context.data().get("authInfo");
+
+
+
+
     MultiMap queryParams = getQueryParams(context, response).get();
+//
     Future<Boolean> queryParamsValidator = requestValidator.isValid(queryParams);
+
     Future<List<String>> allowedFilters =
         catalogueService.getAllowedFilters4Queries(queryParams.get(PARAM_ID));
 
@@ -590,9 +600,17 @@ public class FileServerVerticle extends AbstractVerticle {
     for (Map.Entry<String, String> entry : queryParams.entries()) {
       query.put(entry.getKey(), entry.getValue());
     }
-    QueryParams params = query.mapTo(QueryParams.class).build();
-    QueryType type = getQueryType(params);
 
+    if (authInfo.containsKey("attrs")) {
+      List<String> maskedAttributesList = authInfo.getJsonArray("attrs").getList();
+
+      query.put("attrs", maskedAttributesList);
+    }
+
+    QueryParams params = query.mapTo(QueryParams.class).build();
+
+
+    QueryType type = getQueryType(params);
     JsonObject auditParams =
         new JsonObject()
             .put(RESOURCE_ID, query.getString("id"))
@@ -601,6 +619,9 @@ public class FileServerVerticle extends AbstractVerticle {
             .put(ROLE, authInfo.getString(ROLE))
             .put(DRL, authInfo.getString(DRL))
             .put(DID, authInfo.getString(DID));
+
+
+
 
     queryParamsValidator
         .compose(
@@ -614,6 +635,7 @@ public class FileServerVerticle extends AbstractVerticle {
                     true; // TODO :change to false once filters available in cat for
                 // file
                 List<String> applicableFilters = handler.result();
+
                 if (TEMPORAL_GEO.equals(type)
                     && applicableFilters.contains("SPATIAL")
                     && applicableFilters.contains("TEMPORAL")) {
@@ -636,18 +658,23 @@ public class FileServerVerticle extends AbstractVerticle {
                 LOGGER.error(handler.cause().getMessage());
                 handleResponse(response, HttpStatusCode.BAD_REQUEST, (ResponseUrn) null);
               }
+
             });
   }
 
   private void executeSearch(
       JsonObject json, QueryType type, HttpServerResponse response, JsonObject auditParams) {
     Future<JsonObject> searchDbFuture = database.search(json, type);
-    searchDbFuture.onComplete(
+
+    searchDbFuture.onComplete(    /// before searchDbfuturecomplete we need to check , whether he is exceeding the file restriction
         handler -> {
           if (handler.succeeded()) {
+
             LOGGER.info("Success: Search Success");
+
             handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
             auditParams.put(RESPONSE_SIZE, response.bytesWritten());
+
             Future.future(fu -> updateAuditTable(auditParams));
           } else if (handler.failed()) {
             LOGGER.error("Fail: Search Fail");
@@ -662,11 +689,11 @@ public class FileServerVerticle extends AbstractVerticle {
   public void delete(RoutingContext routingContext) {
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
+  JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
     response.putHeader("content-type", "application/json");
     String id = request.getParam("file-id");
     String resource = StringUtils.substringBefore(id, FORWARD_SLASH);
-    JsonObject auditParams =
+      JsonObject auditParams =
         new JsonObject()
             .put("api", request.path())
             .put(USER_ID, authInfo.getString(USER_ID))
@@ -751,6 +778,12 @@ public class FileServerVerticle extends AbstractVerticle {
     JsonObject authInfo = (JsonObject) context.data().get("authInfo");
     String id = request.getParam("id");
     JsonObject query = new JsonObject().put("id", id);
+
+
+    List<String> maskedAttributesList = authInfo.getJsonArray("attrs").getList();
+
+    query.put("attrs", maskedAttributesList);
+
     JsonObject auditParams =
         new JsonObject()
             .put("api", request.path())
@@ -964,15 +997,17 @@ public class FileServerVerticle extends AbstractVerticle {
       RoutingContext routingContext, HttpServerResponse response) {
     MultiMap queryParams = null;
     try {
+
       queryParams = MultiMap.caseInsensitiveMultiMap();
       // Internally + sign is dropped and treated as space, replacing + with %2B do the trick
       String uri = routingContext.request().uri().toString().replaceAll("\\+", "%2B");
+
       Map<String, List<String>> decodedParams =
           new QueryStringDecoder(uri, HttpConstants.DEFAULT_CHARSET, true, 1024, true).parameters();
+
       for (Map.Entry<String, List<String>> entry : decodedParams.entrySet()) {
         queryParams.add(entry.getKey(), entry.getValue());
       }
-      LOGGER.debug("Info: Decoded multimap");
     } catch (IllegalArgumentException ex) {
       response
           .putHeader(CONTENT_TYPE, APPLICATION_JSON)
