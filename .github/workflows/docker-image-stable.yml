@@ -1,0 +1,60 @@
+# This GitHub workflow will automatically update docker image tags of fs-depl in the datakaveri/iudx-deployment repository files
+# for the 5.5.0 release branch when a docker image with tag 5.5.0 is pushed.
+
+name: Update FS docker image tags for release branch
+
+# Trigger the workflow when a new package is published to the registry
+on:
+  registry_package:
+    types: [published]
+
+permissions:
+  packages: read
+
+jobs:
+
+  update-release:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        repository: datakaveri/iudx-deployment
+        token: "${{ secrets.JENKINS_UPDATE }}"
+        fetch-depth: 0
+
+    - name: Update FS docker image tags for release branch
+      env:
+        GH_TOKEN: ${{ secrets.JENKINS_UPDATE}}
+      run: |
+        # Get the latest version of 5.5.0 tags from the container registry using GitHub API
+        export newtag5_5_0=$(head -n1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/fs-depl/versions | jq ' .[].metadata.container.tags[0]'  | grep 5.5.0 | grep -v alpha | sed -e 's/^"//' -e 's/"$//'))
+
+        # Get the old tag from the YAML file
+        export oldtag5_5_0=$(yq -r .services.file-server.image Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml | cut -d : -f 2)
+
+        # Set Git user
+        git config --global user.name 'jenkins-datakaveri'
+        git config --global user.email "96175780+jenkins-datakaveri@users.noreply.github.com"
+
+        if [ "$newtag5_5_0" != "$oldtag5_5_0" ]; then
+          git checkout 5.5.0
+          git checkout -b fs-5.5.0-automatic-updates/$newtag5_5_0
+
+          # Update the YAML file with the new tag
+          sed -i s/$oldtag5_5_0/$newtag5_5_0/g Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml
+
+          # Update application version in the Helm chart files
+          export oldappversion=$(yq -r .version K8s-deployment/Charts/file-server/Chart.yaml)
+          export newappversion=$(yq -r .version K8s-deployment/Charts/file-server/Chart.yaml | awk -F. -v OFS=. 'NF==1{print ++$NF}; NF>1{if(length($NF+1)>length($NF))$(NF-1)++; $NF=sprintf("%0*d", length($NF), ($NF+1)%(10^length($NF))); print}')
+
+          sed -i s/$oldappversion/$newappversion/g K8s-deployment/Charts/file-server/Chart.yaml
+          sed -i s/$oldtag5_5_0/$newtag5_5_0/g K8s-deployment/Charts/file-server/values.yaml
+
+          git add Docker-Swarm-deployment/single-node/file-server/file-server-stack.yaml K8s-deployment/Charts/file-server/values.yaml K8s-deployment/Charts/file-server/Chart.yaml
+          git commit --allow-empty -m "updated FS docker image tag to $newtag5_5_0"
+          git push --set-upstream origin fs-5.5.0-automatic-updates/$newtag5_5_0
+
+          # Create a new pull request on the datakaveri/iudx-deployment repository with the base branch 5.5.0
+          gh pr create -R datakaveri/iudx-deployment --base 5.5.0 --fill
+        fi
