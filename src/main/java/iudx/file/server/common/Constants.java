@@ -16,6 +16,7 @@ public class Constants {
   public static final String AUDIT_SERVICE_ADDRESS = "iudx.file.auditing.service";
   public static final String PG_SERVICE_ADDRESS = "iudx.file.pgsql.service";
   public static final String CACHE_SERVICE_ADDRESS = "iudx.file.cache.service";
+
   public static final String DATABROKER_SERVICE_ADDRESS = "iudx.file.databroker.address";
 
   public static final String GEOM_POINT = "point";

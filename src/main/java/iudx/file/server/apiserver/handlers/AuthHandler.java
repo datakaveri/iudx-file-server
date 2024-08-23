@@ -1,9 +1,7 @@
 package iudx.file.server.apiserver.handlers;
 
 import static iudx.file.server.apiserver.utilities.Constants.*;
-import static iudx.file.server.authenticator.utilities.Constants.DID;
-import static iudx.file.server.authenticator.utilities.Constants.DRL;
-import static iudx.file.server.authenticator.utilities.Constants.ROLE;
+import static iudx.file.server.authenticator.utilities.Constants.*;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -79,17 +77,21 @@ public class AuthHandler implements Handler<RoutingContext> {
         new JsonObject().put(API_ENDPOINT, path).put(HEADER_TOKEN, token).put(API_METHOD, method);
 
     authInfo.put("id", id);
+    LOGGER.trace((authInfo));
     authenticator.tokenInterospect(
         requestJson,
         authInfo,
         handler -> {
           if (handler.succeeded()) {
+            LOGGER.info(handler.result().toString());
             LOGGER.info("auth success.");
             authInfo.put(USER_ID, handler.result().getValue(USER_ID));
             authInfo.put(ROLE, handler.result().getValue(ROLE));
             authInfo.put(DID, handler.result().getValue(DID));
             authInfo.put(DRL, handler.result().getValue(DRL));
+            authInfo.put(ACCESS, handler.result().getValue(ACCESS));
             context.data().put("authInfo", authInfo);
+
           } else {
             LOGGER.error("Authentication failed [" + handler.cause().getMessage() + "]");
             processUnauthorized(context, false);

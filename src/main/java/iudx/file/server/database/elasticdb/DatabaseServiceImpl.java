@@ -3,8 +3,10 @@ package iudx.file.server.database.elasticdb;
 import static iudx.file.server.database.elasticdb.utilities.Constants.*;
 
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch.core.search.SourceConfig;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.file.server.apiserver.response.ResponseUrn;
 import iudx.file.server.common.QueryType;
@@ -12,6 +14,8 @@ import iudx.file.server.database.elasticdb.elastic.ElasticClient;
 import iudx.file.server.database.elasticdb.elastic.ElasticQueryGenerator;
 import iudx.file.server.database.elasticdb.elastic.exception.EsqueryException;
 import iudx.file.server.database.elasticdb.utilities.ResponseBuilder;
+import iudx.file.server.database.postgres.PostgresConstants;
+import iudx.file.server.database.postgres.PostgresService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,6 +24,7 @@ public class DatabaseServiceImpl implements DatabaseService {
   private static final Logger LOGGER = LogManager.getLogger(DatabaseServiceImpl.class);
   private final ElasticClient client;
   private final String fileMetadataIndex;
+  private PostgresService pgService;
 
   public DatabaseServiceImpl(JsonObject config) {
     this.fileMetadataIndex = config.getString("file-metadata-index");
@@ -36,6 +41,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
   @Override
   public Future<JsonObject> search(JsonObject apiQuery, QueryType type) {
+
     Promise<JsonObject> promise = Promise.promise();
     if (apiQuery == null || apiQuery.isEmpty() || type == null) {
       ResponseBuilder responseBuilder =
@@ -49,25 +55,30 @@ public class DatabaseServiceImpl implements DatabaseService {
     LOGGER.debug("Query type= " + type);
 
     ElasticQueryGenerator queryGenerator = new ElasticQueryGenerator();
+
     Query query = queryGenerator.getQuery(apiQuery, type);
 
+
+
     try {
-      final String searchIndexUrl = fileMetadataIndex;
-      final String countIndexUrl = fileMetadataIndex;
+      final String searchIndexUrl = fileMetadataIndex; //"file-metadata"
+      final String countIndexUrl = fileMetadataIndex;  //file-metadata
+
 
       final int sizeKeyValue = getOrDefault(apiQuery, PARAM_LIMIT, DEFAULT_SIZE_VALUE);
       final int fromKeyValue = getOrDefault(apiQuery, PARAM_OFFSET, DEFAULT_FROM_VALUE);
 
+
+
       CountResultPlaceholder countPlaceHolder = new CountResultPlaceholder();
-
       Future<JsonObject> countFuture = client.asyncCount(countIndexUrl, query);
-
       countFuture
           .compose(
               countQueryHandler -> {
-                long count =
-                    countQueryHandler.getJsonArray("results").getJsonObject(0).getInteger("count");
 
+                long count =
+
+                    countQueryHandler.getJsonArray("results").getJsonObject(0).getInteger("count");
                 if (count > 50000) {
                   JsonObject json = new JsonObject();
                   json.put("type", 413);
@@ -76,6 +87,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                   return Future.failedFuture("Result Limit exceeds");
                 }
                 countPlaceHolder.setCount(count);
+//                SourceConfig sourceFilter = ElasticQueryGenerator.getSourceConfigFilters(apiQuery);
                 return client.asyncSearch(searchIndexUrl, query, sizeKeyValue, fromKeyValue);
               })
           .onSuccess(
@@ -88,6 +100,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                     .put(TOTAL_HITS_KEY, countPlaceHolder.getCount());
                 promise.complete(responseJson);
               })
+
           .onFailure(
               failureHandler -> {
                 LOGGER.info("failed to query : " + failureHandler);
@@ -101,6 +114,11 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     return promise.future();
+
+
+
+
+
   }
 
   @Override
