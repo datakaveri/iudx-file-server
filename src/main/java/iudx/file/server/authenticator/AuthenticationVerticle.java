@@ -59,6 +59,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
               JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
               jwtAuthOptions.addPubSecKey(
                   new PubSecKeyOptions().setAlgorithm("ES256").setBuffer(cert));
+              jwtAuthOptions.getJWTOptions().setLeeway(JWT_LEEWAY_TIME);
               /*
                * Default jwtIgnoreExpiry is false. If set through config, then that value is taken
                */
@@ -67,7 +68,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
                       ? false
                       : config().getBoolean("jwtIgnoreExpiry");
               if (jwtIgnoreExpiry) {
-                jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);
+                jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true).setLeeway(JWT_LEEWAY_TIME);
                 LOGGER.warn(
                     "JWT ignore expiration set to true,"
                         + "do not set IgnoreExpiration in production!!");
