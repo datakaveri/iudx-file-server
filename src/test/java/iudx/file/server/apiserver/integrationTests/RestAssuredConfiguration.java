@@ -1,6 +1,7 @@
 package iudx.file.server.apiserver.integrationTests;
 
 import io.restassured.RestAssured;
+import io.restassured.filter.log.LogDetail;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import iudx.file.server.authenticator.TokenSetup;
@@ -106,7 +107,7 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
 
     // Wait for tokens to be available before proceeding
     waitForTokens();
-    enableLoggingOfRequestAndResponseIfValidationFails();
+    enableLoggingOfRequestAndResponseIfValidationFails(LogDetail.BODY);
   }
 
   private void waitForTokens() {
