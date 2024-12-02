@@ -5,6 +5,9 @@ import static iudx.file.server.common.Constants.JSON_NEAR;
 
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import io.vertx.core.json.JsonArray;
+
+import java.util.List;
 
 /**
  * The QueryParams.
@@ -61,6 +64,11 @@ public class QueryParams {
 
   @JsonProperty("limit")
   private Integer from;
+
+
+
+  @JsonProperty("attrs")
+  private List<String> maskedAttributes;
 
   private QueryParams() {
     super();

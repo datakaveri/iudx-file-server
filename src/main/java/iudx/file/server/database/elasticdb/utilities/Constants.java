@@ -33,7 +33,7 @@ public class Constants extends iudx.file.server.common.Constants {
   public static final String SEARCHTYPE_NOT_FOUND = "No searchType found";
   public static final String MALFORMED_ID = "Malformed Id ";
   public static final String RESPONSE_FILTER_REGEX = "(.*)responseFilter(.*)";
-  public static final String RESPONSE_ATTRS = "attrs";
+  public static final String ACCESSIBLE_ATTRS = "attrs";
   public static final String FILE_ID = "fileId";
   public static final String TIME_RANGE = "timeRange";
   public static final String TIME_RANGE_STARTTIME = "startTime";

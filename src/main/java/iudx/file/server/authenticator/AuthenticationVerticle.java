@@ -19,6 +19,7 @@ import iudx.file.server.common.Api;
 import iudx.file.server.common.WebClientFactory;
 import iudx.file.server.common.service.CatalogueService;
 import iudx.file.server.common.service.impl.CatalogueServiceImpl;
+import iudx.file.server.database.postgres.PostgresService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -31,6 +32,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
   private AuthenticationService jwtAuthenticationService;
   private WebClient webClient;
   private CacheService cacheService;
+  private PostgresService postgresService;
   private String dxApiBasePath;
   private String iudxApiBasePath;
   private Api api;
@@ -74,6 +76,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
                         + "do not set IgnoreExpiration in production!!");
               }
               cacheService = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
+              postgresService= PostgresService.createProxy(vertx,PG_SERVICE_ADDRESS);
               dxApiBasePath = config().getString("dxApiBasePath");
               iudxApiBasePath = config().getString("iudxApiBasePath");
               api = Api.getInstance(dxApiBasePath, iudxApiBasePath);
@@ -81,7 +84,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
 
               jwtAuthenticationService =
                   new JwtAuthenticationServiceImpl(
-                      vertx, jwtAuth, config(), catalogueService, cacheService, api);
+                      vertx, jwtAuth, config(), catalogueService, cacheService, postgresService, api);
               /* Publish the Authentication service with the Event Bus against an address. */
               binder = new ServiceBinder(vertx);
 
