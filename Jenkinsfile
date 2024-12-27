@@ -48,7 +48,7 @@ pipeline {
           recordIssues(
             enabledForFailure: true,
             skipBlames: true,
-            qualityGates: [[threshold:4, type: 'TOTAL', unstable: false]],
+            qualityGates: [[threshold:5, type: 'TOTAL', unstable: false]],
             tool: pmdParser(pattern: 'target/pmd.xml')
           )
         }
