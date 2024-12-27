@@ -96,7 +96,6 @@ public class AuthHandler implements Handler<RoutingContext> {
             return;
           }
           context.next();
-          return;
         });
   }
 

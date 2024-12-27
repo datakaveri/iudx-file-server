@@ -98,11 +98,10 @@ public class FileServerVerticle extends AbstractVerticle {
   private CatalogueService catalogueService;
   private String dxApiBasePath;
   private String dxV1BasePath;
+  private int port;
 
   @Override
   public void start() throws Exception {
-    int port;
-
     Set<String> allowedHeaders = new HashSet<>();
     allowedHeaders.add(HEADER_ACCEPT);
     allowedHeaders.add(HEADER_TOKEN);
@@ -246,6 +245,7 @@ public class FileServerVerticle extends AbstractVerticle {
       /*
        * Default port when ssl is enabled is 8443. If set through config, then that value is taken
        */
+
       port = config().getInteger("httpPort") == null ? 8443 : config().getInteger("httpPort");
 
       /* Setup the HTTPs server properties, APIs and port. */
