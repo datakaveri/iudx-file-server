@@ -165,6 +165,12 @@
             <artifactId>micrometer-registry-prometheus</artifactId>
             <version>${micrometer.version}</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/io.micrometer/micrometer-registry-prometheus-simpleclient -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus-simpleclient</artifactId>
+            <version>${micrometer.version}</version>
+        </dependency>
         <!-- Packages for Hazelcast clustering based on Zookeeper discovery -->
         <dependency>
             <groupId>io.vertx</groupId>
