@@ -7,34 +7,34 @@
     <name>iudx-file-server</name>
 
     <properties>
-        <vertx.version>4.5.4</vertx.version>
-        <openjdk.version>11</openjdk.version>
+        <vertx.version>4.5.11</vertx.version>
+        <openjdk.version>21</openjdk.version>
         <hazelcast.version>4.0.2</hazelcast.version>
-        <micrometer.version>1.12.3</micrometer.version>
-        <curator.version>5.6.0</curator.version>
-        <!--  <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>-->
-        <junit-jupiter-api.version>5.10.2</junit-jupiter-api.version>
-        <junit-jupiter-params.version>5.10.2</junit-jupiter-params.version>
-        <junit-jupiter-engine.version>5.10.2</junit-jupiter-engine.version>
-        <testcontainers.version>1.19.6</testcontainers.version>
-        <testcontainer-elastic.version>1.19.6</testcontainer-elastic.version>
-        <testcontainer-postgres.version>1.19.6</testcontainer-postgres.version>
-        <log4j2.version>2.23.0</log4j2.version>
+        <micrometer.version>1.14.1</micrometer.version>
+        <curator.version>5.7.1</curator.version>
+        <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
+        <junit-jupiter-api.version>5.11.3</junit-jupiter-api.version>
+        <junit-jupiter-params.version>5.11.3</junit-jupiter-params.version>
+        <junit-jupiter-engine.version>5.11.3</junit-jupiter-engine.version>
+        <testcontainers.version>1.20.4</testcontainers.version>
+        <testcontainer-elastic.version>1.20.4</testcontainer-elastic.version>
+        <testcontainer-postgres.version>1.20.4</testcontainer-postgres.version>
+        <log4j2.version>2.24.2</log4j2.version>
         <disruptor.version>4.0.0</disruptor.version>
-        <junit-jupiter.version>1.19.6</junit-jupiter.version>
-        <elasticsearch-rest-client.version>8.12.2</elasticsearch-rest-client.version>
+        <junit-jupiter.version>1.20.4</junit-jupiter.version>
+        <elasticsearch-rest-client.version>8.16.1</elasticsearch-rest-client.version>
         <!--<elasticsearch-rest-high-level-client.version>7.12.1</elasticsearch-rest-high-level-client.version>-->
-        <jacoco-maven-plugin.version>0.8.11</jacoco-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
         <!--<checkstyle.version>10.3.1</checkstyle.version>-->
-        <checkstyle.version>10.13.0</checkstyle.version>
-        <maven-shade-plugin.version>3.5.2</maven-shade-plugin.version>
-        <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
-        <exec-maven-plugin.version>3.2.0</exec-maven-plugin.version>
-        <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
-        <maven-checkstyle-plugin.version>3.3.1</maven-checkstyle-plugin.version>
-        <maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
-        <maven-pmd-plugin.version>3.21.2</maven-pmd-plugin.version>
-        <maven-surefire-report-plugin.version>3.2.5</maven-surefire-report-plugin.version>
+        <checkstyle.version>10.20.1</checkstyle.version>
+        <maven-shade-plugin.version>3.6.0</maven-shade-plugin.version>
+        <maven-javadoc-plugin.version>3.11.1</maven-javadoc-plugin.version>
+        <exec-maven-plugin.version>3.5.0</exec-maven-plugin.version>
+        <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
+        <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
+        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+        <maven-pmd-plugin.version>3.26.0</maven-pmd-plugin.version>
+        <maven-surefire-report-plugin.version>3.5.2</maven-surefire-report-plugin.version>
 
         <exec.mainClass>iudx.file.server.deploy.Deployer</exec.mainClass>
         <exec.mainClassDev>iudx.file.server.deploy.DeployerDev</exec.mainClassDev>
@@ -87,7 +87,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>33.0.0-jre</version>
+            <version>33.3.1-jre</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.plugins</groupId>
@@ -119,7 +119,7 @@
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
-            <version>5.4.0</version>
+            <version>5.5.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -165,6 +165,12 @@
             <artifactId>micrometer-registry-prometheus</artifactId>
             <version>${micrometer.version}</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/io.micrometer/micrometer-registry-prometheus-simpleclient -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus-simpleclient</artifactId>
+            <version>${micrometer.version}</version>
+        </dependency>
         <!-- Packages for Hazelcast clustering based on Zookeeper discovery -->
         <dependency>
             <groupId>io.vertx</groupId>
@@ -198,6 +204,13 @@
             <version>${testcontainer-postgres.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- Latest Mockito compatible with Java 21 -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.5.0</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>com.ongres.scram</groupId>
             <artifactId>client</artifactId>
@@ -206,7 +219,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.2</version>
+            <version>42.7.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -233,18 +246,18 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>2.16.1</version>
+            <version>2.18.2</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.16.1</version>
+            <version>2.18.2</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>2.16.1</version>
+            <version>2.18.2</version>
         </dependency>
 
         <dependency>
@@ -261,7 +274,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>5.10.0</version>
+            <version>5.14.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
