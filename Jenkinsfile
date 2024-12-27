@@ -60,7 +60,7 @@ pipeline {
         }
         cleanup{
           script{
-           sh 'sudo update-alternatives --set java /usr/lib/jvm/java-11-openjdk-amd64/bin/java'
+            sh 'sudo update-alternatives --set java /usr/lib/jvm/java-21-openjdk-amd64/bin/java'
             sh 'sudo rm -rf target/'
           }
         }
@@ -92,7 +92,7 @@ pipeline {
           }
         }
         script{
-            sh 'sudo update-alternatives --set java /usr/lib/jvm/java-11-openjdk-amd64/bin/java'
+             sh 'sudo update-alternatives --set java /usr/lib/jvm/java-21-openjdk-amd64/bin/java'
             sh 'scp /home/ubuntu/configs/fs-config-test.json ./example-configs/config-test.json'
             sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestProxyHost=jenkins-master-priv -DintTestProxyPort=8090 -DintTestHost=jenkins-slave1 -DintTestPort=8443'
         }
@@ -119,7 +119,7 @@ pipeline {
         }
         cleanup{
           script{
-            sh 'sudo update-alternatives --set java /usr/lib/jvm/java-11-openjdk-amd64/bin/java'
+             sh 'sudo update-alternatives --set java /usr/lib/jvm/java-21-openjdk-amd64/bin/java'
             sh 'docker compose -f docker-compose.test.yml down --remove-orphans'
           } 
         }
