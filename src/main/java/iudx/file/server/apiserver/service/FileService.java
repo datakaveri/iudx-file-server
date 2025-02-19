@@ -5,6 +5,8 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
 import java.util.List;
+import com.google.transit.realtime.GtfsRealtime.FeedMessage;
+
 
 /**
  * The FileService.
@@ -48,4 +50,10 @@ public interface FileService {
    * @param filePath path of deleted file
    */
   Future<JsonObject> delete(final String fileName, String filePath);
+
+  Future<JsonObject> uploadGtfsRealtime(final FileUpload file, String fileName, String filePath);
+
+  Future<JsonObject> downloadGtfsRealtime(final String fileName, String filePath, final HttpServerResponse response);
+
+
 }

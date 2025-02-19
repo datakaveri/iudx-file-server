@@ -39,6 +39,7 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
     // file access list/rules
     List<AuthorizationRequest> fileAccessList = new ArrayList<>();
     fileAccessList.add(new AuthorizationRequest(GET, api.getApiTemporal()));
+    fileAccessList.add(new AuthorizationRequest(GET, api.getApiGtfsDownload()));
     fileAccessList.add(new AuthorizationRequest(GET, api.getApiFileDownload()));
     fileAccessList.add(new AuthorizationRequest(GET, api.getListMetaData()));
     fileAccessList.add(new AuthorizationRequest(GET, api.getApiSpatial()));
