@@ -19,6 +19,7 @@ import iudx.file.server.common.Api;
 import iudx.file.server.common.WebClientFactory;
 import iudx.file.server.common.service.CatalogueService;
 import iudx.file.server.common.service.impl.CatalogueServiceImpl;
+import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -64,9 +65,8 @@ public class AuthenticationVerticle extends AbstractVerticle {
                * Default jwtIgnoreExpiry is false. If set through config, then that value is taken
                */
               boolean jwtIgnoreExpiry =
-                  config().getBoolean("jwtIgnoreExpiry") == null
-                      ? false
-                      : config().getBoolean("jwtIgnoreExpiry");
+                  Optional.ofNullable(config().getBoolean("jwtIgnoreExpiry")).orElse(false);
+
               if (jwtIgnoreExpiry) {
                 jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true).setLeeway(JWT_LEEWAY_TIME);
                 LOGGER.warn(
