@@ -178,25 +178,25 @@ public class FileServerVerticle extends AbstractVerticle {
 
     ValidationsHandler uploadGtfsValidationHandler = new ValidationsHandler(RequestType.UPLOAD);
     router
-            .post(api.getApiGtfsUpload())
-            .handler(
-                    BodyHandler.create()
-                            .setUploadsDirectory(tempDirectory)
-                            .setBodyLimit(MAX_SIZE)
-                            .setDeleteUploadedFilesOnEnd(false))
-            .handler(uploadGtfsValidationHandler)
-            .handler(AuthHandler.create(vertx))
-            .handler(this::uploadGtfs)
-            .failureHandler(validationsFailureHandler);
+        .post(api.getApiGtfsUpload())
+        .handler(
+            BodyHandler.create()
+                .setUploadsDirectory(tempDirectory)
+                .setBodyLimit(MAX_SIZE)
+                .setDeleteUploadedFilesOnEnd(false))
+        .handler(uploadGtfsValidationHandler)
+        .handler(AuthHandler.create(vertx))
+        .handler(this::uploadGtfs)
+        .failureHandler(validationsFailureHandler);
 
     ValidationsHandler downloadGtfsValidationHandler = new ValidationsHandler(RequestType.DOWNLOAD);
     router
-            .get(api.getApiGtfsDownload())
-            .handler(BodyHandler.create())
-            .handler(downloadGtfsValidationHandler)
-            .handler(AuthHandler.create(vertx))
-            .handler(this::downloadGtfs)
-            .failureHandler(validationsFailureHandler);
+        .get(api.getApiGtfsDownload())
+        .handler(BodyHandler.create())
+        .handler(downloadGtfsValidationHandler)
+        .handler(AuthHandler.create(vertx))
+        .handler(this::downloadGtfs)
+        .failureHandler(validationsFailureHandler);
 
     ValidationsHandler downloadValidationHandler = new ValidationsHandler(RequestType.DOWNLOAD);
     router
@@ -252,7 +252,6 @@ public class FileServerVerticle extends AbstractVerticle {
               HttpServerResponse response = routingContext.response();
               response.sendFile("docs/apidoc.html");
             });
-
 
     boolean isssl;
     LOGGER.info("starting server");
@@ -328,9 +327,6 @@ public class FileServerVerticle extends AbstractVerticle {
       }
     }
   }
-
-
-
 
   /**
    * Upload File service allows to upload a file into the server after authenticating the user.
@@ -423,73 +419,73 @@ public class FileServerVerticle extends AbstractVerticle {
     String id = formParam.get("id");
     response.putHeader("content-type", "application/json");
     JsonObject auditParams =
-            new JsonObject()
-                    .put("api", request.path())
-                    .put(USER_ID, authInfo.getString(USER_ID))
-                    .put(ROLE, authInfo.getString(ROLE))
-                    .put(DRL, authInfo.getString(DRL))
-                    .put(DID, authInfo.getString(DID))
-                    .put(RESOURCE_ID, id);
+        new JsonObject()
+            .put("api", request.path())
+            .put(USER_ID, authInfo.getString(USER_ID))
+            .put(ROLE, authInfo.getString(ROLE))
+            .put(DRL, authInfo.getString(DRL))
+            .put(DID, authInfo.getString(DID))
+            .put(RESOURCE_ID, id);
 
     Boolean isExternalStorage = Boolean.parseBoolean(request.getHeader("externalStorage"));
 
     Future<String> uploadPathFuture = getPath(id);
 
     FileUpload files = routingContext.fileUploads().stream().findFirst().orElse(null);
-    if ((!isExternalStorage && (files.size() == 0)) || !files.fileName().endsWith(".pb")) {
+    if (!isExternalStorage && (files.size() == 0) || !files.fileName().endsWith(".pb")) {
       handleResponse(response, HttpStatusCode.BAD_REQUEST);
       String message =
-              new RestResponse.Builder()
-                      .type(String.valueOf(400))
-                      .title(HttpStatusCode.BAD_REQUEST.getUrn())
-                      .details("bad request")
-                      .build()
-                      .toJsonString();
+          new RestResponse.Builder()
+              .type(String.valueOf(400))
+              .title(HttpStatusCode.BAD_REQUEST.getUrn())
+              .details("bad request")
+              .build()
+              .toJsonString();
       LOGGER.error("Invalid File type or no file attached");
       processResponse(response, message);
       return;
     }
     uploadPathFuture.onComplete(
-            itemHadler -> {
-              if (itemHadler.succeeded()) {
-                String uploadPath = itemHadler.result();
-                if (isExternalStorage) {
-                  JsonObject responseJson = new JsonObject();
-                  String fileId = id + "/" + UUID.randomUUID();
-                  Future<Boolean> saveRecordFuture = saveFileRecord(formParam, fileId);
+        itemHadler -> {
+          if (itemHadler.succeeded()) {
+            String uploadPath = itemHadler.result();
+            if (isExternalStorage) {
+              JsonObject responseJson = new JsonObject();
+              String fileId = id + "/" + UUID.randomUUID();
+              Future<Boolean> saveRecordFuture = saveFileRecord(formParam, fileId);
 
-                  saveRecordFuture.onComplete(
-                          saveRecordHandler -> {
-                            if (saveRecordHandler.succeeded()) {
-                              responseJson
-                                      .put(JSON_TYPE, SUCCESS.getUrn())
-                                      .put(JSON_TITLE, "Success")
-                                      .put(
-                                              RESULTS, new JsonArray().add(new JsonObject().put("fileId", fileId)));
+              saveRecordFuture.onComplete(
+                  saveRecordHandler -> {
+                    if (saveRecordHandler.succeeded()) {
+                      responseJson
+                          .put(JSON_TYPE, SUCCESS.getUrn())
+                          .put(JSON_TITLE, "Success")
+                          .put(
+                              RESULTS, new JsonArray().add(new JsonObject().put("fileId", fileId)));
 
-                              handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
-                              auditParams.put(RESPONSE_SIZE, 0);
-                              updateAuditTable(auditParams);
-                            } else {
-                              processResponse(response, saveRecordHandler.cause().getMessage());
-                            }
-                          });
-                } else {
-                  sampleGtfsFileUpload(response, files, "sample", uploadPath, id);
-                }
-              } else {
-                LOGGER.debug("unable to construct folder structure");
-                processResponse(response, itemHadler.cause().getMessage());
-              }
-            });
+                      handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
+                      auditParams.put(RESPONSE_SIZE, 0);
+                      updateAuditTable(auditParams);
+                    } else {
+                      processResponse(response, saveRecordHandler.cause().getMessage());
+                    }
+                  });
+            } else {
+              sampleGtfsFileUpload(response, files, "sample", uploadPath, id);
+            }
+          } else {
+            LOGGER.debug("unable to construct folder structure");
+            processResponse(response, itemHadler.cause().getMessage());
+          }
+        });
   }
 
   /**
-   * Download Gtfs File service allows to download a Gtfs file from the server after authenticating the user.
+   * Download Gtfs File service allows to download a Gtfs file from the server after authenticating
+   * the user.
    *
    * @param routingContext Handles web request in Vert.x web
    */
-
   public void downloadGtfs(RoutingContext routingContext) {
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
@@ -502,39 +498,39 @@ public class FileServerVerticle extends AbstractVerticle {
     String fileName = id.substring(id.lastIndexOf(FORWARD_SLASH));
     Future<String> uploadDirFuture = getPath(resource);
     JsonObject auditParams =
-            new JsonObject()
-                    .put("api", request.path())
-                    .put(USER_ID, authInfo.getString(USER_ID))
-                    .put(ROLE, authInfo.getString(ROLE))
-                    .put(DRL, authInfo.getString(DRL))
-                    .put(DID, authInfo.getString(DID))
-                    .put(RESOURCE_ID, resource);
+        new JsonObject()
+            .put("api", request.path())
+            .put(USER_ID, authInfo.getString(USER_ID))
+            .put(ROLE, authInfo.getString(ROLE))
+            .put(DRL, authInfo.getString(DRL))
+            .put(DID, authInfo.getString(DID))
+            .put(RESOURCE_ID, resource);
     uploadDirFuture.onComplete(
-            dirHanler -> {
-              if (dirHanler.succeeded()) {
-                String uploadDir = dirHanler.result();
-                LOGGER.debug(
-                        "uploadDir: " + uploadDir + "; fileuuId: " + fileuuId + "; fileName: " + fileName);
-                fileService
-                        .downloadGtfsRealtime(fileuuId, uploadDir, response)
-                        .onComplete(
-                                handler -> {
-                                  if (handler.failed()) {
-                                    processResponse(response, handler.cause().getMessage());
-                                  } else {
-                                    if (!fileName.toLowerCase().contains("sample")) {
-                                      auditParams.put(RESPONSE_SIZE, response.bytesWritten());
-                                      updateAuditTable(auditParams);
-                                    }
-                                  }
-                                  // do nothing response is already written and file is served using
-                                  // content-disposition.
-                                });
-              } else {
-                LOGGER.debug("unable to construct folder structure");
-                processResponse(response, dirHanler.cause().getMessage());
-              }
-            });
+        dirHanler -> {
+          if (dirHanler.succeeded()) {
+            String uploadDir = dirHanler.result();
+            LOGGER.debug(
+                "uploadDir: " + uploadDir + "; fileuuId: " + fileuuId + "; fileName: " + fileName);
+            fileService
+                .downloadGtfsRealtime(fileuuId, uploadDir, response)
+                .onComplete(
+                    handler -> {
+                      if (handler.failed()) {
+                        processResponse(response, handler.cause().getMessage());
+                      } else {
+                        if (!fileName.toLowerCase().contains("sample")) {
+                          auditParams.put(RESPONSE_SIZE, response.bytesWritten());
+                          updateAuditTable(auditParams);
+                        }
+                      }
+                      // do nothing response is already written and file is served using
+                      // content-disposition.
+                    });
+          } else {
+            LOGGER.debug("unable to construct folder structure");
+            processResponse(response, dirHanler.cause().getMessage());
+          }
+        });
   }
 
   /**
@@ -572,36 +568,29 @@ public class FileServerVerticle extends AbstractVerticle {
         });
   }
 
-
-
   private void sampleGtfsFileUpload(
-          HttpServerResponse response,
-          FileUpload files,
-          String fileName,
-          String filePath,
-          String id) {
+      HttpServerResponse response, FileUpload files, String fileName, String filePath, String id) {
 
     Future<JsonObject> uploadFuture = fileService.uploadGtfsRealtime(files, fileName, filePath);
 
     uploadFuture.onComplete(
-            uploadHandler -> {
-              if (uploadHandler.succeeded()) {
-                JsonObject uploadResult = uploadHandler.result();
-                JsonObject responseJson = new JsonObject();
-                String fileId = id + "/" + uploadResult.getString("file-id");
+        uploadHandler -> {
+          if (uploadHandler.succeeded()) {
+            JsonObject uploadResult = uploadHandler.result();
+            JsonObject responseJson = new JsonObject();
+            String fileId = id + "/" + uploadResult.getString("file-id");
 
-                responseJson
-                        .put(JSON_TYPE, SUCCESS.getUrn())
-                        .put(JSON_TITLE, "Success")
-                        .put("results", new JsonArray().add(new JsonObject().put("fileId", fileId)));
-                // insertFileRecord(params, fileId); no need to insert in DB
-                handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
-              } else {
-                processResponse(response, uploadHandler.cause().getMessage());
-              }
-            });
+            responseJson
+                .put(JSON_TYPE, SUCCESS.getUrn())
+                .put(JSON_TITLE, "Success")
+                .put("results", new JsonArray().add(new JsonObject().put("fileId", fileId)));
+            // insertFileRecord(params, fileId); no need to insert in DB
+            handleResponse(response, HttpStatusCode.SUCCESS, responseJson);
+          } else {
+            processResponse(response, uploadHandler.cause().getMessage());
+          }
+        });
   }
-
 
   /**
    * Helper method to upload a archieve file.
