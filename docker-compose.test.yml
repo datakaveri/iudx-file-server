@@ -8,7 +8,7 @@ services:
     environment:
       - LOG_LEVEL=INFO
     volumes:
-      - /home/ubuntu/configs/fs-config-test.json:/usr/share/app/secrets/all-verticles-configs/config-dev.json
+      - /home/ubuntu/configs/5.6.0/fs-config-test.json:/usr/share/app/secrets/all-verticles-configs/config-dev.json
       - ./docker/runTests.sh:/usr/share/app/docker/runTests.sh
       - ./example-configs/:/usr/share/app/example-configs
       - ./src/:/usr/share/app/src
@@ -25,7 +25,7 @@ services:
     environment:
       - LOG_LEVEL=INFO
     volumes:
-      - /home/ubuntu/configs/fs-config-test.json:/usr/share/app/secrets/configs/config.json
+      - /home/ubuntu/configs/5.6.0/fs-config-test.json:/usr/share/app/secrets/configs/config.json
     command: bash -c "exec java $$FS_JAVA_OPTS  -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.Log4j2LogDelegateFactory -jar ./fatjar.jar  --host $$(hostname) -c secrets/configs/config.json"
     ports:
       - "8443:8443"
