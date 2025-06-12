@@ -14,6 +14,16 @@ pipeline {
   }
   stages {
 
+    stage('Trivy Code Scan (Dependencies)') {
+      steps {
+        script {
+          sh '''
+            trivy fs --scanners vuln,secret,misconfig --output trivy-fs-report.txt .
+          '''
+        }
+      }
+    }
+
     stage('Building images') {
       steps{
         script {
@@ -22,6 +32,27 @@ pipeline {
           deplImage = docker.build( deplRegistry, "-f ./docker/depl.dockerfile .")
           testImage = docker.build( testRegistry, "-f ./docker/test.dockerfile .")
         }
+      }
+    }
+
+    stage('Trivy Docker Image Scan') {
+      steps {
+        script {
+          sh "trivy image --output trivy-dev-image-report.txt ${devImage.imageName()}"
+          sh "trivy image --output trivy-depl-image-report.txt ${deplImage.imageName()}"
+        }
+      }
+    }
+    stage('Archive Trivy Reports') {
+      steps {
+        archiveArtifacts artifacts: 'trivy-*.txt', allowEmptyArchive: true
+        publishHTML(target: [
+          allowMissing: true,
+          keepAll: true,
+          reportDir: '.',
+          reportFiles: 'trivy-fs-report.txt, trivy-dev-image-report.txt, trivy-depl-image-report.txt',
+          reportName: 'Trivy Reports'
+        ])
       }
     }
 
