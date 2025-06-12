@@ -17,6 +17,8 @@ public class Api {
   private StringBuilder fileDownloadEndpoint;
   private StringBuilder fileDeleteEndpoint;
   private StringBuilder listMetaDataEndpoint;
+  private StringBuilder fileGtfsUploadEndpoint;
+  private StringBuilder fileGtfsDownloadEndpoint;
 
   private Api(String dxApiBasePath, String iudxApiBasePath) {
     this.dxApiBasePath = dxApiBasePath;
@@ -44,6 +46,8 @@ public class Api {
     fileDownloadEndpoint = new StringBuilder(iudxApiBasePath).append(API_FILE_DOWNLOAD);
     fileDeleteEndpoint = new StringBuilder(iudxApiBasePath).append(API_FILE_DELETE);
     listMetaDataEndpoint = new StringBuilder(iudxApiBasePath).append(API_LIST_METADATA);
+    fileGtfsUploadEndpoint = new StringBuilder(iudxApiBasePath).append(API_GTFS_UPLOAD);
+    fileGtfsDownloadEndpoint = new StringBuilder(iudxApiBasePath).append(API_GTFS_DOWNLOAD);
   }
 
   public String getApiTemporal() {
@@ -56,6 +60,14 @@ public class Api {
 
   public String getApiFileUpload() {
     return fileUploadEndpoint.toString();
+  }
+
+  public String getApiGtfsUpload() {
+    return fileGtfsUploadEndpoint.toString();
+  }
+
+  public String getApiGtfsDownload() {
+    return fileGtfsDownloadEndpoint.toString();
   }
 
   public String getApiFileDownload() {

@@ -11,6 +11,8 @@ public class Constants extends iudx.file.server.common.Constants {
   public static final String API_TEMPORAL = "/temporal/entities";
   public static final String API_SPATIAL = "/entities";
   public static final String API_FILE_UPLOAD = "/upload";
+  public static final String API_GTFS_UPLOAD = "/gtfs/upload";
+  public static final String API_GTFS_DOWNLOAD = "/gtfs/download";
   public static final String API_FILE_DOWNLOAD = "/download";
   public static final String API_FILE_DELETE = "/delete";
   public static final String API_LIST_METADATA = "/list";

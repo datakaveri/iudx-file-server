@@ -48,4 +48,9 @@ public interface FileService {
    * @param filePath path of deleted file
    */
   Future<JsonObject> delete(final String fileName, String filePath);
+
+  Future<JsonObject> uploadGtfsRealtime(final FileUpload file, String fileName, String filePath);
+
+  Future<JsonObject> downloadGtfsRealtime(
+      final String fileName, String filePath, final HttpServerResponse response);
 }

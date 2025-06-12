@@ -254,7 +254,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
               JwtData jwtData = new JwtData(user.principal());
               jwtData.setExp(user.get("exp"));
               jwtData.setIat(user.get("iat"));
-              LOGGER.debug("jwt: "+jwtData);
+              LOGGER.debug("jwt: " + jwtData);
               promise.complete(jwtData);
             })
         .onFailure(

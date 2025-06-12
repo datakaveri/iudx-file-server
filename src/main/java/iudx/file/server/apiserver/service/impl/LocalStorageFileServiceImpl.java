@@ -197,4 +197,102 @@ public class LocalStorageFileServiceImpl implements FileService {
   public String getFileExtension(String fileName) {
     return FileNameUtils.getExtension(fileName);
   }
+
+  /**
+   * GTFS Realtime Upload. (Stores as Protobuf.)
+   */
+  @Override
+  public Future<JsonObject> uploadGtfsRealtime(
+      final FileUpload fileUpload, String fileName, String filePath) {
+    final Promise<JsonObject> promise = Promise.promise();
+    LOGGER.debug("uploading.. gtfs files to file system.");
+    final JsonObject metadata = new JsonObject();
+    final JsonObject finalResponse = new JsonObject();
+    LOGGER.info(directory + filePath);
+    createLocalDirectory(filePath);
+    LOGGER.debug("uploading... " + fileUpload.fileName());
+    String uuid = fileName;
+    String fileExtension = getFileExtension(fileUpload.fileName());
+    String fileUploadPath = directory + "/" + filePath + "/" + uuid + "." + fileExtension;
+    CopyOptions copyOptions = new CopyOptions();
+    copyOptions.setReplaceExisting(true);
+    fileSystem.move(
+        fileUpload.uploadedFileName(),
+        fileUploadPath,
+        copyOptions,
+        fileMoveHandler -> {
+          if (fileMoveHandler.succeeded()) {
+            LOGGER.debug("uploaded");
+            metadata.put("fileName", fileUpload.fileName());
+            metadata.put("content-type", fileUpload.contentType());
+            metadata.put("content-transfer-encoding", fileUpload.contentTransferEncoding());
+            metadata.put("char-set", fileUpload.charSet());
+            metadata.put("size", fileUpload.size() + " Bytes");
+            metadata.put("uploaded_path", fileUploadPath);
+            metadata.put("file-id", uuid + "." + fileExtension);
+            promise.complete(metadata);
+          } else {
+            LOGGER.debug("failed uploading :" + fileMoveHandler.cause());
+            finalResponse.put("type", HttpStatusCode.INTERNAL_SERVER_ERROR.getUrn());
+            finalResponse.put("title", "failed to upload file.");
+            finalResponse.put("details", fileMoveHandler.cause());
+            promise.fail(finalResponse.toString());
+          }
+        });
+
+    return promise.future();
+  }
+
+  /**
+   * GTFS Realtime Download.
+   */
+  @Override
+  public Future<JsonObject> downloadGtfsRealtime(
+      final String fileName, String uploadDir, final HttpServerResponse response) {
+    Promise<JsonObject> promise = Promise.promise();
+    JsonObject finalResponse = new JsonObject();
+    String path = getLocalDirectory(fileName, uploadDir);
+    LOGGER.info(path);
+    response.setChunked(true);
+    String finalPath = path;
+    fileSystem.exists(
+        path,
+        existHandler -> {
+          if (existHandler.succeeded()) {
+            if (existHandler.result()) {
+              fileSystem.open(
+                  finalPath,
+                  new OpenOptions().setCreate(true),
+                  readEvent -> {
+                    if (readEvent.failed()) {
+                      finalResponse.put("statusCode", HttpStatus.SC_BAD_REQUEST);
+                      promise.complete(finalResponse);
+                    }
+                    LOGGER.debug("sending file : " + fileName + " to client");
+                    ReadStream<Buffer> asyncFile = readEvent.result();
+                    response.putHeader("content-type", "application/octet-stream");
+                    response.putHeader("Content-Disposition", "attachment; filename=" + fileName);
+                    asyncFile.pipeTo(
+                        response,
+                        pipeHandler -> {
+                          promise.complete();
+                        });
+                  });
+            } else {
+              finalResponse.put("type", HttpStatus.SC_NOT_FOUND);
+              finalResponse.put("title", "urn:dx:rs:resourceNotFound");
+              finalResponse.put("details", "File does not exist");
+              LOGGER.error("File does not exist");
+              promise.fail(finalResponse.toString());
+            }
+          } else {
+            LOGGER.error(existHandler.cause());
+            finalResponse.put("type", HttpStatus.SC_INTERNAL_SERVER_ERROR);
+            finalResponse.put("title", "Something went wrong while downloading file.");
+            finalResponse.put("details", existHandler.cause());
+            promise.fail(finalResponse.toString());
+          }
+        });
+    return promise.future();
+  }
 }
