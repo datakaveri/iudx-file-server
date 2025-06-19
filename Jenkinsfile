@@ -14,6 +14,16 @@ pipeline {
   }
   stages {
 
+    stage('Trivy Code Scan (Dependencies)') {
+      steps {
+        script {
+          sh '''
+            trivy fs --scanners vuln,secret,misconfig --output trivy-fs-report.txt .
+          '''
+        }
+      }
+    }
+
     stage('Building images') {
       steps{
         script {
@@ -22,6 +32,27 @@ pipeline {
           deplImage = docker.build( deplRegistry, "-f ./docker/depl.dockerfile .")
           testImage = docker.build( testRegistry, "-f ./docker/test.dockerfile .")
         }
+      }
+    }
+
+    stage('Trivy Docker Image Scan') {
+      steps {
+        script {
+          sh "trivy image --output trivy-dev-image-report.txt ${devImage.imageName()}"
+          sh "trivy image --output trivy-depl-image-report.txt ${deplImage.imageName()}"
+        }
+      }
+    }
+    stage('Archive Trivy Reports') {
+      steps {
+        archiveArtifacts artifacts: 'trivy-*.txt', allowEmptyArchive: true
+        publishHTML(target: [
+          allowMissing: true,
+          keepAll: true,
+          reportDir: '.',
+          reportFiles: 'trivy-fs-report.txt, trivy-dev-image-report.txt, trivy-depl-image-report.txt',
+          reportName: 'Trivy Reports'
+        ])
       }
     }
 
@@ -90,7 +121,7 @@ pipeline {
           }
         }
         script{
-            sh 'scp /home/ubuntu/configs/fs-config-test.json ./example-configs/config-test.json'
+            sh 'scp /home/ubuntu/configs/5.6.0/fs-config-test.json ./example-configs/config-test.json'
             sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestProxyHost=jenkins-master-priv -DintTestProxyPort=8090 -DintTestHost=jenkins-slave1 -DintTestPort=8443'
         }
         node('built-in') {
@@ -122,7 +153,7 @@ pipeline {
       }
     }
 
-    stage('Continuous Deployment') {
+    stage('Push Images') {
       when {
         allOf {
           anyOf {
@@ -133,59 +164,25 @@ pipeline {
             triggeredBy cause: 'UserIdCause'
           }
           expression {
-            return env.GIT_BRANCH == 'origin/master';
+            return env.GIT_BRANCH == 'origin/5.6.0';
           }
         }
       }
-      stages {
-        stage('Push Images') {
-          steps {
-            script {
-              docker.withRegistry( registryUri, registryCredential ) {
-                devImage.push("5.6.0-alpha-${env.GIT_HASH}")
-                deplImage.push("5.6.0-alpha-${env.GIT_HASH}")
-              }
-            }
+  	steps {
+    	  script {
+          docker.withRegistry( registryUri, registryCredential ) {
+        	devImage.push("5.6.0-${env.GIT_HASH}")
+        	deplImage.push("5.6.0-${env.GIT_HASH}")
           }
-        }
-        stage('Docker Swarm deployment') {
-          steps {
-            script {
-              sh "ssh azureuser@docker-swarm 'docker service update file-server_file-server --image ghcr.io/datakaveri/fs-depl:5.6.0-alpha-${env.GIT_HASH}'"
-              sh 'sleep 20'
-            }
-          }
-          post{
-            failure{
-              error "Failed to deploy image in Docker Swarm"
-            }
-          }          
-        }
-        stage('Integration test on swarm deployment') {
-          steps {
-              script{
-                sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestDepl=true'
-              }
-          }
-          post{
-            always{
-             xunit (
-               thresholds: [ skipped(failureThreshold: '0'), failed(failureThreshold: '0') ],
-               tools: [ JUnit(pattern: 'target/failsafe-reports/*.xml') ]
-               )
-            }
-            failure{
-              error "Test failure. Stopping pipeline execution!"
-            }
-          }
-        }
-      }
+    	  }
+  	}
     }
+
   }
   post{
     failure{
       script{
-        if (env.GIT_BRANCH == 'origin/master')
+        if (env.GIT_BRANCH == 'origin/5.6.0')
         emailext recipientProviders: [buildUser(), developers()], to: '$RS_RECIPIENTS, $DEFAULT_RECIPIENTS', subject: '$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!', body: '''$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS:
 Check console output at $BUILD_URL to view the results.'''
       }
