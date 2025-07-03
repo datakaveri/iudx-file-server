@@ -82,7 +82,7 @@ pipeline {
       steps{
         script{
           //sh 'docker compose -f docker-compose.test.yml up test'
-          sh 'sudo update-alternatives --set java /usr/lib/jvm/java-21-openjdk-amd64/bin/java'
+          //sh 'sudo update-alternatives --set java /usr/lib/jvm/java-21-openjdk-amd64/bin/java'
           sh 'mkdir -p configs'
           sh 'cp /home/ubuntu/configs/fs-config-test.json ./configs/config-test.json'
           sh 'mvn clean test checkstyle:checkstyle pmd:pmd'

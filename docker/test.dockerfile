@@ -1,4 +1,4 @@
-#### Run from project root directory
+## Run from project root directory
 
 ARG VERSION="0.0.1-SNAPSHOT"
 
