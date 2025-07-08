@@ -51,7 +51,6 @@ pipeline {
           echo 'Pulled - ' + env.GIT_BRANCH
           devImage = docker.build( devRegistry, "-f ./docker/dev.dockerfile .")
           deplImage = docker.build( deplRegistry, "-f ./docker/depl.dockerfile .")
-         // testImage = docker.build( testRegistry, "-f ./docker/test.dockerfile .")
         }
       }
     }
@@ -81,8 +80,6 @@ pipeline {
     stage('Unit Tests and Code Coverage Test'){
       steps{
         script{
-          //sh 'docker compose -f docker-compose.test.yml up test'
-          //sh 'sudo update-alternatives --set java /usr/lib/jvm/java-21-openjdk-amd64/bin/java'
           sh 'mkdir -p configs'
           sh 'cp /home/ubuntu/configs/fs-config-test.json ./configs/config-test.json'
           sh 'mvn clean test checkstyle:checkstyle pmd:pmd'
@@ -113,7 +110,6 @@ pipeline {
         }
         cleanup{
           script{
-            sh 'sudo update-alternatives --set java /usr/lib/jvm/java-11-openjdk-amd64/bin/java'
             sh 'sudo rm -rf target/'
           }
         }

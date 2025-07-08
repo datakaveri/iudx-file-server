@@ -3,23 +3,6 @@ networks:
   fs-net:
     driver: bridge
 services:
-  test:
-    image: ghcr.io/datakaveri/fs-test:latest
-    environment:
-      - LOG_LEVEL=INFO
-    volumes:
-      - /home/ubuntu/configs/fs-config-test.json:/usr/share/app/secrets/all-verticles-configs/config-dev.json
-      - ./docker/runTests.sh:/usr/share/app/docker/runTests.sh
-      - ./example-configs/:/usr/share/app/example-configs
-      - ./src/:/usr/share/app/src
-      - ${WORKSPACE}:/tmp/test
-      - $PWD:$PWD -w $PWD
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./iudx-pmd-ruleset.xml:/usr/share/app/iudx-pmd-ruleset.xml
-      - ./google_checks.xml:/usr/share/app/google_checks.xml
-    command: bash -c "docker/runTests.sh"
-    network_mode: host
-
   integTest:
     image: ghcr.io/datakaveri/fs-depl:latest
     environment:
