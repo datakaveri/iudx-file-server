@@ -14,23 +14,19 @@ pipeline {
   }
   stages {
 
-    stage('Check for Important Changes') {
-      when {
-        not {
-          anyOf {
-            changeset "docker/**"
-            changeset "docs/**"
-            changeset "pom.xml"
-            changeset "src/main/**"
-            triggeredBy cause: 'UserIdCause'
-          }
-        }
-      }
+    stage('Trigger Validation') {
       steps {
-        echo 'No relevant changes detected. Skipping the rest of the pipeline.'
         script {
-          currentBuild.result = 'NOT_BUILT'
-          error("No changes in important paths. Pipeline aborted.")
+          def isPRComment = env.ghprbCommentBody != null
+          def changed = isImportantChange()
+          if (isPRComment || changed) {
+            echo "Trigger valid: Running pipeline due to PR comment or file changes."
+          } 
+          else {
+            echo "Skipping pipeline. Reason: No PR comment and no important file changes."
+            currentBuild.result = 'SUCCESS'
+            return
+          }
         }
       }
     }
@@ -230,6 +226,16 @@ pipeline {
         if (env.GIT_BRANCH == 'origin/master')
         emailext recipientProviders: [buildUser(), developers()], to: '$RS_RECIPIENTS, $DEFAULT_RECIPIENTS', subject: '$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!', body: '''$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS:
 Check console output at $BUILD_URL to view the results.'''
+      }
+    }
+  }
+}
+def isImportantChange() {
+  def paths = ['docker/', 'docs/', 'pom.xml', 'src/main/']
+  return currentBuild.changeSets.any { cs ->
+    cs.items.any { item ->
+      item.affectedPaths.any { path ->
+        paths.any { imp -> path.startsWith(imp) || path == imp }
       }
     }
   }
