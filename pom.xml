@@ -19,7 +19,7 @@
         <testcontainers.version>1.19.6</testcontainers.version>
         <testcontainer-elastic.version>1.19.6</testcontainer-elastic.version>
         <testcontainer-postgres.version>1.19.6</testcontainer-postgres.version>
-        <log4j2.version>2.23.0</log4j2.version>
+        <log4j2.version>2.25.3</log4j2.version>
         <disruptor.version>4.0.0</disruptor.version>
         <junit-jupiter.version>1.19.6</junit-jupiter.version>
         <elasticsearch-rest-client.version>8.12.2</elasticsearch-rest-client.version>
